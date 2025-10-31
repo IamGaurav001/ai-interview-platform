@@ -27,7 +27,9 @@ export const evaluateAnswer = async (req, res) => {
     const { question, answer } = req.body;
 
     if (!question || !answer) {
-      return res.status(400).json({ error: "Question and answer are required" });
+      return res
+        .status(400)
+        .json({ error: "Question and answer are required" });
     }
 
     const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
