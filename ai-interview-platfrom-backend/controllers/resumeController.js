@@ -9,7 +9,6 @@ export const analyzeResume = async (req, res) => {
   let filePath = null;
   
   try {
-    // Check if file was uploaded
     if (!req.file) {
       return res.status(400).json({ 
         error: "No file uploaded. Please upload a PDF resume file." 
@@ -20,30 +19,23 @@ export const analyzeResume = async (req, res) => {
     console.log("========================================");
     console.log("Processing file:", filePath);
     
-    // Read the PDF file
     const dataBuffer = fs.readFileSync(filePath);
     console.log("File size:", dataBuffer.length, "bytes");
     
-    // Convert Buffer to Uint8Array as required by pdf-parse v2.x
     const data = new Uint8Array(dataBuffer);
     console.log("Converted to Uint8Array, length:", data.length);
     
-    // Import pdf-parse v2.x - Uses class-based API
     const { PDFParse } = await import("pdf-parse");
     console.log("pdf-parse imported successfully (v2.x)");
     
-    // Create parser instance with the Uint8Array data
     const parser = new PDFParse({ data });
     console.log("Parser instance created");
     
-    // Get the text - v2.x uses getText() method that returns TextResult
     const textResult = await parser.getText();
     console.log("getText() called");
     console.log("textResult type:", typeof textResult);
     console.log("textResult constructor:", textResult?.constructor?.name);
-    
-    // Extract the actual text string from TextResult
-    // In v2.x, TextResult has a 'text' property
+
     let resumeText = "";
     
     if (textResult && textResult.text) {
@@ -54,7 +46,7 @@ export const analyzeResume = async (req, res) => {
       console.error("Unexpected textResult structure:", textResult);
       throw new Error("Unable to extract text from PDF parsing result");
     }
-    
+
     console.log("\n=== TEXT EXTRACTION ===");
     console.log("Extracted text type:", typeof resumeText);
     console.log("Extracted text length:", resumeText?.length || 0);
@@ -64,11 +56,9 @@ export const analyzeResume = async (req, res) => {
     console.log(resumeText.substring(0, 400));
     console.log("=======================\n");
     
-    // Clean up parser resources
     await parser.destroy();
     console.log("Parser destroyed");
 
-    // Validate extracted text
     if (!resumeText || typeof resumeText !== 'string' || resumeText.trim().length < 50) {
       throw new Error(
         `Failed to extract valid text from PDF. Length: ${resumeText?.length || 0}. ` +
@@ -76,10 +66,9 @@ export const analyzeResume = async (req, res) => {
       );
     }
 
-    // Clean the text
     const cleanResumeText = resumeText
-      .replace(/\s+/g, ' ')         // Normalize whitespace
-      .replace(/\n+/g, '\n')        // Normalize line breaks
+      .replace(/\s+/g, ' ')         
+      .replace(/\n+/g, '\n')        
       .trim();
     
     console.log("Cleaned text length:", cleanResumeText.length);
@@ -89,11 +78,9 @@ export const analyzeResume = async (req, res) => {
       throw new Error("Resume text too short after cleaning.");
     }
 
-    // Initialize Gemini - fallback to gemini-1.5-flash if 2.0-flash is unavailable
     console.log("\n=== PREPARING GEMINI REQUEST ===");
     let model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
-    // Create a clear, straightforward prompt
     const prompt = `You are an expert technical interviewer. I'm providing you with a candidate's resume below.
 
 Your task: Generate exactly 5 interview questions based on this specific candidate's background.
