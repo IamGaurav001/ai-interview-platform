@@ -4,6 +4,7 @@ import cors from "cors";
 import interviewRoutes from "./routes/interviewRoutes.js";
 import resumeRoutes from "./routes/resumeRoutes.js";
 import connectDB from "./config/db.js";
+import authRoutes from "./routes/authRoutes.js";
 
 dotenv.config();
 const app = express();
@@ -16,7 +17,7 @@ app.use(express.json());
 
 app.use("/api/interview", interviewRoutes);
 app.use("/api/resume", resumeRoutes);
-
+app.use("/api/auth", authRoutes);
 
 app.get("/", (req, res) => {
   res.send("AI Interview Coach Backend is running ✅");
