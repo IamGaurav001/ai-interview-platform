@@ -1,23 +1,175 @@
 @import "tailwindcss";
 
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
-
-  color-scheme: dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #0f172a;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
+  /* Primary Color Palette */
+  --color-primary-50: #eff6ff;
+  --color-primary-100: #dbeafe;
+  --color-primary-200: #bfdbfe;
+  --color-primary-300: #93c5fd;
+  --color-primary-400: #60a5fa;
+  --color-primary-500: #3b82f6;
+  --color-primary-600: #2563eb;
+  --color-primary-700: #1d4ed8;
+  --color-primary-800: #1e40af;
+  --color-primary-900: #1e3a8a;
+  --color-primary-950: #172554;
 }
 
 body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
-  background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+  background-color: #ffffff;
+  overflow-x: hidden;
 }
+
+* {
+  box-sizing: border-box;
+}
+
+/* Ensure all content is visible */
+main {
+  width: 100%;
+  overflow-x: hidden;
+}
+
+/* Primary color utility classes for Tailwind v4 */
+@theme {
+  --color-primary-50: #eff6ff;
+  --color-primary-100: #dbeafe;
+  --color-primary-200: #bfdbfe;
+  --color-primary-300: #93c5fd;
+  --color-primary-400: #60a5fa;
+  --color-primary-500: #3b82f6;
+  --color-primary-600: #2563eb;
+  --color-primary-700: #1d4ed8;
+  --color-primary-800: #1e40af;
+  --color-primary-900: #1e3a8a;
+  --color-primary-950: #172554;
+}
+
+/* Ensure buttons are visible and have proper styling */
+button {
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease-in-out;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Fix for primary colored buttons */
+.bg-primary-50 { background-color: var(--color-primary-50); }
+.bg-primary-100 { background-color: var(--color-primary-100); }
+.bg-primary-200 { background-color: var(--color-primary-200); }
+.bg-primary-300 { background-color: var(--color-primary-300); }
+.bg-primary-400 { background-color: var(--color-primary-400); }
+.bg-primary-500 { background-color: var(--color-primary-500); }
+.bg-primary-600 { background-color: var(--color-primary-600); }
+.bg-primary-700 { background-color: var(--color-primary-700); }
+.bg-primary-800 { background-color: var(--color-primary-800); }
+.bg-primary-900 { background-color: var(--color-primary-900); }
+
+.text-primary-50 { color: var(--color-primary-50); }
+.text-primary-100 { color: var(--color-primary-100); }
+.text-primary-200 { color: var(--color-primary-200); }
+.text-primary-300 { color: var(--color-primary-300); }
+.text-primary-400 { color: var(--color-primary-400); }
+.text-primary-500 { color: var(--color-primary-500); }
+.text-primary-600 { color: var(--color-primary-600); }
+.text-primary-700 { color: var(--color-primary-700); }
+.text-primary-800 { color: var(--color-primary-800); }
+.text-primary-900 { color: var(--color-primary-900); }
+
+.border-primary-200 { border-color: var(--color-primary-200); }
+.border-primary-300 { border-color: var(--color-primary-300); }
+.border-primary-600 { border-color: var(--color-primary-600); }
+
+.hover\:bg-primary-700:hover { background-color: var(--color-primary-700); }
+.hover\:text-primary-500:hover { color: var(--color-primary-500); }
+.hover\:text-primary-600:hover { color: var(--color-primary-600); }
+.hover\:text-primary-700:hover { color: var(--color-primary-700); }
+
+/* Focus ring for primary buttons */
+.focus\:ring-primary-600:focus { 
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.3);
+}
+
+/* Ensure all buttons have minimum visibility */
+button[class*="bg-primary"] {
+  color: white !important;
+  font-weight: 500;
+  border: none;
+}
+
+button[class*="bg-primary"]:hover {
+  opacity: 0.9;
+}
+
+button[class*="bg-primary"]:active {
+  transform: scale(0.98);
+}
+
+/* Fix for buttons that might be hidden */
+button:not([disabled]) {
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+/* Ensure text is visible on colored backgrounds */
+.bg-primary-600,
+.bg-primary-700,
+.bg-primary-800 {
+  color: white !important;
+}
+
+.text-primary-100 {
+  color: var(--color-primary-100);
+}
+
+/* Focus ring utilities */
+.focus\:ring-2:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.3);
+}
+
+.focus\:ring-primary-600:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.3);
+}
+
+.focus\:ring-offset-2:focus {
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.3), 0 0 0 4px rgba(255, 255, 255, 0.8);
+}
+
+/* Ensure buttons have proper z-index */
+button {
+  position: relative;
+  z-index: 1;
+}
+
+/* Fix for any hidden elements */
+[class*="bg-primary"] {
+  display: block;
+  visibility: visible;
+  opacity: 1;
+}
+
+/* Additional hover states */
+.hover\:bg-primary-50:hover { background-color: var(--color-primary-50); }
+.hover\:bg-primary-100:hover { background-color: var(--color-primary-100); }
+.hover\:bg-primary-200:hover { background-color: var(--color-primary-200); }

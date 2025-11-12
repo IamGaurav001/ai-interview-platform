@@ -5,9 +5,9 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
-import Interview from "./pages/Interview";
+import SequentialInterview from "./pages/SequentialInterview";
+import InterviewFlow from "./pages/InterviewFlow";
 import History from "./pages/History";
-import PrepGuide from "./pages/PrepGuide";
 import ResumeUpload from "./pages/ResumeUpload";
 import Landing from "./pages/Landing.jsx";
 
@@ -15,7 +15,7 @@ function App() {
   return (
     <BrowserRouter>
       <Navbar />
-      <main className="container mx-auto p-4">
+      <main className="min-h-screen w-full overflow-x-hidden">
         <Routes>
           {/* Public Routes */}
           <Route path="/" element={<Landing />} />
@@ -32,10 +32,18 @@ function App() {
             }
           />
           <Route
-            path="/interview"
+            path="/sequential-interview"
             element={
               <ProtectedRoute>
-                <Interview />
+                <SequentialInterview />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/interview-flow"
+            element={
+              <ProtectedRoute>
+                <InterviewFlow />
               </ProtectedRoute>
             }
           />
@@ -44,14 +52,6 @@ function App() {
             element={
               <ProtectedRoute>
                 <History />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/prep-guide"
-            element={
-              <ProtectedRoute>
-                <PrepGuide />
               </ProtectedRoute>
             }
           />
