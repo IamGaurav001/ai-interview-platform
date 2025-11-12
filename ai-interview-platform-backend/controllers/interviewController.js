@@ -8,9 +8,9 @@ import { callGeminiWithRetry } from "../utils/geminiHelper.js";
 dotenv.config();
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
-// ------------------------------------
+// -------------------------------------
 // Generate AI Interview Question
-// ------------------------------------
+// -------------------------------------
 export const generateQuestion = async (req, res) => {
   try {
     const { domain } = req.body;
@@ -48,7 +48,10 @@ export const evaluateAnswer = async (req, res) => {
     if (!domain || !question || !answer)
       return res
         .status(400)
-        .json({ success: false, error: "Domain, question, and answer are required." });
+        .json({
+          success: false,
+          error: "Domain, question, and answer are required.",
+        });
 
     const cacheKey = `eval:${req.user._id}:${domain}:${Buffer.from(question)
       .toString("base64")
@@ -63,30 +66,28 @@ export const evaluateAnswer = async (req, res) => {
 
     // 2️⃣ Primary strict prompt with strict evaluation criteria
     const prompt = `
-You are a strict AI Interview Evaluator. You must be critical and thorough in your assessment.
+      You are a strict AI Interview Evaluator. You must be critical and thorough in your assessment.
 
-**CRITICAL EVALUATION RULES:**
-1. If the answer simply repeats or restates the question without providing actual content, correctness MUST be 0-2/10
-2. If the answer is too short (less than 50 words) or lacks detail, deduct points accordingly
-3. If the answer doesn't address the specific question asked, correctness should be low (0-4/10)
-4. Only give high scores (8-10) for answers that are detailed, specific, technically accurate, and directly address the question
-5. Clarity should be low (0-3) if the answer is vague, unclear, or doesn't make sense
-6. Confidence should reflect how well the candidate demonstrates knowledge - low if they're guessing or avoiding the question
+      **CRITICAL EVALUATION RULES:**
+      1. Default assumption: scores should be 4-6/10 unless answer is CLEARLY excellent
+      2. Only give 8+ for answers that are: detailed, specific, technically accurate, AND directly address the question
+      3. If answer is vague, repetitive, or lacks concrete examples: max 3/10
+      4. If answer shows basic understanding but lacks depth: 4-5/10
+      5. If answer is good but has minor gaps: 6-7/10
 
-Return **ONLY JSON**, no introductions, markdown, or text outside of braces.
-JSON format:
-{
-  "correctness": number (0–10) - How accurately and completely the answer addresses the question. Be strict!
-  "clarity": number (0–10) - How clear and well-articulated the answer is
-  "confidence": number (0–10) - How confidently the candidate demonstrates knowledge
-  "overall_feedback": "2–3 concise sentences of constructive feedback. Be specific about what's missing or wrong."
-}
+      Return **ONLY JSON**, no introductions, markdown, or text outside of braces.
+      JSON format:
+      {
+        "correctness": number (0–10) - How accurately and completely the answer addresses the question. Be strict!
+        "clarity": number (0–10) - How clear and well-articulated the answer is
+        "confidence": number (0–10) - How confidently the candidate demonstrates knowledge
+        "overall_feedback": "2–3 concise sentences of constructive feedback. Be specific about what's missing or wrong."
+      }
 
-Question: ${question}
-Answer: ${answer}
+      Question: ${question}
+      Answer: ${answer}
 
-Evaluate strictly. If the answer just repeats the question or provides no real content, correctness should be 0-2/10.
-`;
+      Evaluate strictly. If the answer just repeats the question or provides no real content, correctness should be 0-2/10.`;
 
     let feedbackText = "";
     try {
@@ -108,12 +109,14 @@ Evaluate strictly. If the answer just repeats the question or provides no real c
         !feedbackText.includes("{");
 
       if (looksWrong) {
-        console.warn(`⚠️ Gemini returned non-evaluation text, attempting repair...`);
+        console.warn(
+          `⚠️ Gemini returned non-evaluation text, attempting repair...`
+        );
         // Try a repair prompt
         const repairPrompt = `Convert this to valid JSON with correctness, clarity, confidence (0-10), and overall_feedback:\n${feedbackText}`;
         try {
           feedbackText = await callGeminiWithRetry(repairPrompt, {
-            model: "gemini-1.5-flash",
+            model: "gemini-pro",
             maxRetries: 3,
           });
         } catch (repairError) {
@@ -126,7 +129,7 @@ Evaluate strictly. If the answer just repeats the question or provides no real c
       return res.status(503).json({
         success: false,
         error: "AI service temporarily unavailable",
-        message: error.message.includes("Rate limit") 
+        message: error.message.includes("Rate limit")
           ? "The AI service is experiencing high demand. Please wait a moment and try again."
           : "Unable to evaluate answer at this time. Please try again in a few moments.",
         retryAfter: 60, // Suggest retrying after 60 seconds
@@ -145,7 +148,7 @@ Text:
 ${feedbackText}`;
       try {
         const repairText = await callGeminiWithRetry(repairPrompt, {
-          model: "gemini-1.5-flash",
+          model: "gemini-pro",
           maxRetries: 2,
         });
         feedback = parseFeedbackSafely(repairText);
@@ -172,20 +175,30 @@ ${feedbackText}`;
     // 6️⃣ Cache result
     await redisClient.setEx(cacheKey, 600, JSON.stringify({ feedback, score }));
 
-    res.json({ success: true, cached: false, feedback, score, sessionId: session._id });
+    res.json({
+      success: true,
+      cached: false,
+      feedback,
+      score,
+      sessionId: session._id,
+    });
   } catch (err) {
     console.error("❌ Error in evaluateAnswer:", err.message);
-    
+
     // Check if it's a rate limit error
-    if (err.message && (err.message.includes("429") || err.message.includes("Rate limit"))) {
+    if (
+      err.message &&
+      (err.message.includes("429") || err.message.includes("Rate limit"))
+    ) {
       return res.status(429).json({
         success: false,
         error: "Rate limit exceeded",
-        message: "The AI service is experiencing high demand. Please wait a moment and try again.",
+        message:
+          "The AI service is experiencing high demand. Please wait a moment and try again.",
         retryAfter: 60,
       });
     }
-    
+
     res.status(500).json({
       success: false,
       error: "Error evaluating answer",
@@ -241,7 +254,7 @@ export const getInterviewHistory = async (req, res) => {
         .filter((n) => !isNaN(n) && n > 0);
 
       const avgScore = validScores.length
-        ? (validScores.reduce((a, b) => a + b, 0) / validScores.length)
+        ? validScores.reduce((a, b) => a + b, 0) / validScores.length
         : 0;
 
       const { label: avgLabel, color: avgColor } = getConfidence(avgScore);
@@ -262,10 +275,11 @@ export const getInterviewHistory = async (req, res) => {
           score: s.score?.toFixed(2) || "0.00",
           confidenceLevel: label,
           confidenceColor: color,
-          date: new Date(s.createdAt).toLocaleString("en-IN", {
+          date: new Date(s.createdAt).toLocaleString("en-US", {
             dateStyle: "medium",
             timeStyle: "short",
           }),
+          createdAt: s.createdAt,
           questions: s.questions,
           answers: s.answers,
           feedback: s.feedback,
@@ -286,7 +300,6 @@ export const getInterviewHistory = async (req, res) => {
       .json({ success: false, error: "Error fetching interview history" });
   }
 };
-
 
 // ------------------------------
 // 📊 GET Weak Areas
@@ -372,24 +385,27 @@ Output JSON structure (must be valid JSON):
 }
 `;
 
-    console.log("🔮 Generating prep guide for domains:", weakDomains.join(", "));
+    console.log(
+      "🔮 Generating prep guide for domains:",
+      weakDomains.join(", ")
+    );
     const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
     const result = await model.generateContent(prompt);
     let aiResponse = result.response.text().trim();
-    
+
     console.log("📥 Raw AI response length:", aiResponse.length);
     console.log("📥 First 200 chars:", aiResponse.substring(0, 200));
 
     // Extract JSON from markdown code blocks if present
     let cleaned = aiResponse;
-    
+
     // Remove ```json ... ``` or ``` ... ```
     cleaned = cleaned.replace(/```(?:json)?\s*([\s\S]*?)```/gi, "$1").trim();
-    
+
     // Find JSON object boundaries
     const jsonStart = cleaned.indexOf("{");
     const jsonEnd = cleaned.lastIndexOf("}");
-    
+
     if (jsonStart !== -1 && jsonEnd !== -1 && jsonEnd > jsonStart) {
       cleaned = cleaned.substring(jsonStart, jsonEnd + 1);
     }
@@ -397,34 +413,44 @@ Output JSON structure (must be valid JSON):
     let prepGuide;
     let parseAttempts = 0;
     const maxAttempts = 3;
-    
+
     while (parseAttempts < maxAttempts) {
       try {
         prepGuide = JSON.parse(cleaned);
         console.log("✅ Successfully parsed prep guide JSON");
-        
+
         // Validate structure
-        if (prepGuide.week1 && prepGuide.week2 && prepGuide.week3 && prepGuide.week4) {
-          break; // Success
+        if (
+          prepGuide.week1 &&
+          prepGuide.week2 &&
+          prepGuide.week3 &&
+          prepGuide.week4
+        ) {
+          break;
         } else {
           throw new Error("Missing required week fields");
         }
       } catch (parseError) {
         parseAttempts++;
-        console.warn(`⚠️ JSON parse attempt ${parseAttempts} failed:`, parseError.message);
-        
+        console.warn(
+          `⚠️ JSON parse attempt ${parseAttempts} failed:`,
+          parseError.message
+        );
+
         if (parseAttempts < maxAttempts) {
-          // Try to fix common JSON issues
-          cleaned = cleaned.replace(/,(\s*[}\]])/g, "$1"); // Remove trailing commas
-          cleaned = cleaned.replace(/([,\{[])\s*\n\s*([,\}\]])/g, "$1 $2"); // Fix newlines in JSON
+          cleaned = cleaned.replace(/,(\s*[}\]])/g, "$1");
+          cleaned = cleaned.replace(/([,\{[])\s*\n\s*([,\}\]])/g, "$1 $2");
         } else {
-          // Last attempt: try to extract and reconstruct
-          console.error("❌ Failed to parse JSON after", maxAttempts, "attempts");
+          console.error(
+            "❌ Failed to parse JSON after",
+            maxAttempts,
+            "attempts"
+          );
           prepGuide = {
             raw: aiResponse,
             note: "Could not parse structured JSON from AI response",
             error: parseError.message,
-            parsedText: cleaned.substring(0, 500)
+            parsedText: cleaned.substring(0, 500),
           };
         }
       }
@@ -438,7 +464,7 @@ Output JSON structure (must be valid JSON):
         error: "Failed to generate structured prep guide",
         message: prepGuide?.note || "AI response could not be parsed",
         weakDomains,
-        rawResponse: aiResponse.substring(0, 1000) // First 1000 chars for debugging
+        rawResponse: aiResponse.substring(0, 1000), // First 1000 chars for debugging
       });
     }
 
@@ -465,7 +491,13 @@ export const saveCompleteSession = async (req, res) => {
   try {
     const { domain, questions, answers, feedbacks, scores } = req.body;
 
-    if (!domain || !questions || !answers || !Array.isArray(questions) || !Array.isArray(answers)) {
+    if (
+      !domain ||
+      !questions ||
+      !answers ||
+      !Array.isArray(questions) ||
+      !Array.isArray(answers)
+    ) {
       return res.status(400).json({
         success: false,
         error: "Domain, questions array, and answers array are required.",
@@ -535,11 +567,11 @@ export const saveCompleteSession = async (req, res) => {
 export const startInterview = async (req, res) => {
   try {
     const userId = req.user._id.toString();
-    
+
     // ✅ Step 1: Try to load resume from Redis cache
     let resumeText = "";
     const resumeCacheKey = `resume:${userId}`;
-    
+
     try {
       const cachedResume = await redisClient.get(resumeCacheKey);
       if (cachedResume) {
@@ -549,14 +581,15 @@ export const startInterview = async (req, res) => {
         return res.status(400).json({
           success: false,
           error: "No resume found. Please upload your resume first.",
-          message: "Resume not found in cache. Please upload your resume before starting an interview."
+          message:
+            "Resume not found in cache. Please upload your resume before starting an interview.",
         });
       }
     } catch (redisError) {
       console.error("❌ Redis error loading resume:", redisError.message);
       return res.status(500).json({
         success: false,
-        error: "Failed to load resume from cache"
+        error: "Failed to load resume from cache",
       });
     }
 
@@ -597,10 +630,14 @@ Generate only the first interview question. Do not include any introduction or e
       currentQuestion: firstQuestion,
       resumeText: resumeText,
       history: JSON.stringify([
-        { role: "interviewer", text: firstQuestion, timestamp: new Date().toISOString() }
+        {
+          role: "interviewer",
+          text: firstQuestion,
+          timestamp: new Date().toISOString(),
+        },
       ]),
       questionCount: "1",
-      startedAt: new Date().toISOString()
+      startedAt: new Date().toISOString(),
     };
 
     await redisClient.hSet(sessionKey, sessionData);
@@ -613,14 +650,14 @@ Generate only the first interview question. Do not include any introduction or e
       success: true,
       question: firstQuestion,
       sessionId: sessionKey,
-      message: "Interview started successfully"
+      message: "Interview started successfully",
     });
   } catch (error) {
     console.error("❌ Error starting interview:", error.message);
     res.status(500).json({
       success: false,
       error: "Failed to start interview",
-      details: error.message
+      details: error.message,
     });
   }
 };
@@ -636,19 +673,20 @@ export const nextInterviewStep = async (req, res) => {
     if (!answer || answer.trim().length < 10) {
       return res.status(400).json({
         success: false,
-        error: "Answer is required and must be at least 10 characters"
+        error: "Answer is required and must be at least 10 characters",
       });
     }
 
     const sessionKey = `session:${userId}`;
-    
+
     // ✅ Step 1: Load current session state from Redis
     const session = await redisClient.hGetAll(sessionKey);
-    
+
     if (!session || !session.stage) {
       return res.status(404).json({
         success: false,
-        error: "No active interview session found. Please start a new interview."
+        error:
+          "No active interview session found. Please start a new interview.",
       });
     }
 
@@ -665,17 +703,22 @@ export const nextInterviewStep = async (req, res) => {
     history.push({
       role: "user",
       text: answer.trim(),
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
 
     // ✅ Step 4: Send updated conversation to Gemini for next response
     // Build conversation context
-    const conversationContext = history.map(msg => 
-      `${msg.role === "interviewer" ? "Interviewer" : "Candidate"}: ${msg.text}`
-    ).join("\n\n");
+    const conversationContext = history
+      .map(
+        (msg) =>
+          `${msg.role === "interviewer" ? "Interviewer" : "Candidate"}: ${
+            msg.text
+          }`
+      )
+      .join("\n\n");
 
     const questionCount = parseInt(session.questionCount || "0");
-    
+
     const prompt = `You are a professional technical interviewer conducting a comprehensive, real-world interview. Your goal is to thoroughly evaluate the candidate across multiple dimensions:
 
 1. **Technical Depth**: Assess their understanding of technologies mentioned in their resume
@@ -693,35 +736,37 @@ CONVERSATION SO FAR (${questionCount} questions asked):
 ${conversationContext}
 
 **CRITICAL INSTRUCTIONS:**
-- This is a COMPREHENSIVE interview - you MUST continue asking questions
+- This is a COMPREHENSIVE interview with a maximum of 25 questions
 - Current question count: ${questionCount}
-- **DO NOT end the interview until you have asked AT LEAST 15-20 questions**
-- **ALWAYS ask another question unless ALL these conditions are met:**
-  1. You have asked at least 15 questions (Current: ${questionCount})
-  2. You have covered multiple technical areas from their resume
-  3. You have had at least 2-3 deep technical discussions
-  4. You have asked system design or architecture questions (if applicable)
-  5. You have asked behavioral/experience-based questions
-  6. You have thoroughly assessed their problem-solving approach
+- **Interview should naturally conclude between 15-20 questions when you've covered all areas**
+- **Maximum limit: 25 questions - if you reach 25 questions, you MUST end the interview**
 
 **Interview Guidelines:**
 - Vary question types: technical deep-dives, system design, coding scenarios, behavioral questions
 - Build on previous answers - ask follow-up questions to dig deeper
 - Cover different aspects: frontend, backend, databases, architecture, algorithms, etc.
 - Make it conversational and natural - like a real interview
-- If question count is less than 15, you MUST continue asking questions
 
 **When to Complete:**
-ONLY indicate INTERVIEW_COMPLETE if:
-- You have asked at least 15 questions AND
-- You have thoroughly covered all dimensions listed above AND
-- You genuinely believe you have a complete assessment
+You should indicate INTERVIEW_COMPLETE when:
+- You have asked at least 12-15 questions AND
+- You have thoroughly covered multiple technical areas from their resume AND
+- You have had at least 2-3 deep technical discussions AND
+- You have asked system design or architecture questions (if applicable) AND
+- You have asked behavioral/experience-based questions AND
+- You genuinely believe you have a comprehensive assessment
+
+**OR if you reach 25 questions, you MUST end the interview.**
 
 **Response Format:**
 FEEDBACK: [brief, constructive feedback on their last answer - 1-2 sentences]
-QUESTION: [next question or "INTERVIEW_COMPLETE" ONLY if all conditions above are met]
+QUESTION: [next question or "INTERVIEW_COMPLETE" if conditions above are met]
 
-**IMPORTANT: If question count is ${questionCount} and it's less than 15, you MUST ask another question. Do NOT end the interview yet.**`;
+**Current Status:**
+- Questions asked: ${questionCount}
+- If ${questionCount} < 12: Continue asking questions
+- If ${questionCount} >= 12 and you've covered all areas: You may end the interview
+- If ${questionCount} >= 25: You MUST end the interview`;
 
     let aiResponse;
     try {
@@ -748,39 +793,53 @@ QUESTION: [next question or "INTERVIEW_COMPLETE" ONLY if all conditions above ar
     let nextQuestion = "";
     let isComplete = false;
 
-    // Check if interview should complete (only if explicitly stated AND we have enough questions)
-    const hasCompleteSignal = aiResponse.includes("INTERVIEW_COMPLETE") || 
-                             aiResponse.toLowerCase().includes("interview complete") ||
-                             aiResponse.toLowerCase().includes("that concludes") ||
-                             aiResponse.toLowerCase().includes("thank you for your time");
-    
-    // Only complete if explicitly signaled AND we've asked at least 10 questions (minimum for comprehensive interview)
-    if (hasCompleteSignal && questionCount >= 10) {
+    // Check if interview should complete
+    const hasCompleteSignal =
+      aiResponse.includes("INTERVIEW_COMPLETE") ||
+      aiResponse.toLowerCase().includes("interview complete") ||
+      aiResponse.toLowerCase().includes("that concludes") ||
+      aiResponse.toLowerCase().includes("thank you for your time");
+
+    // Complete if explicitly signaled AND we've asked at least 12 questions
+    // OR if we've reached the maximum of 25 questions
+    if (questionCount >= 25) {
+      // Hard limit: Force completion at 25 questions
+      isComplete = true;
+      feedback =
+        "We've reached the maximum number of questions. Let's wrap up the interview.";
+      nextQuestion = "";
+    } else if (hasCompleteSignal && questionCount >= 12) {
+      // Natural completion: AI decides to end after covering topics
       isComplete = true;
       feedback = aiResponse.replace(/INTERVIEW_COMPLETE/gi, "").trim();
+      nextQuestion = "";
     } else {
       // Extract feedback and question
-      const feedbackMatch = aiResponse.match(/FEEDBACK:\s*(.+?)(?=QUESTION:|$)/is);
+      const feedbackMatch = aiResponse.match(
+        /FEEDBACK:\s*(.+?)(?=QUESTION:|$)/is
+      );
       const questionMatch = aiResponse.match(/QUESTION:\s*(.+?)$/is);
-      
+
       feedback = feedbackMatch ? feedbackMatch[1].trim() : "";
       nextQuestion = questionMatch ? questionMatch[1].trim() : aiResponse;
-      
-      // If no question found and we have enough questions, check if it's a completion message
+
+      // If no question found, try to extract from full response
       if (!nextQuestion || nextQuestion.length < 10) {
-        // Only complete if we've asked enough questions
-        if (questionCount >= 10 && hasCompleteSignal) {
-          isComplete = true;
-        } else {
-          // If parsing failed but we don't have enough questions, try to extract question from full response
-          nextQuestion = aiResponse.length > 20 ? aiResponse : "Could you elaborate on that?";
-        }
+        // If parsing failed, try to extract question from full response
+        nextQuestion =
+          aiResponse.length > 20 ? aiResponse : "Could you elaborate on that?";
       }
-      
-      // Safety: Don't let interview go beyond 30 questions (very comprehensive)
-      if (questionCount >= 30) {
-        isComplete = true;
-        feedback = "We've covered a comprehensive range of topics. Let's wrap up the interview.";
+
+      // If AI tried to complete but we don't have enough questions, force a question
+      if (hasCompleteSignal && questionCount < 12) {
+        console.log(
+          `⚠️ AI tried to end at question ${questionCount}, but we need at least 12. Forcing continuation.`
+        );
+        // Generate a follow-up question instead
+        nextQuestion =
+          nextQuestion ||
+          "Let me ask you another question about your experience...";
+        isComplete = false;
       }
     }
 
@@ -802,23 +861,23 @@ QUESTION: [next question or "INTERVIEW_COMPLETE" ONLY if all conditions above ar
       await redisClient.hSet(sessionKey, {
         ...session,
         stage: "completed",
-        history: JSON.stringify(history)
+        history: JSON.stringify(history),
       });
     } else {
       // Add interviewer's next question to history
       history.push({
         role: "interviewer",
         text: nextQuestion,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
 
       const questionCount = parseInt(session.questionCount || "0") + 1;
-      
+
       await redisClient.hSet(sessionKey, {
         ...session,
         history: JSON.stringify(history),
         currentQuestion: nextQuestion,
-        questionCount: questionCount.toString()
+        questionCount: questionCount.toString(),
       });
     }
 
@@ -828,26 +887,29 @@ QUESTION: [next question or "INTERVIEW_COMPLETE" ONLY if all conditions above ar
       feedback: feedback || "Good answer!",
       question: nextQuestion,
       isComplete,
-      questionCount: parseInt(session.questionCount || "0") + 1
+      questionCount: parseInt(session.questionCount || "0") + 1,
     });
-
   } catch (error) {
     console.error("❌ Error in nextInterviewStep:", error.message);
-    
+
     // Check if it's a rate limit error
-    if (error.message && (error.message.includes("429") || error.message.includes("Rate limit"))) {
+    if (
+      error.message &&
+      (error.message.includes("429") || error.message.includes("Rate limit"))
+    ) {
       return res.status(429).json({
         success: false,
         error: "Rate limit exceeded",
-        message: "The AI service is experiencing high demand. Please wait a moment and try again.",
+        message:
+          "The AI service is experiencing high demand. Please wait a moment and try again.",
         retryAfter: 60,
       });
     }
-    
+
     res.status(500).json({
       success: false,
       error: "Failed to process interview step",
-      details: error.message
+      details: error.message,
     });
   }
 };
@@ -862,11 +924,11 @@ export const endInterview = async (req, res) => {
 
     // ✅ Step 1: Load full conversation from Redis
     const session = await redisClient.hGetAll(sessionKey);
-    
+
     if (!session || !session.stage) {
       return res.status(404).json({
         success: false,
-        error: "No active interview session found"
+        error: "No active interview session found",
       });
     }
 
@@ -882,7 +944,7 @@ export const endInterview = async (req, res) => {
     // ✅ Step 3: Extract questions and answers
     const questions = [];
     const answers = [];
-    
+
     history.forEach((msg, index) => {
       if (msg.role === "interviewer") {
         questions.push(msg.text);
@@ -892,9 +954,14 @@ export const endInterview = async (req, res) => {
     });
 
     // ✅ Step 4: Generate final AI summary
-    const conversationText = history.map(msg => 
-      `${msg.role === "interviewer" ? "Interviewer" : "Candidate"}: ${msg.text}`
-    ).join("\n\n");
+    const conversationText = history
+      .map(
+        (msg) =>
+          `${msg.role === "interviewer" ? "Interviewer" : "Candidate"}: ${
+            msg.text
+          }`
+      )
+      .join("\n\n");
 
     const summaryPrompt = `You are an AI Interview Evaluator. Analyze this comprehensive interview conversation and provide a detailed, thorough evaluation.
 
@@ -925,7 +992,7 @@ Return ONLY valid JSON, no markdown, no code blocks.`;
 
     let summaryText;
     let finalSummary;
-    
+
     try {
       summaryText = await callGeminiWithRetry(summaryPrompt, {
         model: "gemini-2.0-flash",
@@ -933,9 +1000,11 @@ Return ONLY valid JSON, no markdown, no code blocks.`;
         initialDelay: 2000,
       });
       summaryText = summaryText.trim();
-      
+
       // Clean JSON from markdown
-      summaryText = summaryText.replace(/```(?:json)?\s*([\s\S]*?)```/gi, "$1").trim();
+      summaryText = summaryText
+        .replace(/```(?:json)?\s*([\s\S]*?)```/gi, "$1")
+        .trim();
       const jsonStart = summaryText.indexOf("{");
       const jsonEnd = summaryText.lastIndexOf("}");
       if (jsonStart !== -1 && jsonEnd !== -1) {
@@ -947,26 +1016,30 @@ Return ONLY valid JSON, no markdown, no code blocks.`;
       } catch (parseError) {
         console.warn("⚠️ Failed to parse summary JSON, using defaults");
         finalSummary = {
-          overallScore: 7,
+          overallScore: 5, // ← Line 589 - This is the issue
           strengths: ["Good communication"],
           weaknesses: ["Could improve technical depth"],
-          summary: "Interview completed successfully.",
-          recommendations: ["Continue practicing technical questions"],
-          technicalDepth: 7,
-          problemSolving: 7,
-          communication: 7,
-          experienceRelevance: 7,
+          summary: "Interview completed. Detailed evaluation unavailable.",
+          recommendations: ["Continue practicing"],
+          technicalDepth: 5, // ← Line 594
+          problemSolving: 5, // ← Line 595
+          communication: 5, // ← Line 596
+          experienceRelevance: 5, // ← Line 597
         };
       }
     } catch (error) {
       console.error("❌ Error generating summary:", error.message);
-      // Return a default summary structure if API fails
+      // ← Line 600 - This catch block has ANOTHER fallback with overallScore: 7
       finalSummary = {
-        overallScore: 7,
+        overallScore: 7, // ← Line 603 - CONFLICTS with line 589!
         strengths: ["Good communication", "Relevant experience"],
         weaknesses: ["Could improve technical depth"],
-        summary: "Interview completed successfully. Due to service limitations, detailed evaluation could not be generated at this time.",
-        recommendations: ["Continue practicing technical questions", "Review system design concepts"],
+        summary:
+          "Interview completed successfully. Due to service limitations, detailed evaluation could not be generated at this time.",
+        recommendations: [
+          "Continue practicing technical questions",
+          "Review system design concepts",
+        ],
         technicalDepth: 7,
         problemSolving: 7,
         communication: 7,
@@ -982,9 +1055,9 @@ Return ONLY valid JSON, no markdown, no code blocks.`;
       answers,
       feedback: {
         summary: finalSummary,
-        all: history
+        all: history,
       },
-      score: finalSummary.overallScore || 7
+      score: finalSummary.overallScore || 7,
     });
 
     // ✅ Step 6: Redis Cleanup
@@ -1002,15 +1075,14 @@ Return ONLY valid JSON, no markdown, no code blocks.`;
       sessionId: interviewSession._id,
       summary: finalSummary,
       score: finalSummary.overallScore || 7,
-      message: "Interview completed and saved successfully"
+      message: "Interview completed and saved successfully",
     });
-
   } catch (error) {
     console.error("❌ Error ending interview:", error.message);
     res.status(500).json({
       success: false,
       error: "Failed to end interview",
-      details: error.message
+      details: error.message,
     });
   }
 };
@@ -1024,11 +1096,11 @@ export const getActiveSession = async (req, res) => {
     const sessionKey = `session:${userId}`;
 
     const session = await redisClient.hGetAll(sessionKey);
-    
+
     if (!session || !session.stage) {
       return res.json({
         success: true,
-        hasActiveSession: false
+        hasActiveSession: false,
       });
     }
 
@@ -1045,14 +1117,13 @@ export const getActiveSession = async (req, res) => {
       currentQuestion: session.currentQuestion,
       questionCount: parseInt(session.questionCount || "0"),
       history: history,
-      stage: session.stage
+      stage: session.stage,
     });
-
   } catch (error) {
     console.error("❌ Error getting active session:", error.message);
     res.status(500).json({
       success: false,
-      error: "Failed to get active session"
+      error: "Failed to get active session",
     });
   }
 };

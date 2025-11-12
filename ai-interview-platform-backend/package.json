@@ -13,6 +13,7 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@google-cloud/text-to-speech": "^6.4.0",
     "@google/generative-ai": "^0.24.1",
     "axios": "^1.12.2",
     "bcryptjs": "^3.0.3",
@@ -23,6 +24,7 @@
     "mongodb": "^6.20.0",
     "mongoose": "^8.19.2",
     "multer": "^2.0.2",
+    "node-fetch": "^3.3.2",
     "pdf-parse": "^2.4.5",
     "redis": "^5.9.0"
   },

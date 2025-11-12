@@ -1,6 +1,8 @@
 import fs from "fs";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import dotenv from "dotenv";
+import redisClient from "../config/redis.js";
+import { callGeminiWithRetry } from "../utils/geminiHelper.js";
 
 dotenv.config();
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
@@ -9,7 +11,22 @@ export const analyzeResume = async (req, res) => {
   let filePath = null;
   
   try {
+    console.log("=== RESUME UPLOAD REQUEST ===");
+    console.log("Request headers:", {
+      authorization: req.headers.authorization ? "Present" : "Missing",
+      contentType: req.headers["content-type"],
+    });
+    console.log("Request file:", req.file ? {
+      fieldname: req.file.fieldname,
+      originalname: req.file.originalname,
+      mimetype: req.file.mimetype,
+      size: req.file.size,
+      path: req.file.path,
+    } : "No file");
+    console.log("Request user:", req.user ? { id: req.user._id, email: req.user.email } : "No user");
+    
     if (!req.file) {
+      console.error("❌ No file in request");
       return res.status(400).json({ 
         error: "No file uploaded. Please upload a PDF resume file." 
       });
@@ -78,8 +95,17 @@ export const analyzeResume = async (req, res) => {
       throw new Error("Resume text too short after cleaning.");
     }
 
+    // ✅ Stage 1: Cache resume text in Redis (TTL: 1 hour)
+    try {
+      const resumeCacheKey = `resume:${req.user._id}`;
+      await redisClient.setEx(resumeCacheKey, 3600, cleanResumeText);
+      console.log("✅ Resume cached in Redis with 1h TTL");
+    } catch (redisError) {
+      console.warn("⚠️ Failed to cache resume in Redis:", redisError.message);
+      // Continue even if Redis fails
+    }
+
     console.log("\n=== PREPARING GEMINI REQUEST ===");
-    let model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
     const prompt = `You are an expert technical interviewer. I'm providing you with a candidate's resume below.
 
@@ -109,43 +135,28 @@ Format your response as a numbered list with just the questions.`;
 
     console.log("Sending request to Gemini...");
     
-    // Generate content with retry logic
+    // Generate content with retry logic using helper
     let responseText;
-    const maxRetries = 3;
-    let retryCount = 0;
-    
-    while (retryCount < maxRetries) {
-      try {
-        const result = await model.generateContent({
-          contents: [{ role: 'user', parts: [{ text: prompt }] }],
-          generationConfig
-        });
-        responseText = result.response.text();
-        console.log("✓ Successfully received response from Gemini");
-        break; // Success, exit retry loop
-      } catch (apiError) {
-        retryCount++;
-        
-        // Check if it's an overload error
-        const isOverload = apiError.message && (apiError.message.includes('503') || apiError.message.includes('overloaded'));
-        
-        if (isOverload && retryCount === 1) {
-          // On first failure, try switching to gemini-1.5-flash as fallback
-          console.log("⚠️ gemini-2.0-flash unavailable, switching to gemini-1.5-flash fallback...");
-          model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-          continue;
-        }
-        
-        if (isOverload && retryCount < maxRetries) {
-          const delayMs = 1000 * Math.pow(2, retryCount - 1); // 2s, 4s after first retry
-          console.log(`⚠️ API overloaded (attempt ${retryCount}/${maxRetries}). Retrying in ${delayMs}ms...`);
-          await new Promise(resolve => setTimeout(resolve, delayMs));
-          continue;
-        }
-        
-        // If we've exhausted retries or it's a different error, throw it
-        throw apiError;
+    try {
+      responseText = await callGeminiWithRetry(prompt, {
+        model: "gemini-2.0-flash",
+        maxRetries: 5,
+        initialDelay: 2000,
+        generationConfig,
+      });
+      console.log("✓ Successfully received response from Gemini");
+    } catch (apiError) {
+      console.error("❌ Error calling Gemini API:", apiError.message);
+      
+      // Check if it's a model not found error
+      if (apiError.message && (apiError.message.includes("404") || apiError.message.includes("not found"))) {
+        throw new Error(
+          "Gemini model not available. Please check your API key and ensure you have access to Gemini models. " +
+          "The system will try to use gemini-pro as a fallback, but if that also fails, please verify your API configuration."
+        );
       }
+      
+      throw apiError;
     }
     
     console.log("\n=== GEMINI RESPONSE ===");
@@ -163,6 +174,43 @@ Format your response as a numbered list with just the questions.`;
       console.error("This is unexpected. Check the logs above.");
     }
 
+    // Parse questions into an array
+    // Questions are typically in numbered format: "1. Question text\n2. Question text..."
+    let questionsArray = [];
+    
+    // Split by lines and process
+    const lines = responseText.split("\n").filter((line) => line.trim());
+    
+    for (const line of lines) {
+      // Remove numbering (1., 2., etc.) and clean up
+      const cleaned = line.replace(/^\d+[\.\)]\s*/, "").trim();
+      
+      // Only include lines that look like questions (more than 10 chars, not just formatting)
+      if (cleaned.length > 10 && !cleaned.match(/^(question|answer|note|tip)/i)) {
+        questionsArray.push(cleaned);
+      }
+    }
+
+    // If we couldn't parse into array, try alternative methods
+    if (questionsArray.length === 0) {
+      // Try splitting by double newlines or other patterns
+      const paragraphs = responseText.split(/\n\s*\n/).filter(p => p.trim().length > 10);
+      if (paragraphs.length > 0) {
+        questionsArray = paragraphs.slice(0, 5); // Take first 5 paragraphs
+      } else {
+        // Fallback: split by sentence if it's one long text
+        const sentences = responseText.split(/[.!?]+/).filter(s => s.trim().length > 20);
+        questionsArray = sentences.slice(0, 5);
+      }
+    }
+
+    // Ensure we have exactly 5 questions (pad or trim as needed)
+    if (questionsArray.length > 5) {
+      questionsArray = questionsArray.slice(0, 5);
+    }
+
+    console.log(`✅ Parsed ${questionsArray.length} questions from response`);
+
     // Cleanup the uploaded file
     if (fs.existsSync(filePath)) {
       fs.unlinkSync(filePath);
@@ -172,13 +220,14 @@ Format your response as a numbered list with just the questions.`;
     console.log("Sending successful response to client");
     console.log("========================================\n");
 
-    // Send successful response
+    // Send successful response with questions as array
     res.json({ 
-      questions: responseText,
+      questions: questionsArray, // Array of questions
       resumeText: cleanResumeText,
       metadata: {
         textLength: cleanResumeText.length,
-        wordCount: cleanResumeText.split(/\s+/).length
+        wordCount: cleanResumeText.split(/\s+/).length,
+        questionsCount: questionsArray.length
       }
     });
 

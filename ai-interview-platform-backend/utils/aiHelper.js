@@ -42,10 +42,15 @@ export const parseFeedbackSafely = (text = "") => {
 };
 
 export const calculateSafeScore = (fb) => {
-  const nums = [fb.correctness, fb.clarity, fb.confidence].filter(
-    (n) => typeof n === "number" && n > 0
-  );
+  const nums = [fb.correctness, fb.clarity, fb.confidence]
+    .filter(n => typeof n === "number" && !isNaN(n) && n >= 0 && n <= 10)
+    .map(n => Math.min(10, Math.max(0, n))); // Clamp 0-10
+  
   if (!nums.length) return 0;
-  const avg = nums.reduce((a, b) => a + b, 0) / nums.length;
-  return Number(avg.toFixed(2));
+  
+  let avg = nums.reduce((a, b) => a + b, 0) / nums.length;
+  
+  avg = avg * 0.85;
+  
+  return Number(Math.max(0, avg).toFixed(2));
 };
