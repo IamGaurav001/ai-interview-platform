@@ -10,6 +10,9 @@ import {
   ArrowRight,
   Trophy,
   FileText,
+  Volume2,
+  Play,
+  Pause,
 } from "lucide-react";
 
 const InterviewFlow = () => {
@@ -24,11 +27,31 @@ const InterviewFlow = () => {
   const [isComplete, setIsComplete] = useState(false);
   const [summary, setSummary] = useState(null);
   const [saving, setSaving] = useState(false);
+  const [questionAudioUrl, setQuestionAudioUrl] = useState(null);
+  const [feedbackAudioUrl, setFeedbackAudioUrl] = useState(null);
+  const [isPlayingQuestion, setIsPlayingQuestion] = useState(false);
+  const [isPlayingFeedback, setIsPlayingFeedback] = useState(false);
+  const [questionAudio, setQuestionAudio] = useState(null);
+  const [feedbackAudio, setFeedbackAudio] = useState(null);
 
   // Check for active session on mount
   useEffect(() => {
     checkActiveSession();
   }, []);
+
+  // Cleanup audio on unmount
+  useEffect(() => {
+    return () => {
+      if (questionAudio) {
+        questionAudio.pause();
+        questionAudio.src = "";
+      }
+      if (feedbackAudio) {
+        feedbackAudio.pause();
+        feedbackAudio.src = "";
+      }
+    };
+  }, [questionAudio, feedbackAudio]);
 
   const checkActiveSession = async () => {
     try {
@@ -58,6 +81,13 @@ const InterviewFlow = () => {
         setConversationHistory([
           { role: "interviewer", text: res.data.question, timestamp: new Date().toISOString() }
         ]);
+        // Set audio URL if available
+        if (res.data.audioUrl) {
+          console.log("✅ Audio URL received:", res.data.audioUrl);
+          setQuestionAudioUrl(res.data.audioUrl);
+        } else {
+          console.warn("⚠️ No audio URL in response:", res.data);
+        }
       } else {
         setError(res.data.message || "Failed to start interview");
       }
@@ -101,6 +131,18 @@ const InterviewFlow = () => {
           setFeedback(res.data.feedback);
         }
 
+        // Set audio URLs if available
+        if (res.data.feedbackAudioUrl) {
+          console.log("✅ Feedback audio URL received:", res.data.feedbackAudioUrl);
+          setFeedbackAudioUrl(res.data.feedbackAudioUrl);
+        }
+        if (res.data.questionAudioUrl) {
+          console.log("✅ Question audio URL received:", res.data.questionAudioUrl);
+          setQuestionAudioUrl(res.data.questionAudioUrl);
+        } else {
+          console.warn("⚠️ No question audio URL in response:", res.data);
+        }
+
         if (res.data.isComplete) {
           // Interview is complete
           setIsComplete(true);
@@ -128,6 +170,154 @@ const InterviewFlow = () => {
       }
     } finally {
       setLoading(false);
+    }
+  };
+
+  const playAudio = (audioUrl, type = "question", text = null) => {
+    // If audioUrl is available, use it
+    if (audioUrl) {
+      // Stop any currently playing audio
+      if (type === "question" && questionAudio) {
+        questionAudio.pause();
+        questionAudio.src = "";
+      }
+      if (type === "feedback" && feedbackAudio) {
+        feedbackAudio.pause();
+        feedbackAudio.src = "";
+      }
+
+      // Create new audio instance
+      const audio = new Audio(audioUrl);
+      
+      if (type === "question") {
+        setQuestionAudio(audio);
+        setIsPlayingQuestion(true);
+      } else {
+        setFeedbackAudio(audio);
+        setIsPlayingFeedback(true);
+      }
+
+      audio.play().catch((err) => {
+        console.error("Error playing audio:", err);
+        // Fallback to browser TTS if audio file fails
+        if (text) {
+          playBrowserTTS(text, type);
+        } else {
+          if (type === "question") {
+            setIsPlayingQuestion(false);
+          } else {
+            setIsPlayingFeedback(false);
+          }
+        }
+      });
+
+      audio.onended = () => {
+        if (type === "question") {
+          setIsPlayingQuestion(false);
+          setQuestionAudio(null);
+        } else {
+          setIsPlayingFeedback(false);
+          setFeedbackAudio(null);
+        }
+      };
+
+      audio.onerror = () => {
+        console.error("Audio playback error, falling back to browser TTS");
+        // Fallback to browser TTS
+        if (text) {
+          playBrowserTTS(text, type);
+        } else {
+          if (type === "question") {
+            setIsPlayingQuestion(false);
+            setQuestionAudio(null);
+          } else {
+            setIsPlayingFeedback(false);
+            setFeedbackAudio(null);
+          }
+        }
+      };
+    } else if (text) {
+      // No audio URL, use browser TTS as fallback
+      playBrowserTTS(text, type);
+    }
+  };
+
+  const playBrowserTTS = (text, type = "question") => {
+    // Use browser's built-in speech synthesis (no backend required)
+    if (!("speechSynthesis" in window)) {
+      console.warn("Browser TTS not supported");
+      return;
+    }
+
+    // Stop any current speech
+    window.speechSynthesis.cancel();
+
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = "en-US";
+    utterance.rate = 1.0;
+    utterance.pitch = 1.0;
+    utterance.volume = 1.0;
+
+    // Try to use a natural voice
+    const voices = window.speechSynthesis.getVoices();
+    const preferredVoice = voices.find(
+      (voice) =>
+        voice.lang.includes("en") &&
+        (voice.name.includes("Samantha") ||
+          voice.name.includes("Karen") ||
+          voice.name.includes("Victoria") ||
+          voice.voiceURI.includes("Neural"))
+    );
+    if (preferredVoice) {
+      utterance.voice = preferredVoice;
+    }
+
+    if (type === "question") {
+      setIsPlayingQuestion(true);
+    } else {
+      setIsPlayingFeedback(true);
+    }
+
+    utterance.onend = () => {
+      if (type === "question") {
+        setIsPlayingQuestion(false);
+      } else {
+        setIsPlayingFeedback(false);
+      }
+    };
+
+    utterance.onerror = () => {
+      console.error("Browser TTS error");
+      if (type === "question") {
+        setIsPlayingQuestion(false);
+      } else {
+        setIsPlayingFeedback(false);
+      }
+    };
+
+    window.speechSynthesis.speak(utterance);
+  };
+
+  const stopAudio = (type = "question") => {
+    // Stop file-based audio
+    if (type === "question" && questionAudio) {
+      questionAudio.pause();
+      questionAudio.src = "";
+      setQuestionAudio(null);
+      setIsPlayingQuestion(false);
+    }
+    if (type === "feedback" && feedbackAudio) {
+      feedbackAudio.pause();
+      feedbackAudio.src = "";
+      setFeedbackAudio(null);
+      setIsPlayingFeedback(false);
+    }
+    // Stop browser TTS
+    window.speechSynthesis.cancel();
+    if (type === "question") {
+      setIsPlayingQuestion(false);
+    } else {
+      setIsPlayingFeedback(false);
     }
   };
 
@@ -287,14 +477,58 @@ const InterviewFlow = () => {
             </div>
             <h2 className="text-2xl font-bold text-gray-900">Question {questionCount}</h2>
           </div>
-          <p className="text-lg text-gray-800 leading-relaxed mb-6">{currentQuestion}</p>
+          <div className="flex items-start justify-between gap-4 mb-6">
+            <p className="text-lg text-gray-800 leading-relaxed flex-1">{currentQuestion}</p>
+            <button
+              onClick={() => {
+                if (isPlayingQuestion) {
+                  stopAudio("question");
+                } else {
+                  playAudio(questionAudioUrl, "question", currentQuestion);
+                }
+              }}
+              className="flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors flex-shrink-0"
+              title={isPlayingQuestion ? "Stop audio" : "Play question audio"}
+            >
+              {isPlayingQuestion ? (
+                <>
+                  <Pause className="h-5 w-5" />
+                  <span className="hidden sm:inline">Pause</span>
+                </>
+              ) : (
+                <>
+                  <Play className="h-5 w-5" />
+                  <span className="hidden sm:inline">Play</span>
+                </>
+              )}
+            </button>
+          </div>
 
           {/* Feedback from previous answer */}
           {feedback && (
             <div className="mb-6 p-4 bg-primary-50 rounded-lg border border-primary-200">
               <div className="flex items-start gap-2">
                 <CheckCircle2 className="h-5 w-5 text-primary-600 mt-0.5 flex-shrink-0" />
-                <p className="text-gray-700">{feedback}</p>
+                <div className="flex-1">
+                  <p className="text-gray-700">{feedback}</p>
+                </div>
+                <button
+                  onClick={() => {
+                    if (isPlayingFeedback) {
+                      stopAudio("feedback");
+                    } else {
+                      playAudio(feedbackAudioUrl, "feedback", feedback);
+                    }
+                  }}
+                  className="flex items-center gap-2 px-3 py-1.5 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors flex-shrink-0 ml-2"
+                  title={isPlayingFeedback ? "Stop audio" : "Play feedback audio"}
+                >
+                  {isPlayingFeedback ? (
+                    <Pause className="h-4 w-4" />
+                  ) : (
+                    <Volume2 className="h-4 w-4" />
+                  )}
+                </button>
               </div>
             </div>
           )}

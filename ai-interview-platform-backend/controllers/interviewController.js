@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import InterviewSession from "../models/InterviewSession.js";
 import { parseFeedbackSafely, calculateSafeScore } from "../utils/aiHelper.js";
 import { callGeminiWithRetry } from "../utils/geminiHelper.js";
+import { geminiTextToSpeech } from "../utils/geminiTTS.js";
 
 dotenv.config();
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
@@ -21,7 +22,9 @@ export const generateQuestion = async (req, res) => {
 
     if (cached) {
       console.log("⚡ Redis cache hit for:", domain);
-      return res.json({ success: true, question: cached, cached: true });
+      // Generate audio for cached question too
+      const audioUrl = await geminiTextToSpeech(cached, `question_${Date.now()}.mp3`);
+      return res.json({ success: true, question: cached, audioUrl, cached: true });
     }
 
     console.log("🧠 Cache miss → calling Gemini API");
@@ -31,9 +34,12 @@ export const generateQuestion = async (req, res) => {
     const result = await model.generateContent(prompt);
     const question = result.response.text().trim();
 
+    // 🔊 Convert question to voice
+    const audioUrl = await geminiTextToSpeech(question, `question_${Date.now()}.mp3`);
+
     await redisClient.setEx(cacheKey, 3600, question);
 
-    res.json({ success: true, question, cached: false });
+    res.json({ success: true, question, audioUrl, cached: false });
   } catch (error) {
     console.error("❌ Error generating question:", error.message);
     res.status(500).json({ error: "Error generating question" });
@@ -61,7 +67,12 @@ export const evaluateAnswer = async (req, res) => {
     const cached = await redisClient.get(cacheKey);
     if (cached) {
       const parsed = JSON.parse(cached);
-      return res.json({ success: true, cached: true, ...parsed });
+      // Generate audio for cached feedback too
+      const feedbackAudio = await geminiTextToSpeech(
+        parsed.feedback?.overall_feedback || "Feedback generated successfully.",
+        `feedback_${Date.now()}.mp3`
+      );
+      return res.json({ success: true, cached: true, ...parsed, audioUrl: feedbackAudio });
     }
 
     // 2️⃣ Primary strict prompt with strict evaluation criteria
@@ -175,12 +186,19 @@ ${feedbackText}`;
     // 6️⃣ Cache result
     await redisClient.setEx(cacheKey, 600, JSON.stringify({ feedback, score }));
 
+    // 🔊 Convert feedback to voice
+    const feedbackAudio = await geminiTextToSpeech(
+      feedback.overall_feedback || "Feedback generated successfully.",
+      `feedback_${Date.now()}.mp3`
+    );
+
     res.json({
       success: true,
       cached: false,
       feedback,
       score,
       sessionId: session._id,
+      audioUrl: feedbackAudio,
     });
   } catch (err) {
     console.error("❌ Error in evaluateAnswer:", err.message);
@@ -646,9 +664,13 @@ Generate only the first interview question. Do not include any introduction or e
 
     console.log("✅ Interview session started and stored in Redis");
 
+    // 🔊 Convert first question to voice
+    const audioUrl = await geminiTextToSpeech(firstQuestion, `question_${Date.now()}.mp3`);
+
     res.json({
       success: true,
       question: firstQuestion,
+      audioUrl,
       sessionId: sessionKey,
       message: "Interview started successfully",
     });
@@ -881,13 +903,27 @@ QUESTION: [next question or "INTERVIEW_COMPLETE" if conditions above are met]
       });
     }
 
-    // ✅ Step 8: Return response
+    // ✅ Step 8: Generate audio for feedback and next question
+    let feedbackAudio = null;
+    let questionAudio = null;
+
+    if (feedback) {
+      feedbackAudio = await geminiTextToSpeech(feedback, `feedback_${Date.now()}.mp3`);
+    }
+
+    if (nextQuestion && !isComplete) {
+      questionAudio = await geminiTextToSpeech(nextQuestion, `question_${Date.now()}.mp3`);
+    }
+
+    // ✅ Step 9: Return response
     res.json({
       success: true,
       feedback: feedback || "Good answer!",
       question: nextQuestion,
       isComplete,
       questionCount: parseInt(session.questionCount || "0") + 1,
+      feedbackAudioUrl: feedbackAudio,
+      questionAudioUrl: questionAudio,
     });
   } catch (error) {
     console.error("❌ Error in nextInterviewStep:", error.message);

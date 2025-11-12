@@ -18,6 +18,9 @@ connectDB();
 app.use(cors());
 app.use(express.json());
 
+// 🔊 Serve audio files
+app.use("/audio", express.static("public/audio"));
+
 app.get("/health", async (req, res) => {
   try {
     const mongoStatus =

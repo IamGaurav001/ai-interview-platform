@@ -10,11 +10,14 @@ import {
   ArrowLeft,
   Trophy,
   FileText,
+  Volume2,
+  Play,
+  Pause,
 } from "lucide-react";
 
 const SequentialInterview = () => {
   const navigate = useNavigate();
-  const location = useLocation();X
+  const location = useLocation();
   const { questions: initialQuestions, domain = "Resume-Based" } = location.state || {};
 
   const [questions] = useState(() => {
@@ -48,6 +51,10 @@ const SequentialInterview = () => {
   const [error, setError] = useState("");
   const [showSummary, setShowSummary] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [questionAudioUrls, setQuestionAudioUrls] = useState({});
+  const [feedbackAudioUrls, setFeedbackAudioUrls] = useState({});
+  const [playingAudio, setPlayingAudio] = useState({});
+  const [audioInstances, setAudioInstances] = useState({});
 
   // Update current answer when question index changes
   useEffect(() => {
@@ -63,6 +70,18 @@ const SequentialInterview = () => {
       navigate("/upload-resume", { replace: true });
     }
   }, [initialQuestions, questions.length, navigate]);
+
+  // Cleanup audio on unmount
+  useEffect(() => {
+    return () => {
+      Object.values(audioInstances).forEach((audio) => {
+        if (audio) {
+          audio.pause();
+          audio.src = "";
+        }
+      });
+    };
+  }, [audioInstances]);
 
   const handleSubmitAnswer = async () => {
     if (!currentAnswer.trim()) {
@@ -80,6 +99,14 @@ const SequentialInterview = () => {
       if (res.data && res.data.feedback) {
         const newAnswers = [...answers, currentAnswer];
         const newFeedbacks = [...feedbacks, res.data.feedback];
+
+        // Store audio URLs if available
+        if (res.data.audioUrl) {
+          setFeedbackAudioUrls((prev) => ({
+            ...prev,
+            [currentQuestionIndex]: res.data.audioUrl,
+          }));
+        }
 
         setAnswers(newAnswers);
         setFeedbacks(newFeedbacks);
@@ -132,6 +159,84 @@ const SequentialInterview = () => {
       const prevIndex = currentQuestionIndex - 1;
       setCurrentQuestionIndex(prevIndex);
       setCurrentAnswer(answers[prevIndex] || "");
+    }
+  };
+
+  const playAudio = (audioUrl, type, index) => {
+    if (!audioUrl) return;
+
+    const audioKey = `${type}_${index}`;
+
+    // Stop any currently playing audio
+    if (audioInstances[audioKey]) {
+      audioInstances[audioKey].pause();
+      audioInstances[audioKey].src = "";
+    }
+
+    // Create new audio instance
+    const audio = new Audio(audioUrl);
+
+    setAudioInstances((prev) => ({
+      ...prev,
+      [audioKey]: audio,
+    }));
+    setPlayingAudio((prev) => ({
+      ...prev,
+      [audioKey]: true,
+    }));
+
+    audio.play().catch((err) => {
+      console.error("Error playing audio:", err);
+      setPlayingAudio((prev) => {
+        const newState = { ...prev };
+        delete newState[audioKey];
+        return newState;
+      });
+    });
+
+    audio.onended = () => {
+      setPlayingAudio((prev) => {
+        const newState = { ...prev };
+        delete newState[audioKey];
+        return newState;
+      });
+      setAudioInstances((prev) => {
+        const newState = { ...prev };
+        delete newState[audioKey];
+        return newState;
+      });
+    };
+
+    audio.onerror = () => {
+      console.error("Audio playback error");
+      setPlayingAudio((prev) => {
+        const newState = { ...prev };
+        delete newState[audioKey];
+        return newState;
+      });
+      setAudioInstances((prev) => {
+        const newState = { ...prev };
+        delete newState[audioKey];
+        return newState;
+      });
+    };
+  };
+
+  const stopAudio = (type, index) => {
+    const audioKey = `${type}_${index}`;
+    if (audioInstances[audioKey]) {
+      audioInstances[audioKey].pause();
+      audioInstances[audioKey].src = "";
+      setPlayingAudio((prev) => {
+        const newState = { ...prev };
+        delete newState[audioKey];
+        return newState;
+      });
+      setAudioInstances((prev) => {
+        const newState = { ...prev };
+        delete newState[audioKey];
+        return newState;
+      });
     }
   };
 
@@ -306,7 +411,39 @@ const SequentialInterview = () => {
             </div>
             <h2 className="text-2xl font-bold text-gray-900">Question {currentQuestionIndex + 1}</h2>
           </div>
-          <p className="text-lg text-gray-800 leading-relaxed mb-6">{currentQuestion}</p>
+          <div className="flex items-start justify-between gap-4 mb-6">
+            <p className="text-lg text-gray-800 leading-relaxed flex-1">{currentQuestion}</p>
+            {questionAudioUrls[currentQuestionIndex] && (
+              <button
+                onClick={() => {
+                  const audioKey = `question_${currentQuestionIndex}`;
+                  if (playingAudio[audioKey]) {
+                    stopAudio("question", currentQuestionIndex);
+                  } else {
+                    playAudio(questionAudioUrls[currentQuestionIndex], "question", currentQuestionIndex);
+                  }
+                }}
+                className="flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors flex-shrink-0"
+                title={
+                  playingAudio[`question_${currentQuestionIndex}`]
+                    ? "Stop audio"
+                    : "Play question audio"
+                }
+              >
+                {playingAudio[`question_${currentQuestionIndex}`] ? (
+                  <>
+                    <Pause className="h-5 w-5" />
+                    <span className="hidden sm:inline">Pause</span>
+                  </>
+                ) : (
+                  <>
+                    <Play className="h-5 w-5" />
+                    <span className="hidden sm:inline">Play</span>
+                  </>
+                )}
+              </button>
+            )}
+          </div>
 
           {/* Answer Input */}
           <div>
@@ -356,7 +493,37 @@ const SequentialInterview = () => {
               </div>
               {feedbacks[currentQuestionIndex].overall_feedback && (
                 <div className="bg-primary-50 rounded-lg p-4 border border-primary-200">
-                  <p className="text-gray-700">{feedbacks[currentQuestionIndex].overall_feedback}</p>
+                  <div className="flex items-start gap-2">
+                    <p className="text-gray-700 flex-1">{feedbacks[currentQuestionIndex].overall_feedback}</p>
+                    {feedbackAudioUrls[currentQuestionIndex] && (
+                      <button
+                        onClick={() => {
+                          const audioKey = `feedback_${currentQuestionIndex}`;
+                          if (playingAudio[audioKey]) {
+                            stopAudio("feedback", currentQuestionIndex);
+                          } else {
+                            playAudio(
+                              feedbackAudioUrls[currentQuestionIndex],
+                              "feedback",
+                              currentQuestionIndex
+                            );
+                          }
+                        }}
+                        className="flex items-center gap-2 px-3 py-1.5 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors flex-shrink-0 ml-2"
+                        title={
+                          playingAudio[`feedback_${currentQuestionIndex}`]
+                            ? "Stop audio"
+                            : "Play feedback audio"
+                        }
+                      >
+                        {playingAudio[`feedback_${currentQuestionIndex}`] ? (
+                          <Pause className="h-4 w-4" />
+                        ) : (
+                          <Volume2 className="h-4 w-4" />
+                        )}
+                      </button>
+                    )}
+                  </div>
                 </div>
               )}
             </div>
