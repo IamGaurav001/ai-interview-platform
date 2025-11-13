@@ -9,16 +9,12 @@ dotenv.config();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Initialize Google Cloud Text-to-Speech client
-// Uses GOOGLE_APPLICATION_CREDENTIALS env var or API key if available
 let ttsClient = null;
 
-// Initialize TTS client asynchronously to avoid blocking server startup
 const initializeTTS = async () => {
-  if (ttsClient !== null) return; // Already initialized or attempted
+  if (ttsClient !== null) return; 
   
   try {
-    // Try to initialize with credentials file or default credentials
     if (process.env.GOOGLE_APPLICATION_CREDENTIALS) {
       ttsClient = new textToSpeech.TextToSpeechClient({
         keyFilename: process.env.GOOGLE_APPLICATION_CREDENTIALS,
@@ -30,25 +26,22 @@ const initializeTTS = async () => {
       });
       console.log("✅ Google Cloud TTS client initialized with project ID");
     } else {
-      // Don't try default credentials - it will crash if not available
       console.warn("⚠️ Google Cloud TTS credentials not found. Audio generation disabled.");
       console.warn("⚠️ Set GOOGLE_APPLICATION_CREDENTIALS or GOOGLE_CLOUD_PROJECT to enable TTS.");
-      ttsClient = false; // Mark as attempted but failed
+      ttsClient = false;
       return;
     }
   } catch (err) {
     console.warn("⚠️ Google Cloud TTS client initialization failed:", err.message);
     console.warn("⚠️ Audio generation will be disabled. Set GOOGLE_APPLICATION_CREDENTIALS or GOOGLE_CLOUD_PROJECT env var.");
-    ttsClient = false; // Mark as attempted but failed
+    ttsClient = false;
   }
 };
 
-// Initialize on first import (non-blocking)
 initializeTTS().catch(() => {
   ttsClient = false;
 });
 
-// 🗣 Convert text to audio (MP3) using Google Cloud Text-to-Speech
 export async function geminiTextToSpeech(text, fileName = "output.mp3") {
   try {
     if (!text || text.trim().length === 0) {
@@ -56,22 +49,19 @@ export async function geminiTextToSpeech(text, fileName = "output.mp3") {
       return null;
     }
 
-    // Ensure TTS client is initialized
     if (ttsClient === null) {
       await initializeTTS();
     }
 
     if (!ttsClient || ttsClient === false) {
-      // TTS not available - return null gracefully
       return null;
     }
 
-    // Configure the request
     const request = {
       input: { text: text },
       voice: {
         languageCode: "en-US",
-        name: "en-US-Neural2-F", // Natural, conversational female voice
+        name: "en-US-Neural2-F",
         ssmlGender: "FEMALE",
       },
       audioConfig: {
@@ -82,18 +72,15 @@ export async function geminiTextToSpeech(text, fileName = "output.mp3") {
       },
     };
 
-    // Perform the text-to-speech request
     const [response] = await ttsClient.synthesizeSpeech(request);
 
     if (!response.audioContent) {
       throw new Error("No audio content received from TTS service.");
     }
 
-    // Ensure folder exists
     const outputDir = path.resolve(__dirname, "../public/audio");
     fs.mkdirSync(outputDir, { recursive: true });
 
-    // Save MP3
     const filePath = path.join(outputDir, fileName);
     fs.writeFileSync(filePath, response.audioContent, "binary");
 
@@ -102,7 +89,6 @@ export async function geminiTextToSpeech(text, fileName = "output.mp3") {
     return `/audio/${fileName}`;
   } catch (err) {
     console.error("❌ Google Cloud TTS Error:", err.message);
-    // Return null instead of throwing to allow graceful degradation
     return null;
   }
 }
