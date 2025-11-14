@@ -44,7 +44,7 @@ app.use("/api/interview", interviewRoutes);
 app.use("/api/resume", resumeRoutes);
 
 app.get("/", (req, res) => {
-  res.send("AI Interview Coach Backend is running ✅");
+  res.send("IntervueAI Backend is running ✅");
 });
 
 app.use(errorHandler);
