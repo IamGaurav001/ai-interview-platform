@@ -10,7 +10,6 @@ import redisClient from "../config/redis.js";
 export const rateLimiter = (maxRequests = 10, windowSeconds = 60) => {
   return async (req, res, next) => {
     try {
-      // Skip rate limiting if user is not authenticated
       if (!req.user || !req.user._id) {
         return next();
       }
@@ -18,15 +17,12 @@ export const rateLimiter = (maxRequests = 10, windowSeconds = 60) => {
       const userId = req.user._id.toString();
       const key = `ratelimit:${userId}`;
 
-      // Increment request count
       const requests = await redisClient.incr(key);
 
-      // Set expiration on first request
       if (requests === 1) {
         await redisClient.expire(key, windowSeconds);
       }
 
-      // Check if limit exceeded
       if (requests > maxRequests) {
         const ttl = await redisClient.ttl(key);
         return res.status(429).json({
@@ -37,7 +33,6 @@ export const rateLimiter = (maxRequests = 10, windowSeconds = 60) => {
         });
       }
 
-      // Add rate limit headers
       res.setHeader("X-RateLimit-Limit", maxRequests);
       res.setHeader("X-RateLimit-Remaining", Math.max(0, maxRequests - requests));
       res.setHeader("X-RateLimit-Reset", Date.now() + (windowSeconds * 1000));
@@ -45,11 +40,17 @@ export const rateLimiter = (maxRequests = 10, windowSeconds = 60) => {
       next();
     } catch (error) {
       console.error("❌ Rate limiter error:", error.message);
-      // On Redis error, allow request (fail open)
       next();
     }
   };
 };
+
+
+
+
+
+
+
 
 
 

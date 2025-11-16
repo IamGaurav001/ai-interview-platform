@@ -102,30 +102,28 @@ export const analyzeResume = async (req, res) => {
       console.log("✅ Resume cached in Redis with 1h TTL");
     } catch (redisError) {
       console.warn("⚠️ Failed to cache resume in Redis:", redisError.message);
-      // Continue even if Redis fails
     }
 
     console.log("\n=== PREPARING GEMINI REQUEST ===");
 
     const prompt = `You are an expert technical interviewer. I'm providing you with a candidate's resume below.
+    
+    Your task: Generate exactly 5 interview questions based on this specific candidate's background.
 
-Your task: Generate exactly 5 interview questions based on this specific candidate's background.
+    RESUME:
+    ${cleanResumeText}
 
-RESUME:
-${cleanResumeText}
+    Now, create 5 numbered interview questions (1-5) that are:
+    - Specific to this candidate's skills, experience, and projects
+    - Suitable for assessing their technical abilities
+    - Clear and professional
+    - Directly related to what's mentioned in their resume
 
-Now, create 5 numbered interview questions (1-5) that are:
-- Specific to this candidate's skills, experience, and projects
-- Suitable for assessing their technical abilities
-- Clear and professional
-- Directly related to what's mentioned in their resume
-
-Format your response as a numbered list with just the questions.`;
+    Format your response as a numbered list with just the questions.`;
 
     console.log("Prompt length:", prompt.length);
     console.log("Resume snippet in prompt:", prompt.includes(cleanResumeText.substring(0, 100)) ? "✓" : "✗");
 
-    // Generation configuration
     const generationConfig = {
       temperature: 0.7,
       topP: 0.9,
@@ -135,7 +133,6 @@ Format your response as a numbered list with just the questions.`;
 
     console.log("Sending request to Gemini...");
     
-    // Generate content with retry logic using helper
     let responseText;
     try {
       responseText = await callGeminiWithRetry(prompt, {
@@ -148,7 +145,6 @@ Format your response as a numbered list with just the questions.`;
     } catch (apiError) {
       console.error("❌ Error calling Gemini API:", apiError.message);
       
-      // Check if it's a model not found error
       if (apiError.message && (apiError.message.includes("404") || apiError.message.includes("not found"))) {
         throw new Error(
           "Gemini model not available. Please check your API key and ensure you have access to Gemini models. " +
@@ -165,7 +161,6 @@ Format your response as a numbered list with just the questions.`;
     console.log(responseText.substring(0, 500));
     console.log("=======================\n");
 
-    // Check for issues in response
     const lowerResponse = responseText.toLowerCase();
     if (lowerResponse.includes('provide the resume') || 
         lowerResponse.includes('need the resume') ||
@@ -174,44 +169,34 @@ Format your response as a numbered list with just the questions.`;
       console.error("This is unexpected. Check the logs above.");
     }
 
-    // Parse questions into an array
-    // Questions are typically in numbered format: "1. Question text\n2. Question text..."
     let questionsArray = [];
     
-    // Split by lines and process
     const lines = responseText.split("\n").filter((line) => line.trim());
     
     for (const line of lines) {
-      // Remove numbering (1., 2., etc.) and clean up
       const cleaned = line.replace(/^\d+[\.\)]\s*/, "").trim();
       
-      // Only include lines that look like questions (more than 10 chars, not just formatting)
       if (cleaned.length > 10 && !cleaned.match(/^(question|answer|note|tip)/i)) {
         questionsArray.push(cleaned);
       }
     }
 
-    // If we couldn't parse into array, try alternative methods
     if (questionsArray.length === 0) {
-      // Try splitting by double newlines or other patterns
       const paragraphs = responseText.split(/\n\s*\n/).filter(p => p.trim().length > 10);
       if (paragraphs.length > 0) {
-        questionsArray = paragraphs.slice(0, 5); // Take first 5 paragraphs
+        questionsArray = paragraphs.slice(0, 5); 
       } else {
-        // Fallback: split by sentence if it's one long text
         const sentences = responseText.split(/[.!?]+/).filter(s => s.trim().length > 20);
         questionsArray = sentences.slice(0, 5);
       }
     }
 
-    // Ensure we have exactly 5 questions (pad or trim as needed)
     if (questionsArray.length > 5) {
       questionsArray = questionsArray.slice(0, 5);
     }
 
     console.log(`✅ Parsed ${questionsArray.length} questions from response`);
 
-    // Cleanup the uploaded file
     if (fs.existsSync(filePath)) {
       fs.unlinkSync(filePath);
       console.log("Temporary file cleaned up");
@@ -220,9 +205,8 @@ Format your response as a numbered list with just the questions.`;
     console.log("Sending successful response to client");
     console.log("========================================\n");
 
-    // Send successful response with questions as array
     res.json({ 
-      questions: questionsArray, // Array of questions
+      questions: questionsArray,
       resumeText: cleanResumeText,
       metadata: {
         textLength: cleanResumeText.length,
@@ -239,7 +223,6 @@ Format your response as a numbered list with just the questions.`;
     console.error("Error stack:", error.stack);
     console.error("========================================\n");
     
-    // Cleanup uploaded file on error
     if (filePath && fs.existsSync(filePath)) {
       try {
         fs.unlinkSync(filePath);
@@ -249,7 +232,6 @@ Format your response as a numbered list with just the questions.`;
       }
     }
     
-    // Check if it's an API overload error
     let errorMessage = error.message;
     let statusCode = 500;
     

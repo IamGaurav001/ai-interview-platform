@@ -1,4 +1,3 @@
-// utils/parseFeedback.js
 export function parseFeedbackSafely(text) {
   if (!text || typeof text !== "string") {
     return { parsingFailed: true, raw: text || "" };
@@ -6,15 +5,10 @@ export function parseFeedbackSafely(text) {
 
   const original = text;
 
-  // 1) Remove common wrappers (markdown fences, triple backticks, leading commentary)
-  // Remove ```json ... ``` or ``` ... ```
   let cleaned = text.replace(/```(?:json)?\s*([\s\S]*?)```/i, "$1");
 
-  // Remove single backtick quoted code blocks `...`
   cleaned = cleaned.replace(/`([^`]*)`/g, "$1");
 
-  // Remove lines that look like an instruction block (heuristic)
-  // e.g. lines that start with "You are" or "Please provide" etc. Keep rest.
   const lines = cleaned.split("\n").map(l => l.trim());
   const usefulLines = lines.filter(l => {
     if (!l) return false;
@@ -27,14 +21,12 @@ export function parseFeedbackSafely(text) {
   });
   cleaned = usefulLines.join(" ").trim();
 
-  // 2) Try to find a JSON substring
   const jsonStart = cleaned.indexOf("{");
   const jsonEnd = cleaned.lastIndexOf("}");
   if (jsonStart !== -1 && jsonEnd !== -1 && jsonEnd > jsonStart) {
     const jsonText = cleaned.substring(jsonStart, jsonEnd + 1);
     try {
       const parsed = JSON.parse(jsonText);
-      // ensure numeric fields are numbers
       const correctness = Number(parsed.correctness);
       const clarity = Number(parsed.clarity);
       const confidence = Number(parsed.confidence);
@@ -47,11 +39,9 @@ export function parseFeedbackSafely(text) {
         raw: original
       };
     } catch (e) {
-      // continue to heuristic extraction
     }
   }
 
-  // 3) Heuristic extraction of numeric fields if JSON not available
   const numRegex = /("?)?(correctness|clarity|confidence)("?)\s*[:=]\s*([0-9]+(?:\.[0-9]+)?)/ig;
   const found = {};
   let m;
@@ -61,7 +51,6 @@ export function parseFeedbackSafely(text) {
     if (isFinite(val)) found[key] = val;
   }
 
-  // Also try to pick the first short sentence/line as overall_feedback
   const sentences = cleaned.split(/[\.\n]+/).map(s => s.trim()).filter(Boolean);
   const overall = sentences.length ? sentences[0] : "";
 

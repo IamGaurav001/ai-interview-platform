@@ -5,77 +5,43 @@ import InterviewSession from "../models/InterviewSession.js";
 import { parseFeedbackSafely, calculateSafeScore } from "../utils/aiHelper.js";
 import { callGeminiWithRetry } from "../utils/geminiHelper.js";
 import { geminiTextToSpeech } from "../utils/geminiTTS.js";
+import { geminiSpeechToText } from "../utils/geminiSTT.js";
+import fs from "fs";
+import path from "path";
 
 dotenv.config();
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
-// -------------------------------------
-// Generate AI Interview Question
-// -------------------------------------
-export const generateQuestion = async (req, res) => {
-  try {
-    const { domain } = req.body;
-    if (!domain) return res.status(400).json({ error: "Domain is required" });
-
-    const cacheKey = `question:${domain.toLowerCase()}`;
-    const cached = await redisClient.get(cacheKey);
-
-    if (cached) {
-      console.log("⚡ Redis cache hit for:", domain);
-      // Generate audio for cached question too
-      const audioUrl = await geminiTextToSpeech(cached, `question_${Date.now()}.mp3`);
-      return res.json({ success: true, question: cached, audioUrl, cached: true });
-    }
-
-    console.log("🧠 Cache miss → calling Gemini API");
-    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
-    const prompt = `Generate one technical interview question from ${domain}. Keep it clear and concise.`;
-
-    const result = await model.generateContent(prompt);
-    const question = result.response.text().trim();
-
-    // 🔊 Convert question to voice
-    const audioUrl = await geminiTextToSpeech(question, `question_${Date.now()}.mp3`);
-
-    await redisClient.setEx(cacheKey, 3600, question);
-
-    res.json({ success: true, question, audioUrl, cached: false });
-  } catch (error) {
-    console.error("❌ Error generating question:", error.message);
-    res.status(500).json({ error: "Error generating question" });
-  }
-};
-// -------------------------------------
 // Evaluate User's Answer
-// -------------------------------------
 export const evaluateAnswer = async (req, res) => {
   try {
     const { domain, question, answer } = req.body;
     if (!domain || !question || !answer)
-      return res
-        .status(400)
-        .json({
-          success: false,
-          error: "Domain, question, and answer are required.",
-        });
+      return res.status(400).json({
+        success: false,
+        error: "Domain, question, and answer are required.",
+      });
 
     const cacheKey = `eval:${req.user._id}:${domain}:${Buffer.from(question)
       .toString("base64")
       .slice(0, 40)}:${Buffer.from(answer).toString("base64").slice(0, 40)}`;
 
-    // 1️⃣ Try cache
     const cached = await redisClient.get(cacheKey);
     if (cached) {
       const parsed = JSON.parse(cached);
-      // Generate audio for cached feedback too
       const feedbackAudio = await geminiTextToSpeech(
         parsed.feedback?.overall_feedback || "Feedback generated successfully.",
         `feedback_${Date.now()}.mp3`
       );
-      return res.json({ success: true, cached: true, ...parsed, audioUrl: feedbackAudio });
+      return res.json({
+        success: true,
+        cached: true,
+        ...parsed,
+        audioUrl: feedbackAudio,
+      });
     }
 
-    // 2️⃣ Primary strict prompt with strict evaluation criteria
+    // Primary strict prompt with strict evaluation criteria
     const prompt = `
       You are a strict AI Interview Evaluator. You must be critical and thorough in your assessment.
 
@@ -102,14 +68,12 @@ export const evaluateAnswer = async (req, res) => {
 
     let feedbackText = "";
     try {
-      // Use retry helper with exponential backoff
       feedbackText = await callGeminiWithRetry(prompt, {
         model: "gemini-2.0-flash",
         maxRetries: 5,
-        initialDelay: 2000, // Start with 2 seconds
+        initialDelay: 2000,
       });
 
-      // 🧩 Detect bad "I am an AI Evaluator…" responses
       const lower = feedbackText.toLowerCase();
       const looksWrong =
         lower.includes("i understand") ||
@@ -123,7 +87,6 @@ export const evaluateAnswer = async (req, res) => {
         console.warn(
           `⚠️ Gemini returned non-evaluation text, attempting repair...`
         );
-        // Try a repair prompt
         const repairPrompt = `Convert this to valid JSON with correctness, clarity, confidence (0-10), and overall_feedback:\n${feedbackText}`;
         try {
           feedbackText = await callGeminiWithRetry(repairPrompt, {
@@ -136,21 +99,18 @@ export const evaluateAnswer = async (req, res) => {
       }
     } catch (error) {
       console.error("❌ Error calling Gemini API:", error.message);
-      // Return a default feedback structure if API fails
       return res.status(503).json({
         success: false,
         error: "AI service temporarily unavailable",
         message: error.message.includes("Rate limit")
           ? "The AI service is experiencing high demand. Please wait a moment and try again."
           : "Unable to evaluate answer at this time. Please try again in a few moments.",
-        retryAfter: 60, // Suggest retrying after 60 seconds
+        retryAfter: 60,
       });
     }
 
-    // 3️⃣ Parse safely
     let feedback = parseFeedbackSafely(feedbackText);
 
-    // If still failed, last-chance "repair prompt"
     if (feedback.parsingFailed) {
       const repairPrompt = `
 Convert the following text into valid JSON with numeric scores.
@@ -170,23 +130,14 @@ ${feedbackText}`;
       }
     }
 
-    // 4️⃣ Compute score
     const score = calculateSafeScore(feedback);
 
-    // 5️⃣ Save session
-    const session = await InterviewSession.create({
-      userId: req.user._id,
-      domain,
-      questions: [question],
-      answers: [answer],
-      feedback,
-      score,
-    });
+    // ✅ DO NOT create a session here - this is for individual question evaluation
+    // Sessions should only be created when the complete interview is saved via saveCompleteSession or endInterview
+    // Creating sessions here causes duplicate sessions in history
 
-    // 6️⃣ Cache result
     await redisClient.setEx(cacheKey, 600, JSON.stringify({ feedback, score }));
 
-    // 🔊 Convert feedback to voice
     const feedbackAudio = await geminiTextToSpeech(
       feedback.overall_feedback || "Feedback generated successfully.",
       `feedback_${Date.now()}.mp3`
@@ -197,13 +148,12 @@ ${feedbackText}`;
       cached: false,
       feedback,
       score,
-      sessionId: session._id,
+      // Removed sessionId - no session created for individual evaluations
       audioUrl: feedbackAudio,
     });
   } catch (err) {
     console.error("❌ Error in evaluateAnswer:", err.message);
 
-    // Check if it's a rate limit error
     if (
       err.message &&
       (err.message.includes("429") || err.message.includes("Rate limit"))
@@ -225,9 +175,7 @@ ${feedbackText}`;
   }
 };
 
-// -------------------------------------
 // Get Interview History
-// -------------------------------------
 
 export const getInterviewHistory = async (req, res) => {
   try {
@@ -244,7 +192,6 @@ export const getInterviewHistory = async (req, res) => {
         groupedHistory: {},
       });
 
-    // Group by domain
     const grouped = {};
     sessions.forEach((s) => {
       const domain = s.domain || "Unknown";
@@ -252,21 +199,18 @@ export const getInterviewHistory = async (req, res) => {
       grouped[domain].push(s);
     });
 
-    // Helper for badge text & color
     const getConfidence = (score) => {
       if (score >= 8) return { label: "🟢 Strong", color: "green" };
       if (score >= 5) return { label: "🟡 Average", color: "yellow" };
       return { label: "🔴 Weak", color: "red" };
     };
 
-    // Prepare response objects
     const groupedHistory = {};
     const summary = [];
 
     for (const domain of Object.keys(grouped)) {
       const domainSessions = grouped[domain];
 
-      // Compute average
       const validScores = domainSessions
         .map((s) => Number(s.score || 0))
         .filter((n) => !isNaN(n) && n > 0);
@@ -285,18 +229,24 @@ export const getInterviewHistory = async (req, res) => {
         confidenceColor: avgColor,
       });
 
-      // Detailed sessions with confidence badges
       groupedHistory[domain] = domainSessions.map((s) => {
         const { label, color } = getConfidence(Number(s.score || 0));
+        const date = new Date(s.createdAt);
+        const day = date.getDate();
+        const month = date.toLocaleString("en-US", { month: "short" });
+        const hours = date.getHours();
+        const minutes = date.getMinutes();
+        const ampm = hours >= 12 ? "Pm" : "Am";
+        const displayHours = hours % 12 || 12;
+        const displayMinutes = minutes.toString().padStart(2, "0");
+        const formattedDate = `${day} ${month} ${displayHours}:${displayMinutes}${ampm}`;
+        
         return {
           id: s._id,
           score: s.score?.toFixed(2) || "0.00",
           confidenceLevel: label,
           confidenceColor: color,
-          date: new Date(s.createdAt).toLocaleString("en-US", {
-            dateStyle: "medium",
-            timeStyle: "short",
-          }),
+          date: formattedDate,
           createdAt: s.createdAt,
           questions: s.questions,
           answers: s.answers,
@@ -319,9 +269,7 @@ export const getInterviewHistory = async (req, res) => {
   }
 };
 
-// ------------------------------
-// 📊 GET Weak Areas
-// ------------------------------
+// GET Weak Areas
 export const getWeakAreas = async (req, res) => {
   try {
     const analysis = await InterviewSession.aggregate([
@@ -345,166 +293,6 @@ export const getWeakAreas = async (req, res) => {
   }
 };
 
-// ------------------------------
-// 🎯 GET 1-Month Personalized Prep Guide
-// ------------------------------
-export const getPrepGuide = async (req, res) => {
-  try {
-    const cacheKey = `prepguide:${req.user._id}`;
-    const cached = await redisClient.get(cacheKey);
-
-    // ✅ Step 1: Return from cache if exists
-    if (cached) {
-      console.log("⚡ Redis cache hit: prep-guide");
-      return res.json({ success: true, cached: true, ...JSON.parse(cached) });
-    }
-
-    // ✅ Step 2: Analyze performance
-    const analysis = await InterviewSession.aggregate([
-      { $match: { userId: req.user._id } },
-      {
-        $group: {
-          _id: "$domain",
-          avgScore: { $avg: "$score" },
-          attempts: { $sum: 1 },
-        },
-      },
-      { $sort: { avgScore: 1 } },
-    ]);
-
-    if (!analysis.length) {
-      return res.status(400).json({
-        success: false,
-        message:
-          "Not enough data to create a prep guide. Complete at least one interview session.",
-      });
-    }
-
-    const weakDomains = analysis.slice(0, 3).map((d) => d._id);
-
-    // ✅ Step 3: Create prompt
-    const prompt = `
-You are an expert technical mentor.
-Create a **1-Month Personalized Preparation Plan** for improving in these domains:
-${weakDomains.join(", ")}.
-
-Guidelines:
-- Duration: 4 weeks
-- Each week should focus on a specific skill goal for those domains.
-- Mention key topics, resources, and daily focus tasks.
-- Return ONLY valid JSON, no markdown code blocks, no explanatory text, just the JSON object.
-
-Output JSON structure (must be valid JSON):
-{
-  "week1": { "focus": "Brief focus description", "topics": ["topic1", "topic2"], "resources": ["resource1", "resource2"] },
-  "week2": { "focus": "Brief focus description", "topics": ["topic1", "topic2"], "resources": ["resource1", "resource2"] },
-  "week3": { "focus": "Brief focus description", "topics": ["topic1", "topic2"], "resources": ["resource1", "resource2"] },
-  "week4": { "focus": "Brief focus description", "topics": ["topic1", "topic2"], "resources": ["resource1", "resource2"] }
-}
-`;
-
-    console.log(
-      "🔮 Generating prep guide for domains:",
-      weakDomains.join(", ")
-    );
-    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
-    const result = await model.generateContent(prompt);
-    let aiResponse = result.response.text().trim();
-
-    console.log("📥 Raw AI response length:", aiResponse.length);
-    console.log("📥 First 200 chars:", aiResponse.substring(0, 200));
-
-    // Extract JSON from markdown code blocks if present
-    let cleaned = aiResponse;
-
-    // Remove ```json ... ``` or ``` ... ```
-    cleaned = cleaned.replace(/```(?:json)?\s*([\s\S]*?)```/gi, "$1").trim();
-
-    // Find JSON object boundaries
-    const jsonStart = cleaned.indexOf("{");
-    const jsonEnd = cleaned.lastIndexOf("}");
-
-    if (jsonStart !== -1 && jsonEnd !== -1 && jsonEnd > jsonStart) {
-      cleaned = cleaned.substring(jsonStart, jsonEnd + 1);
-    }
-
-    let prepGuide;
-    let parseAttempts = 0;
-    const maxAttempts = 3;
-
-    while (parseAttempts < maxAttempts) {
-      try {
-        prepGuide = JSON.parse(cleaned);
-        console.log("✅ Successfully parsed prep guide JSON");
-
-        // Validate structure
-        if (
-          prepGuide.week1 &&
-          prepGuide.week2 &&
-          prepGuide.week3 &&
-          prepGuide.week4
-        ) {
-          break;
-        } else {
-          throw new Error("Missing required week fields");
-        }
-      } catch (parseError) {
-        parseAttempts++;
-        console.warn(
-          `⚠️ JSON parse attempt ${parseAttempts} failed:`,
-          parseError.message
-        );
-
-        if (parseAttempts < maxAttempts) {
-          cleaned = cleaned.replace(/,(\s*[}\]])/g, "$1");
-          cleaned = cleaned.replace(/([,\{[])\s*\n\s*([,\}\]])/g, "$1 $2");
-        } else {
-          console.error(
-            "❌ Failed to parse JSON after",
-            maxAttempts,
-            "attempts"
-          );
-          prepGuide = {
-            raw: aiResponse,
-            note: "Could not parse structured JSON from AI response",
-            error: parseError.message,
-            parsedText: cleaned.substring(0, 500),
-          };
-        }
-      }
-    }
-
-    // Validate prepGuide structure before sending
-    if (!prepGuide || prepGuide.note) {
-      console.error("❌ Prep guide parsing failed, sending error response");
-      return res.status(500).json({
-        success: false,
-        error: "Failed to generate structured prep guide",
-        message: prepGuide?.note || "AI response could not be parsed",
-        weakDomains,
-        rawResponse: aiResponse.substring(0, 1000), // First 1000 chars for debugging
-      });
-    }
-
-    const finalResponse = { weakDomains, prepGuide };
-
-    await redisClient.setEx(cacheKey, 3600, JSON.stringify(finalResponse));
-    console.log("✅ Prep guide generated and cached successfully");
-
-    res.json({ success: true, cached: false, ...finalResponse });
-  } catch (error) {
-    console.error("Error in getPrepGuide:", error.message);
-    res.status(500).json({
-      success: false,
-      error: "Failed to generate personalized prep guide",
-      details: error.message,
-    });
-  }
-};
-
-// ------------------------------
-// 💾 Save Complete Interview Session (Multiple Q&A)
-// ------------------------------
 export const saveCompleteSession = async (req, res) => {
   try {
     const { domain, questions, answers, feedbacks, scores } = req.body;
@@ -529,7 +317,6 @@ export const saveCompleteSession = async (req, res) => {
       });
     }
 
-    // Calculate average score from all feedbacks
     let totalScore = 0;
     let validScores = 0;
     const allFeedbacks = [];
@@ -538,7 +325,6 @@ export const saveCompleteSession = async (req, res) => {
       feedbacks.forEach((fb) => {
         if (fb && typeof fb === "object") {
           allFeedbacks.push(fb);
-          // Calculate score from feedback
           const correctness = fb.correctness || 0;
           const clarity = fb.clarity || 0;
           const confidence = fb.confidence || 0;
@@ -579,9 +365,7 @@ export const saveCompleteSession = async (req, res) => {
   }
 };
 
-// ------------------------------
-// 🚀 Stage 2: Start Interview (Initialize Redis Session)
-// ------------------------------
+// Stage 2: Start Interview (Initialize Redis Session)
 export const startInterview = async (req, res) => {
   try {
     const userId = req.user._id.toString();
@@ -665,7 +449,10 @@ Generate only the first interview question. Do not include any introduction or e
     console.log("✅ Interview session started and stored in Redis");
 
     // 🔊 Convert first question to voice
-    const audioUrl = await geminiTextToSpeech(firstQuestion, `question_${Date.now()}.mp3`);
+    const audioUrl = await geminiTextToSpeech(
+      firstQuestion,
+      `question_${Date.now()}.mp3`
+    );
 
     res.json({
       success: true,
@@ -811,8 +598,63 @@ QUESTION: [next question or "INTERVIEW_COMPLETE" if conditions above are met]
     }
 
     // ✅ Step 5: Parse AI response
-    let feedback = "";
-    let nextQuestion = "";
+    const normalizeText = (text) =>
+      (text || "")
+        .replace(/\r\n/g, "\n")
+        .replace(/\r/g, "\n")
+        .trim();
+
+    const extractSections = (text) => {
+      const result = {
+        feedback: "",
+        question: "",
+      };
+
+      if (!text) {
+        return result;
+      }
+
+      const normalized = normalizeText(text);
+      const questionSplit = normalized.split(/QUESTION\s*[:\-]/i);
+
+      if (questionSplit.length > 1) {
+        const feedbackPart = questionSplit.shift();
+        const questionPart = questionSplit.join(" ").trim();
+
+        if (feedbackPart) {
+          const feedbackPieces = feedbackPart.split(/FEEDBACK\s*[:\-]/i);
+          result.feedback = feedbackPieces.pop()?.trim() || "";
+        }
+
+        result.question = questionPart;
+      } else {
+        const feedbackPieces = normalized.split(/FEEDBACK\s*[:\-]/i);
+        result.feedback = feedbackPieces.pop()?.trim() || normalized;
+      }
+
+      // Clean up residual labels or duplicated sections
+      result.feedback = normalizeText(
+        result.feedback.replace(/QUESTION\s*[:\-].*/is, "")
+      );
+      result.question = normalizeText(
+        result.question
+          .replace(/^\s*(QUESTION|FEEDBACK)\s*[:\-]\s*/i, "")
+          .replace(/FEEDBACK\s*[:\-].*/is, "")
+      );
+
+      // Remove any lingering INTERVIEW_COMPLETE marker from question text
+      result.question = normalizeText(
+        result.question.replace(/INTERVIEW_COMPLETE/gi, "")
+      );
+
+      return result;
+    };
+
+    const { feedback: parsedFeedback, question: parsedQuestion } =
+      extractSections(aiResponse);
+
+    let feedback = parsedFeedback;
+    let nextQuestion = parsedQuestion;
     let isComplete = false;
 
     // Check if interview should complete
@@ -822,42 +664,34 @@ QUESTION: [next question or "INTERVIEW_COMPLETE" if conditions above are met]
       aiResponse.toLowerCase().includes("that concludes") ||
       aiResponse.toLowerCase().includes("thank you for your time");
 
-    // Complete if explicitly signaled AND we've asked at least 12 questions
-    // OR if we've reached the maximum of 25 questions
     if (questionCount >= 25) {
-      // Hard limit: Force completion at 25 questions
       isComplete = true;
       feedback =
+        feedback ||
         "We've reached the maximum number of questions. Let's wrap up the interview.";
       nextQuestion = "";
     } else if (hasCompleteSignal && questionCount >= 12) {
-      // Natural completion: AI decides to end after covering topics
       isComplete = true;
-      feedback = aiResponse.replace(/INTERVIEW_COMPLETE/gi, "").trim();
+      feedback = feedback || aiResponse.replace(/INTERVIEW_COMPLETE/gi, "").trim();
       nextQuestion = "";
     } else {
-      // Extract feedback and question
-      const feedbackMatch = aiResponse.match(
-        /FEEDBACK:\s*(.+?)(?=QUESTION:|$)/is
-      );
-      const questionMatch = aiResponse.match(/QUESTION:\s*(.+?)$/is);
-
-      feedback = feedbackMatch ? feedbackMatch[1].trim() : "";
-      nextQuestion = questionMatch ? questionMatch[1].trim() : aiResponse;
-
-      // If no question found, try to extract from full response
-      if (!nextQuestion || nextQuestion.length < 10) {
-        // If parsing failed, try to extract question from full response
-        nextQuestion =
-          aiResponse.length > 20 ? aiResponse : "Could you elaborate on that?";
+      if (!feedback) {
+        feedback = "Thanks for the answer. Let's continue.";
       }
 
-      // If AI tried to complete but we don't have enough questions, force a question
+      if (!nextQuestion || nextQuestion.length < 5) {
+        nextQuestion =
+          aiResponse.length > 20
+            ? extractSections(
+                aiResponse.substring(aiResponse.indexOf("QUESTION"))
+              ).question || aiResponse
+            : "Could you elaborate on that?";
+      }
+
       if (hasCompleteSignal && questionCount < 12) {
         console.log(
           `⚠️ AI tried to end at question ${questionCount}, but we need at least 12. Forcing continuation.`
         );
-        // Generate a follow-up question instead
         nextQuestion =
           nextQuestion ||
           "Let me ask you another question about your experience...";
@@ -870,8 +704,8 @@ QUESTION: [next question or "INTERVIEW_COMPLETE" if conditions above are met]
       try {
         const feedbackKey = `feedback:${userId}`;
         await redisClient.lPush(feedbackKey, feedback);
-        await redisClient.lTrim(feedbackKey, 0, 9); // Keep last 10 feedbacks (for comprehensive interview)
-        await redisClient.expire(feedbackKey, 1800); // 30 minutes TTL
+        await redisClient.lTrim(feedbackKey, 0, 9);
+        await redisClient.expire(feedbackKey, 1800);
       } catch (redisError) {
         console.warn("⚠️ Failed to cache feedback:", redisError.message);
       }
@@ -879,27 +713,25 @@ QUESTION: [next question or "INTERVIEW_COMPLETE" if conditions above are met]
 
     // ✅ Step 7: Update session in Redis
     if (isComplete) {
-      // Mark session as complete
       await redisClient.hSet(sessionKey, {
         ...session,
         stage: "completed",
         history: JSON.stringify(history),
       });
     } else {
-      // Add interviewer's next question to history
       history.push({
         role: "interviewer",
         text: nextQuestion,
         timestamp: new Date().toISOString(),
       });
 
-      const questionCount = parseInt(session.questionCount || "0") + 1;
+      const updatedQuestionCount = parseInt(session.questionCount || "0") + 1;
 
       await redisClient.hSet(sessionKey, {
         ...session,
         history: JSON.stringify(history),
         currentQuestion: nextQuestion,
-        questionCount: questionCount.toString(),
+        questionCount: updatedQuestionCount.toString(),
       });
     }
 
@@ -908,27 +740,34 @@ QUESTION: [next question or "INTERVIEW_COMPLETE" if conditions above are met]
     let questionAudio = null;
 
     if (feedback) {
-      feedbackAudio = await geminiTextToSpeech(feedback, `feedback_${Date.now()}.mp3`);
+      feedbackAudio = await geminiTextToSpeech(
+        feedback,
+        `feedback_${Date.now()}.mp3`
+      );
     }
 
     if (nextQuestion && !isComplete) {
-      questionAudio = await geminiTextToSpeech(nextQuestion, `question_${Date.now()}.mp3`);
+      questionAudio = await geminiTextToSpeech(
+        nextQuestion,
+        `question_${Date.now()}.mp3`
+      );
     }
 
     // ✅ Step 9: Return response
+    const currentCount = parseInt(session.questionCount || "0");
+
     res.json({
       success: true,
       feedback: feedback || "Good answer!",
       question: nextQuestion,
       isComplete,
-      questionCount: parseInt(session.questionCount || "0") + 1,
+      questionCount: currentCount + (isComplete ? 0 : 1),
       feedbackAudioUrl: feedbackAudio,
       questionAudioUrl: questionAudio,
     });
   } catch (error) {
     console.error("❌ Error in nextInterviewStep:", error.message);
 
-    // Check if it's a rate limit error
     if (
       error.message &&
       (error.message.includes("429") || error.message.includes("Rate limit"))
@@ -950,15 +789,13 @@ QUESTION: [next question or "INTERVIEW_COMPLETE" if conditions above are met]
   }
 };
 
-// ------------------------------
-// 🏁 Stage 5: End Interview (Summary & Cleanup)
-// ------------------------------
+// Stage 5: End Interview (Summary & Cleanup)
 export const endInterview = async (req, res) => {
   try {
     const userId = req.user._id.toString();
     const sessionKey = `session:${userId}`;
 
-    // ✅ Step 1: Load full conversation from Redis
+    // Step 1: Load full conversation from Redis
     const session = await redisClient.hGetAll(sessionKey);
 
     if (!session || !session.stage) {
@@ -968,7 +805,7 @@ export const endInterview = async (req, res) => {
       });
     }
 
-    // ✅ Step 2: Parse conversation history
+    // Step 2: Parse conversation history
     let history = [];
     try {
       history = JSON.parse(session.history || "[]");
@@ -977,19 +814,154 @@ export const endInterview = async (req, res) => {
       history = [];
     }
 
-    // ✅ Step 3: Extract questions and answers
+    // Step 2.5: Try to get feedbacks from Redis cache
+    let cachedFeedbacks = [];
+    try {
+      const feedbackKey = `feedback:${userId}`;
+      const cachedFeedbackList = await redisClient.lRange(feedbackKey, 0, -1);
+      if (cachedFeedbackList && cachedFeedbackList.length > 0) {
+        cachedFeedbacks = cachedFeedbackList.reverse(); 
+        console.log(
+          `✅ Retrieved ${cachedFeedbacks.length} cached feedbacks from Redis`
+        );
+      }
+    } catch (redisError) {
+      console.warn(
+        "⚠️ Failed to retrieve cached feedbacks:",
+        redisError.message
+      );
+    }
+
+    // Step 3: Extract questions, answers, and feedbacks from conversation history
     const questions = [];
     const answers = [];
+    const allFeedbacks = [];
 
-    history.forEach((msg, index) => {
+    let currentQuestion = null;
+    let currentAnswer = null;
+
+    for (let i = 0; i < history.length; i++) {
+      const msg = history[i];
+
       if (msg.role === "interviewer") {
-        questions.push(msg.text);
+        const text = msg.text.trim();
+
+        // Check if this is feedback (contains "FEEDBACK:" or is short text without question mark)
+        const isFeedback =
+          text.includes("FEEDBACK:") ||
+          (text.length < 400 &&
+            !text.includes("?") &&
+            !text.includes("INTERVIEW_COMPLETE") &&
+            !text.toLowerCase().includes("thanks for joining"));
+
+        if (!isFeedback) {
+          // This is a question
+          // If we have a previous Q&A pair, save it first
+          if (
+            currentQuestion !== null &&
+            currentAnswer !== null &&
+            currentAnswer.trim().length > 0
+          ) {
+            questions.push(currentQuestion);
+            answers.push(currentAnswer.trim());
+          }
+          // Start new question
+          currentQuestion = text;
+          currentAnswer = null;
+        }
       } else if (msg.role === "user") {
-        answers.push(msg.text);
+        // This is an answer
+        if (currentQuestion !== null) {
+          currentAnswer = msg.text.trim();
+        }
       }
+    }
+
+    // Don't forget the last Q&A pair (only if it has a valid answer)
+    if (
+      currentQuestion !== null &&
+      currentAnswer !== null &&
+      currentAnswer.trim().length > 0
+    ) {
+      questions.push(currentQuestion);
+      answers.push(currentAnswer.trim());
+    }
+
+    // Ensure questions and answers arrays have the same length
+    // If they don't match, we have a problem - log it and fix it
+    if (questions.length !== answers.length) {
+      console.warn(
+        `⚠️ Mismatch: ${questions.length} questions but ${answers.length} answers. Adjusting...`
+      );
+      // Keep only the pairs that have both question and answer
+      const minLength = Math.min(questions.length, answers.length);
+      questions.splice(minLength);
+      answers.splice(minLength);
+    }
+
+    // Final validation: ensure all answers are non-empty (required by model)
+    const validPairs = [];
+    for (let i = 0; i < questions.length; i++) {
+      if (answers[i] && answers[i].trim().length > 0) {
+        validPairs.push({ question: questions[i], answer: answers[i] });
+      }
+    }
+
+    // Rebuild arrays with only valid pairs
+    questions.length = 0;
+    answers.length = 0;
+    validPairs.forEach((pair) => {
+      questions.push(pair.question);
+      answers.push(pair.answer);
     });
 
-    // ✅ Step 4: Generate final AI summary
+    // Now map feedbacks from Redis cache to questions
+    // The cached feedbacks are in chronological order (one per answer)
+    // Ensure we have feedback for each question-answer pair
+    for (let i = 0; i < questions.length; i++) {
+      if (i < cachedFeedbacks.length && cachedFeedbacks[i]) {
+        // Use cached feedback
+        allFeedbacks[i] = {
+          overall_feedback: cachedFeedbacks[i].trim() || "Feedback provided.",
+        };
+      } else {
+        // Try to extract feedback from conversation history
+        // Look for feedback messages after the answer
+        let feedbackText = "";
+        let foundAnswer = false;
+
+        for (let j = 0; j < history.length; j++) {
+          if (history[j].role === "user" && history[j].text === answers[i]) {
+            foundAnswer = true;
+          } else if (foundAnswer && history[j].role === "interviewer") {
+            const nextMsg = history[j].text.trim();
+            // Check if this is feedback
+            if (
+              nextMsg.includes("FEEDBACK:") ||
+              (nextMsg.length < 400 &&
+                !nextMsg.includes("?") &&
+                !nextMsg.includes("INTERVIEW_COMPLETE"))
+            ) {
+              feedbackText = nextMsg.replace(/FEEDBACK:\s*/i, "").trim();
+              break;
+            } else if (nextMsg.includes("?")) {
+              // This is the next question, no feedback found
+              break;
+            }
+          }
+        }
+
+        allFeedbacks[i] = {
+          overall_feedback:
+            feedbackText ||
+            (answers[i]
+              ? "Feedback not available for this question."
+              : "No answer provided."),
+        };
+      }
+    }
+
+    // Step 4: Generate final AI summary
     const conversationText = history
       .map(
         (msg) =>
@@ -1052,22 +1024,21 @@ Return ONLY valid JSON, no markdown, no code blocks.`;
       } catch (parseError) {
         console.warn("⚠️ Failed to parse summary JSON, using defaults");
         finalSummary = {
-          overallScore: 5, // ← Line 589 - This is the issue
+          overallScore: 5,
           strengths: ["Good communication"],
           weaknesses: ["Could improve technical depth"],
           summary: "Interview completed. Detailed evaluation unavailable.",
           recommendations: ["Continue practicing"],
-          technicalDepth: 5, // ← Line 594
-          problemSolving: 5, // ← Line 595
-          communication: 5, // ← Line 596
-          experienceRelevance: 5, // ← Line 597
+          technicalDepth: 5,
+          problemSolving: 5,
+          communication: 5,
+          experienceRelevance: 5,
         };
       }
     } catch (error) {
       console.error("❌ Error generating summary:", error.message);
-      // ← Line 600 - This catch block has ANOTHER fallback with overallScore: 7
       finalSummary = {
-        overallScore: 7, // ← Line 603 - CONFLICTS with line 589!
+        overallScore: 7,
         strengths: ["Good communication", "Relevant experience"],
         weaknesses: ["Could improve technical depth"],
         summary:
@@ -1091,7 +1062,7 @@ Return ONLY valid JSON, no markdown, no code blocks.`;
       answers,
       feedback: {
         summary: finalSummary,
-        all: history,
+        all: allFeedbacks.length > 0 ? allFeedbacks : history, // Use structured feedbacks if available, otherwise history
       },
       score: finalSummary.overallScore || 7,
     });
@@ -1100,7 +1071,6 @@ Return ONLY valid JSON, no markdown, no code blocks.`;
     try {
       await redisClient.del(sessionKey);
       await redisClient.del(`feedback:${userId}`);
-      // Keep resume cache for potential retry
       console.log("✅ Redis session cleaned up");
     } catch (redisError) {
       console.warn("⚠️ Failed to cleanup Redis:", redisError.message);
@@ -1122,10 +1092,246 @@ Return ONLY valid JSON, no markdown, no code blocks.`;
     });
   }
 };
+// Evaluate Voice Answer (Speech-to-Text + Evaluation)
+export const evaluateVoiceAnswer = async (req, res) => {
+  try {
+    const { domain, question } = req.body;
+    const audioFile = req.file;
 
-// ------------------------------
-// 📊 Get Active Interview Session (Resume if needed)
-// ------------------------------
+    if (!domain || !question) {
+      return res.status(400).json({
+        success: false,
+        error: "Domain and question are required.",
+      });
+    }
+
+    if (!audioFile) {
+      return res.status(400).json({
+        success: false,
+        error: "Audio file is required.",
+      });
+    }
+
+    console.log("🎤 Processing voice answer...");
+    console.log(
+      "📁 Audio file:",
+      audioFile.filename,
+      "Size:",
+      audioFile.size,
+      "bytes"
+    );
+
+    // Step 1: Transcribe audio to text using Gemini
+    let transcribedText = "";
+    try {
+      const audioPath = audioFile.path;
+      const mimeType = audioFile.mimetype || "audio/webm";
+
+      transcribedText = await geminiSpeechToText(audioPath, mimeType);
+      console.log(
+        "✅ Transcription:",
+        transcribedText.substring(0, 100) + "..."
+      );
+    } catch (transcriptionError) {
+      console.error("❌ Transcription error:", transcriptionError.message);
+
+      try {
+        fs.unlinkSync(audioFile.path);
+      } catch (unlinkError) {
+        console.warn("⚠️ Failed to delete audio file:", unlinkError.message);
+      }
+
+      return res.status(500).json({
+        success: false,
+        error: "Failed to transcribe audio",
+        message: transcriptionError.message || "Could not process audio file",
+      });
+    }
+
+    // Step 2: Clean up audio file (we don't need it anymore)
+    try {
+      fs.unlinkSync(audioFile.path);
+      console.log("✅ Audio file cleaned up");
+    } catch (unlinkError) {
+      console.warn("⚠️ Failed to delete audio file:", unlinkError.message);
+    }
+
+    // Step 3: Evaluate the transcribed text using existing evaluation logic
+    if (!transcribedText || transcribedText.trim().length < 10) {
+      return res.status(400).json({
+        success: false,
+        error:
+          "Transcribed text is too short or empty. Please try recording again.",
+        transcribedText: transcribedText || "",
+      });
+    }
+
+    const cacheKey = `eval:${req.user._id}:${domain}:${Buffer.from(question)
+      .toString("base64")
+      .slice(0, 40)}:${Buffer.from(transcribedText)
+      .toString("base64")
+      .slice(0, 40)}`;
+
+    const cached = await redisClient.get(cacheKey);
+    if (cached) {
+      const parsed = JSON.parse(cached);
+      const feedbackAudio = await geminiTextToSpeech(
+        parsed.feedback?.overall_feedback || "Feedback generated successfully.",
+        `feedback_${Date.now()}.mp3`
+      );
+      return res.json({
+        success: true,
+        cached: true,
+        transcribedText,
+        ...parsed,
+        audioUrl: feedbackAudio,
+      });
+    }
+
+    // Generate evaluation using existing prompt
+    const prompt = `
+      You are a strict AI Interview Evaluator. You must be critical and thorough in your assessment.
+
+      **CRITICAL EVALUATION RULES:**
+      1. Default assumption: scores should be 4-6/10 unless answer is CLEARLY excellent
+      2. Only give 8+ for answers that are: detailed, specific, technically accurate, AND directly address the question
+      3. If answer is vague, repetitive, or lacks concrete examples: max 3/10
+      4. If answer shows basic understanding but lacks depth: 4-5/10
+      5. If answer is good but has minor gaps: 6-7/10
+
+      Return **ONLY JSON**, no introductions, markdown, or text outside of braces.
+      JSON format:
+      {
+        "correctness": number (0–10) - How accurately and completely the answer addresses the question. Be strict!
+        "clarity": number (0–10) - How clear and well-articulated the answer is
+        "confidence": number (0–10) - How confidently the candidate demonstrates knowledge
+        "overall_feedback": "2–3 concise sentences of constructive feedback. Be specific about what's missing or wrong."
+      }
+
+      Question: ${question}
+      Answer: ${transcribedText}
+
+      Evaluate strictly. If the answer just repeats the question or provides no real content, correctness should be 0-2/10.`;
+
+    let feedbackText = "";
+    try {
+      feedbackText = await callGeminiWithRetry(prompt, {
+        model: "gemini-2.0-flash",
+        maxRetries: 5,
+        initialDelay: 2000,
+      });
+
+      // Detect bad responses
+      const lower = feedbackText.toLowerCase();
+      const looksWrong =
+        lower.includes("i understand") ||
+        lower.includes("you are") ||
+        lower.includes("provide me with") ||
+        lower.includes("my role") ||
+        lower.includes("objectively assess") ||
+        !feedbackText.includes("{");
+
+      if (looksWrong) {
+        console.warn(
+          "⚠️ Gemini returned non-evaluation text, attempting repair..."
+        );
+        const repairPrompt = `Convert this to valid JSON with correctness, clarity, confidence (0-10), and overall_feedback:\n${feedbackText}`;
+        try {
+          feedbackText = await callGeminiWithRetry(repairPrompt, {
+            model: "gemini-pro",
+            maxRetries: 3,
+          });
+        } catch (repairError) {
+          console.warn("⚠️ Repair attempt failed, using original response");
+        }
+      }
+    } catch (error) {
+      console.error("❌ Error calling Gemini API:", error.message);
+      return res.status(503).json({
+        success: false,
+        error: "AI service temporarily unavailable",
+        message: error.message.includes("Rate limit")
+          ? "The AI service is experiencing high demand. Please wait a moment and try again."
+          : "Unable to evaluate answer at this time. Please try again in a few moments.",
+        retryAfter: 60,
+        transcribedText,
+      });
+    }
+
+    // Parse feedback
+    let feedback = parseFeedbackSafely(feedbackText);
+
+    if (feedback.parsingFailed) {
+      const repairPrompt = `
+Convert the following text into valid JSON with numeric scores.
+Use fields: correctness, clarity, confidence, overall_feedback.
+Text:
+${feedbackText}`;
+      try {
+        const repairText = await callGeminiWithRetry(repairPrompt, {
+          model: "gemini-pro",
+          maxRetries: 2,
+        });
+        feedback = parseFeedbackSafely(repairText);
+      } catch (repairError) {
+        console.warn("⚠️ Repair prompt also failed");
+        feedback.overall_feedback =
+          "Unable to extract structured feedback. Please retry this question.";
+      }
+    }
+
+    const score = calculateSafeScore(feedback);
+
+    await redisClient.setEx(cacheKey, 600, JSON.stringify({ feedback, score }));
+
+    const feedbackAudio = await geminiTextToSpeech(
+      feedback.overall_feedback || "Feedback generated successfully.",
+      `feedback_${Date.now()}.mp3`
+    );
+
+    res.json({
+      success: true,
+      cached: false,
+      transcribedText,
+      feedback,
+      score,
+      // Removed sessionId - no session created for individual evaluations
+      audioUrl: feedbackAudio,
+    });
+  } catch (err) {
+    console.error("❌ Error in evaluateVoiceAnswer:", err.message);
+
+    if (req.file && req.file.path) {
+      try {
+        fs.unlinkSync(req.file.path);
+      } catch (unlinkError) {
+        console.warn("⚠️ Failed to delete audio file:", unlinkError.message);
+      }
+    }
+
+    if (
+      err.message &&
+      (err.message.includes("429") || err.message.includes("Rate limit"))
+    ) {
+      return res.status(429).json({
+        success: false,
+        error: "Rate limit exceeded",
+        message:
+          "The AI service is experiencing high demand. Please wait a moment and try again.",
+        retryAfter: 60,
+      });
+    }
+
+    res.status(500).json({
+      success: false,
+      error: "Error evaluating voice answer",
+      message: err.message || "An unexpected error occurred",
+    });
+  }
+};
+
+// Get Active Interview Session (Resume if needed)
+
 export const getActiveSession = async (req, res) => {
   try {
     const userId = req.user._id.toString();

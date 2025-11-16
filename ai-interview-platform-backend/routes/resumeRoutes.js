@@ -1,6 +1,6 @@
 import express from "express";
 import multer from "multer";
-import { protect } from "../middleware/authMiddleware.js";
+import { verifyFirebaseToken } from "../middleware/firebaseAuthMiddleware.js";
 import { analyzeResume } from "../controllers/resumeController.js";
 
 const router = express.Router();
@@ -48,7 +48,7 @@ const handleMulterError = (err, req, res, next) => {
 
 // Route with proper error handling
 router.post("/upload", 
-  protect, 
+  verifyFirebaseToken, 
   (req, res, next) => {
     upload.single("resume")(req, res, (err) => {
       if (err) {

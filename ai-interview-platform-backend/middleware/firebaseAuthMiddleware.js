@@ -27,36 +27,16 @@ export const verifyFirebaseToken = async (req, res, next) => {
     const decodedToken = await admin.auth().verifyIdToken(token);
     const firebaseUid = decodedToken.uid;
 
-    // Find user by firebaseUid
+    // Find or create user in MongoDB
     let user = await User.findOne({ firebaseUid });
 
     if (!user) {
-      // Check if a user with the same email already exists
-      if (decodedToken.email) {
-        const existingEmailUser = await User.findOne({ email: decodedToken.email });
-        if (existingEmailUser) {
-          // Update firebaseUid if needed
-          if (!existingEmailUser.firebaseUid || existingEmailUser.firebaseUid !== firebaseUid) {
-            existingEmailUser.firebaseUid = firebaseUid;
-            await existingEmailUser.save();
-          }
-          user = existingEmailUser;
-        } else {
-          // Create new user
-          user = await User.create({
-            firebaseUid,
-            email: decodedToken.email,
-            name: decodedToken.name || decodedToken.email.split("@")[0] || "User",
-          });
-        }
-      } else {
-        // Create new user without email
-        user = await User.create({
-          firebaseUid,
-          email: "",
-          name: decodedToken.name || "User",
-        });
-      }
+      // Create user if doesn't exist (first time login after Firebase registration)
+      user = await User.create({
+        firebaseUid,
+        email: decodedToken.email || "",
+        name: decodedToken.name || decodedToken.email?.split("@")[0] || "User",
+      });
     } else {
       // Update email/name if changed in Firebase
       if (decodedToken.email && user.email !== decodedToken.email) {
@@ -93,5 +73,6 @@ export const verifyFirebaseToken = async (req, res, next) => {
     });
   }
 };
+
 
 

@@ -44,7 +44,7 @@ export const parseFeedbackSafely = (text = "") => {
 export const calculateSafeScore = (fb) => {
   const nums = [fb.correctness, fb.clarity, fb.confidence]
     .filter(n => typeof n === "number" && !isNaN(n) && n >= 0 && n <= 10)
-    .map(n => Math.min(10, Math.max(0, n))); // Clamp 0-10
+    .map(n => Math.min(10, Math.max(0, n))); 
   
   if (!nums.length) return 0;
   
