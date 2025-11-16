@@ -1,22 +1,45 @@
 import axios from "axios";
+import { auth } from "../config/firebase.js";
 
 const axiosInstance = axios.create({
   baseURL: "/api",
   timeout: 30000, // 30 seconds timeout (can be overridden per request)
 });
 
-// Request interceptor - add token to headers
+// Request interceptor - add Firebase ID token to headers
 axiosInstance.interceptors.request.use(
-  (config) => {
-  const token = localStorage.getItem("token");
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+  async (config) => {
+    try {
+      // Get current Firebase user
+      const currentUser = auth.currentUser;
+      
+      if (currentUser) {
+        // Get fresh token (Firebase SDK handles caching and refresh automatically)
+        const token = await currentUser.getIdToken();
+        config.headers.Authorization = `Bearer ${token}`;
+        // Update localStorage for consistency
+        localStorage.setItem("firebaseToken", token);
+      } else {
+        // Fallback to localStorage token if user object not available
+        const token = localStorage.getItem("firebaseToken");
+        if (token) {
+          config.headers.Authorization = `Bearer ${token}`;
+        }
+      }
+    } catch (error) {
+      console.error("Error getting Firebase token:", error);
+      // Try to use stored token as fallback
+      const token = localStorage.getItem("firebaseToken");
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
     }
+    
     // Don't override Content-Type for FormData - let browser set it with boundary
     if (config.data instanceof FormData) {
       delete config.headers["Content-Type"];
     }
-  return config;
+    return config;
   },
   (error) => {
     return Promise.reject(error);
@@ -40,8 +63,7 @@ axiosInstance.interceptors.response.use(
 
     // Handle 401 Unauthorized - clear token and redirect to login
     if (error.response.status === 401) {
-      localStorage.removeItem("token");
-      localStorage.removeItem("user");
+      localStorage.removeItem("firebaseToken");
       // Only redirect if not already on login/register page
       if (!window.location.pathname.includes("/login") && !window.location.pathname.includes("/register")) {
         window.location.href = "/login";

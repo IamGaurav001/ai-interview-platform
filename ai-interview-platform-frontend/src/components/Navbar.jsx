@@ -1,27 +1,35 @@
-import React, { useContext } from "react";
+import React, { useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import { AuthContext } from "../context/AuthContext";
+import { useAuth } from "../context/AuthContext";
 import { LogOut, User, Menu, X, GraduationCap } from "lucide-react";
-import { useState } from "react";
 
 const Navbar = () => {
-  const { user, logout } = useContext(AuthContext);
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const handleLogout = () => {
-    logout();
-    navigate("/");
+  const userDisplayName =
+    (user?.displayName && user.displayName.trim()) ||
+    user?.email ||
+    "User";
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      navigate("/");
+    } catch (error) {
+      console.error("Logout error:", error);
+    }
   };
-  
+
   const isActive = (path) => location.pathname === path;
 
   const navLinks = user
     ? [
         { path: "/dashboard", label: "Dashboard" },
         { path: "/history", label: "History" },
-        { path: "/upload-resume", label: "Resume" },
+        { path: "/upload-resume", label: "Resume" }
       ]
     : [];
   return (
@@ -34,7 +42,7 @@ const Navbar = () => {
           >
             <GraduationCap className="h-8 w-8 text-primary-600" />
             <span className="text-xl font-bold text-gray-900">
-              AI Interview Coach
+              IntervueAI
             </span>
           </Link>
 
@@ -46,7 +54,7 @@ const Navbar = () => {
                   to={link.path}
                   className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                     isActive(link.path)
-                      ? "bg-primary-600 text-black font-extrabold"
+                      ? "bg-primary-600 text-white font-semibold shadow-sm"
                       : "text-gray-700 hover:bg-gray-100"
                   }`}
                 >
@@ -63,7 +71,7 @@ const Navbar = () => {
                 <div className="hidden md:flex items-center gap-3">
                   <div className="flex items-center gap-2 text-sm text-gray-700">
                     <User className="h-4 w-4" />
-                    <span className="font-medium">{user.name}</span>
+                    <span className="font-medium">{userDisplayName}</span>
                   </div>
                   <button
                     onClick={handleLogout}
@@ -115,7 +123,7 @@ const Navbar = () => {
                   onClick={() => setMobileMenuOpen(false)}
                   className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                     isActive(link.path)
-                      ? "bg-primary-600 text-white"
+                      ? "bg-primary-600 text-white shadow-sm"
                       : "text-gray-700 hover:bg-gray-100"
                   }`}
                 >
@@ -124,7 +132,7 @@ const Navbar = () => {
               ))}
               <div className="px-4 py-2 flex items-center gap-2 text-sm text-gray-700">
                 <User className="h-4 w-4" />
-                <span className="font-medium">{user.name}</span>
+                <span className="font-medium">{userDisplayName}</span>
               </div>
               <button
                 onClick={handleLogout}

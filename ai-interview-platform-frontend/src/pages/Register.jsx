@@ -1,20 +1,34 @@
-import React, { useState, useContext } from "react";
-import { registerUser } from "../api/authAPI";
-import { AuthContext } from "../context/AuthContext";
+import React, { useState, useEffect } from "react";
+import { useAuth } from "../context/AuthContext.jsx";
 import { Link, useNavigate } from "react-router-dom";
 import { UserPlus, Mail, Lock, User, Loader2 } from "lucide-react";
+import { syncUser } from "../api/authAPI.jsx";
 
 const Register = () => {
-  const { login } = useContext(AuthContext);
+  const { signup, googleLogin, user } = useAuth();
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     password: "",
-    confirmPassword: "",
+    confirmPassword: ""
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const navigate = useNavigate();
+
+  // Check if user is already logged in or if Google redirect just completed
+  useEffect(() => {
+    if (user) {
+      // Check if this was a Google redirect
+      if (sessionStorage.getItem("googleRedirectComplete")) {
+        sessionStorage.removeItem("googleRedirectComplete");
+        navigate("/dashboard", { replace: true });
+      } else {
+        // User is already logged in, redirect to dashboard
+        navigate("/dashboard", { replace: true });
+      }
+    }
+  }, [user, navigate]);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -37,23 +51,59 @@ const Register = () => {
 
     setLoading(true);
     try {
-      const res = await registerUser({
-        name: formData.name,
-        email: formData.email,
-        password: formData.password,
-      });
-      if (res.data && res.data.token) {
-        login(res.data, res.data.token);
-        navigate("/dashboard");
-      } else {
-        setError("Invalid response from server");
+      await signup(formData.email, formData.password, formData.name.trim());
+      // Sync user to MongoDB backend
+      try {
+        await syncUser();
+      } catch (syncError) {
+        console.error("User sync error (non-critical):", syncError);
+        // Continue even if sync fails - middleware will handle it on first API call
       }
+      navigate("/dashboard");
     } catch (err) {
       console.error("Registration error:", err);
-      if (err.networkError) {
-        setError("Cannot connect to server. Please make sure the backend is running.");
-      } else {
-        setError(err.response?.data?.message || err.message || "Registration failed. Please try again.");
+      switch (err.code) {
+        case "auth/email-already-in-use":
+          setError("An account already exists with this email.");
+          break;
+        case "auth/invalid-email":
+          setError("Please enter a valid email address.");
+          break;
+        case "auth/weak-password":
+          setError("Password should be at least 6 characters.");
+          break;
+        default:
+          setError(err.message || "Registration failed. Please try again.");
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleSignup = async () => {
+    setError("");
+    setLoading(true);
+    try {
+      const user = await googleLogin();
+      if (user) {
+        try {
+          await syncUser();
+        } catch (syncError) {
+          console.error("User sync error (non-critical):", syncError);
+        }
+        navigate("/dashboard");
+      }
+    } catch (err) {
+      console.error("Google signup error:", err);
+      switch (err.code) {
+        case "auth/popup-closed-by-user":
+          setError("Google sign-in was closed before completing.");
+          break;
+        case "auth/cancelled-popup-request":
+          setError("Another sign-in attempt is already in progress.");
+          break;
+        default:
+          setError(err.message || "Unable to sign in with Google. Please try again.");
       }
     } finally {
       setLoading(false);
@@ -185,6 +235,39 @@ const Register = () => {
               </button>
             </div>
           </form>
+
+          <div className="mt-4 flex items-center gap-2 text-sm text-gray-500">
+            <span className="flex-1 h-px bg-gray-200" />
+            <span>or</span>
+            <span className="flex-1 h-px bg-gray-200" />
+          </div>
+
+          <button
+            type="button"
+            onClick={handleGoogleSignup}
+            disabled={loading}
+            className="mt-4 w-full flex items-center justify-center gap-3 py-3 px-4 border border-gray-300 rounded-lg shadow-sm bg-white text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-semibold"
+          >
+            <svg className="h-5 w-5" viewBox="0 0 24 24" aria-hidden="true">
+              <path
+                fill="#4285F4"
+                d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.76 3.28-8.09z"
+              />
+              <path
+                fill="#34A853"
+                d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.99.66-2.25 1.05-3.71 1.05-2.85 0-5.26-1.92-6.12-4.51H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+              />
+              <path
+                fill="#FBBC05"
+                d="M5.88 14.11A7.01 7.01 0 0 1 5.5 12c0-.73.13-1.44.38-2.11V7.05H2.18A11 11 0 0 0 1 12c0 1.76.42 3.43 1.18 4.95l3.7-2.84z"
+              />
+              <path
+                fill="#EA4335"
+                d="M12 5.38c1.62 0 3.07.56 4.21 1.66l3.15-3.15C17.46 1.64 14.97.5 12 .5 7.7.5 3.99 3.02 2.18 7.05l3.7 2.84c.86-2.59 3.27-4.51 6.12-4.51z"
+              />
+            </svg>
+            Sign up with Google
+          </button>
 
           <div className="mt-6 text-center">
             <p className="text-sm text-gray-600">

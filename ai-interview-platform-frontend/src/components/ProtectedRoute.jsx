@@ -1,11 +1,11 @@
-import React, { useContext } from "react";
+import React from "react";
 import { Navigate } from "react-router-dom";
-import { AuthContext } from "../context/AuthContext";
+import { useAuth } from "../context/AuthContext";
 import Loader from "./Loader";
 
 const ProtectedRoute = ({ children }) => {
-  const { user, loading } = useContext(AuthContext);
-  
+  const { user, loading } = useAuth();
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -13,7 +13,7 @@ const ProtectedRoute = ({ children }) => {
       </div>
     );
   }
-  
+
   return user ? children : <Navigate to="/login" />;
 };
 

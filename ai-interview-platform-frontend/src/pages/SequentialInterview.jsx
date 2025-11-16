@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { evaluateAnswer, saveCompleteSession } from "../api/interviewAPI";
+import { evaluateAnswer, saveCompleteSession, evaluateVoiceAnswer } from "../api/interviewAPI";
 import {
   MessageSquare,
   Send,
@@ -13,6 +13,8 @@ import {
   Volume2,
   Play,
   Pause,
+  Mic,
+  Square,
 } from "lucide-react";
 
 const SequentialInterview = () => {
@@ -55,6 +57,11 @@ const SequentialInterview = () => {
   const [feedbackAudioUrls, setFeedbackAudioUrls] = useState({});
   const [playingAudio, setPlayingAudio] = useState({});
   const [audioInstances, setAudioInstances] = useState({});
+  const [isRecording, setIsRecording] = useState(false);
+  const [mediaRecorder, setMediaRecorder] = useState(null);
+  const [recordedAudio, setRecordedAudio] = useState(null);
+  const [transcribedText, setTranscribedText] = useState("");
+  const [recordingTime, setRecordingTime] = useState(0);
 
   // Update current answer when question index changes
   useEffect(() => {
@@ -80,8 +87,129 @@ const SequentialInterview = () => {
           audio.src = "";
         }
       });
+      // Stop recording if active
+      if (mediaRecorder && isRecording) {
+        mediaRecorder.stop();
+      }
     };
-  }, [audioInstances]);
+  }, [audioInstances, mediaRecorder, isRecording]);
+
+  // Recording timer
+  useEffect(() => {
+    let interval = null;
+    if (isRecording) {
+      interval = setInterval(() => {
+        setRecordingTime((time) => time + 1);
+      }, 1000);
+    } else {
+      setRecordingTime(0);
+    }
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [isRecording]);
+
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const recorder = new MediaRecorder(stream, {
+        mimeType: "audio/webm;codecs=opus",
+      });
+
+      const chunks = [];
+
+      recorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          chunks.push(event.data);
+        }
+      };
+
+      recorder.onstop = () => {
+        const blob = new Blob(chunks, { type: "audio/webm" });
+        const audioUrl = URL.createObjectURL(blob);
+        setRecordedAudio(blob);
+        // Stop all tracks
+        stream.getTracks().forEach((track) => track.stop());
+      };
+
+      recorder.start();
+      setMediaRecorder(recorder);
+      setIsRecording(true);
+      setRecordedAudio(null);
+      setTranscribedText("");
+    } catch (err) {
+      console.error("Error starting recording:", err);
+      setError("Failed to access microphone. Please check permissions.");
+    }
+  };
+
+  const stopRecording = () => {
+    if (mediaRecorder && isRecording) {
+      mediaRecorder.stop();
+      setIsRecording(false);
+    }
+  };
+
+  const handleSubmitVoiceAnswer = async () => {
+    if (!recordedAudio) {
+      setError("Please record an answer first");
+      return;
+    }
+
+    setLoading(true);
+    setError("");
+    setTranscribedText("");
+
+    try {
+      const question = questions[currentQuestionIndex];
+      const formData = new FormData();
+      formData.append("audio", recordedAudio, "answer.webm");
+      formData.append("domain", domain);
+      formData.append("question", question);
+
+      const res = await evaluateVoiceAnswer(formData);
+
+      if (res.data && res.data.feedback) {
+        const transcribed = res.data.transcribedText || "";
+        setTranscribedText(transcribed);
+
+        const newAnswers = [...answers, transcribed || "Voice answer"];
+        const newFeedbacks = [...feedbacks, res.data.feedback];
+
+        // Store audio URLs if available
+        if (res.data.audioUrl) {
+          setFeedbackAudioUrls((prev) => ({
+            ...prev,
+            [currentQuestionIndex]: res.data.audioUrl,
+          }));
+        }
+
+        setAnswers(newAnswers);
+        setFeedbacks(newFeedbacks);
+        setCurrentAnswer(transcribed);
+        setRecordedAudio(null);
+
+        // Move to next question or show summary
+        if (currentQuestionIndex < questions.length - 1) {
+          setCurrentQuestionIndex(currentQuestionIndex + 1);
+        } else {
+          // All questions answered - show summary
+          handleShowSummary(newAnswers, newFeedbacks);
+        }
+      } else {
+        setError("Invalid response from server");
+      }
+    } catch (err) {
+      console.error("Evaluate voice error:", err);
+      if (err.networkError) {
+        setError("Cannot connect to server. Please make sure the backend is running.");
+      } else {
+        setError(err.response?.data?.error || err.message || "Failed to evaluate voice answer");
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleSubmitAnswer = async () => {
     if (!currentAnswer.trim()) {
@@ -447,11 +575,67 @@ const SequentialInterview = () => {
 
           {/* Answer Input */}
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-3">Your Answer</label>
+            <div className="flex items-center justify-between mb-3">
+              <label className="block text-sm font-semibold text-gray-700">Your Answer</label>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-gray-500">or</span>
+                <button
+                  onClick={isRecording ? stopRecording : startRecording}
+                  disabled={loading}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg font-semibold transition-colors ${
+                    isRecording
+                      ? "bg-red-600 text-white hover:bg-red-700"
+                      : "bg-gray-600 text-white hover:bg-gray-700"
+                  } disabled:opacity-50 disabled:cursor-not-allowed`}
+                >
+                  {isRecording ? (
+                    <>
+                      <Square className="h-4 w-4" />
+                      <span>Stop Recording</span>
+                      <span className="text-xs">({recordingTime}s)</span>
+                    </>
+                  ) : (
+                    <>
+                      <Mic className="h-4 w-4" />
+                      <span>Record Answer</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+
+            {/* Transcribed text display */}
+            {transcribedText && (
+              <div className="mb-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                <p className="text-sm text-gray-700">
+                  <strong>Transcribed:</strong> {transcribedText}
+                </p>
+              </div>
+            )}
+
+            {/* Recorded audio preview */}
+            {recordedAudio && !transcribedText && (
+              <div className="mb-3 p-3 bg-green-50 border border-green-200 rounded-lg flex items-center gap-3">
+                <Volume2 className="h-5 w-5 text-green-600" />
+                <audio
+                  src={URL.createObjectURL(recordedAudio)}
+                  controls
+                  className="flex-1"
+                />
+                <button
+                  onClick={handleSubmitVoiceAnswer}
+                  disabled={loading}
+                  className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {loading ? "Processing..." : "Submit Voice Answer"}
+                </button>
+              </div>
+            )}
+
             <textarea
               value={currentAnswer}
               onChange={(e) => setCurrentAnswer(e.target.value)}
-              placeholder="Type your answer here... Be detailed and specific."
+              placeholder="Type your answer here... Be detailed and specific. Or use the Record Answer button above."
               className="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-600 focus:border-transparent resize-none"
               rows="8"
               disabled={loading}

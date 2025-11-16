@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axiosInstance from "../api/axiosInstance"; // Make sure this path is correct
+import { useAuth } from "../context/AuthContext";
+import axiosInstance from "../api/axiosInstance";
 import {
   FileText,
   Upload,
@@ -9,10 +10,13 @@ import {
   AlertCircle,
   Copy,
   Play,
+  Sparkles
 } from "lucide-react";
+
 
 const ResumeUpload = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [file, setFile] = useState(null);
   const [questions, setQuestions] = useState("");
   const [loading, setLoading] = useState(false);
@@ -30,7 +34,6 @@ const ResumeUpload = () => {
         selectedFile.size
       );
 
-      // Check file type - check both MIME type and file extension
       const isPDF =
         selectedFile.type === "application/pdf" ||
         selectedFile.name.toLowerCase().endsWith(".pdf");
@@ -42,14 +45,12 @@ const ResumeUpload = () => {
           }. Please upload a PDF file.`
         );
         setFile(null);
-        // Clear the input if it exists
         if (e.target?.value) {
           e.target.value = "";
         }
         return;
       }
 
-      // Check file size (5MB limit)
       if (selectedFile.size > 5 * 1024 * 1024) {
         setError(
           `File size (${(selectedFile.size / 1024 / 1024).toFixed(
@@ -57,18 +58,15 @@ const ResumeUpload = () => {
           )}MB) exceeds 5MB limit. Please upload a smaller file.`
         );
         setFile(null);
-        // Clear the input if it exists
         if (e.target?.value) {
           e.target.value = "";
         }
         return;
       }
 
-      // Check if file is empty
       if (selectedFile.size === 0) {
         setError("File is empty. Please select a valid PDF file.");
         setFile(null);
-        // Clear the input if it exists
         if (e.target?.value) {
           e.target.value = "";
         }
@@ -99,17 +97,26 @@ const ResumeUpload = () => {
     setUploadProgress(0);
 
     try {
-      // Check if user is logged in
-      const token = localStorage.getItem("token");
+      // Check if user is authenticated
+      if (!user) {
+        setError("Please log in first to upload your resume.");
+        setLoading(false);
+        navigate("/login");
+        return;
+      }
+
+      // Ensure we have a fresh token
+      const token = localStorage.getItem("firebaseToken");
       if (!token) {
         setError("Please log in first to upload your resume.");
         setLoading(false);
+        navigate("/login");
         return;
       }
 
       console.log("Uploading file:", file.name, file.size, "bytes");
       console.log("File type:", file.type);
-      console.log("Token exists:", !!token);
+      console.log("User authenticated:", !!user);
 
       // Create FormData and upload with progress tracking
       const formData = new FormData();
@@ -132,15 +139,12 @@ const ResumeUpload = () => {
       console.log("Questions in response:", res.data?.questions ? "Yes" : "No");
       console.log("Questions length:", res.data?.questions?.length || 0);
 
-      // Handle response - questions should be an array
       let questionsData = null;
       
       if (res.data) {
-        // Backend now returns questions as an array
         if (Array.isArray(res.data.questions)) {
           questionsData = res.data.questions;
         } else if (res.data.questions && typeof res.data.questions === 'string') {
-          // Fallback: if backend still returns string, parse it
           console.warn("⚠️ Backend returned string instead of array, parsing...");
           const lines = res.data.questions.split("\n").filter((line) => line.trim());
           questionsData = lines
@@ -153,16 +157,14 @@ const ResumeUpload = () => {
 
       if (questionsData && Array.isArray(questionsData) && questionsData.length > 0) {
         console.log("✅ Questions received successfully:", questionsData.length, "questions");
-        // Convert array to formatted string for display
         const questionsText = questionsData
           .map((q, idx) => `${idx + 1}. ${q}`)
           .join("\n");
         setQuestions(questionsText);
         setSuccess(true);
-        setError(""); // Clear any previous errors
-        setUploadProgress(100); // Set to 100% on success
+        setError(""); 
+        setUploadProgress(100); 
         
-        // Scroll to questions section after a short delay
         setTimeout(() => {
           const questionsSection = document.getElementById("questions-section");
           if (questionsSection) {
@@ -191,9 +193,7 @@ const ResumeUpload = () => {
         );
       } else if (err.response?.status === 401) {
         setError("Session expired. Please log in again.");
-        // Clear token and redirect
-        localStorage.removeItem("token");
-        localStorage.removeItem("user");
+        localStorage.removeItem("firebaseToken");
         setTimeout(() => {
           window.location.href = "/login";
         }, 2000);
@@ -367,7 +367,7 @@ const ResumeUpload = () => {
             )}
 
             {/* Analyze Button Section - More Prominent When File Selected */}
-            {file && !success && (
+{file && !success && (
               <div className="bg-primary-50 border-2 border-primary-200 rounded-xl p-6">
                 <div className="flex items-center gap-3 mb-4">
                   <CheckCircle2 className="h-6 w-6 text-primary-600" />
@@ -380,10 +380,18 @@ const ResumeUpload = () => {
                     </p>
                   </div>
                 </div>
+
+                {/* --- MODIFIED BUTTON --- */}
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full py-4 bg-primary-600 text-white rounded-lg font-bold text-lg hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-3 shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all"
+                  /* FIX: 
+                    1. Added `relative` for positioning the icon.
+                    2. Removed `gap-3` (no longer needed).
+                    3. Added `pl-16` and `pr-6` for padding to ensure
+                       text never overlaps the absolute icon.
+                  */
+                  className="relative w-full py-4 pl-16 pr-6 bg-primary-600 text-white rounded-lg font-bold text-lg hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center shadow-lg hover:shadow-xl transform hover:scale-[1.02] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2"
                   onClick={(e) => {
                     if (!file) {
                       e.preventDefault();
@@ -393,22 +401,33 @@ const ResumeUpload = () => {
                     console.log("Submit button clicked, file:", file?.name);
                   }}
                 >
-                  {loading ? (
-                    <>
+                  {/* FIX: 
+                    Icon is now in an `absolute` container,
+                    vertically centered and positioned on the left.
+                  */}
+                  <div className="absolute left-6 top-1/2 -translate-y-1/2">
+                    {loading ? (
                       <Loader2 className="h-6 w-6 animate-spin" />
-                      <span>
-                        {uploadProgress > 0
-                          ? `Uploading... ${uploadProgress}%`
-                          : "Analyzing Resume with AI..."}
-                      </span>
-                    </>
+                    ) : (
+                      <Sparkles className="h-6 w-6" />
+                    )}
+                  </div>
+
+                  {/* The `span` is now the only child in the flex layout,
+                    so `justify-center` will center it perfectly.
+                  */}
+                  {loading ? (
+                    <span>
+                      {uploadProgress > 0
+                        ? `Uploading... ${uploadProgress}%`
+                        : "Analyzing Resume with AI..."}
+                    </span>
                   ) : (
-                    <>
-                      <Upload className="h-6 w-6" />
-                      <span>Analyze Resume & Generate Questions</span>
-                    </>
+                    <span>Analyze Resume & Generate Questions</span>
                   )}
-        </button>
+                </button>
+                {/* --- END MODIFIED BUTTON --- */}
+
 
                 {loading && uploadProgress > 0 && uploadProgress < 100 && (
                   <div className="w-full bg-gray-200 rounded-full h-3 mt-4">
@@ -465,72 +484,29 @@ const ResumeUpload = () => {
                 </div>
               </div>
 
-              {/* Action Buttons */}
-              <div className="bg-white rounded-xl shadow-lg p-6 mb-6 border-2 border-primary-200">
-                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
-                  <button
-                    onClick={() => {
-                      // Navigate to new Redis-based interview flow
-                      navigate("/interview-flow");
-                    }}
-                    className="flex-1 flex items-center justify-center gap-3 px-6 py-4 bg-primary-600 text-white rounded-lg font-bold text-lg hover:bg-primary-700 transition-colors shadow-md hover:shadow-lg transform hover:scale-[1.02]"
-                  >
-                    <Play className="h-6 w-6" />
-                    Start Full Interview
-                  </button>
-                  <button
-                    onClick={() => copyToClipboard(questions)}
-                    className="flex items-center justify-center gap-2 px-6 py-4 bg-gray-100 text-gray-700 rounded-lg font-semibold hover:bg-gray-200 transition-colors border border-gray-300"
-                  >
-                    <Copy className="h-5 w-5" />
-                    Copy Questions
-                  </button>
-                </div>
-                <p className="text-sm text-gray-600 mt-4 text-center">
-                  💡 Click "Start Full Interview" to begin a comprehensive, real-time interview with dynamic questions
-                </p>
-              </div>
-
-              {/* Questions Display */}
-              <div className="bg-white rounded-xl shadow-lg p-8 border border-gray-200">
-                <h3 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-                  <FileText className="h-7 w-7 text-primary-600" />
-                  Your Personalized Interview Questions
-                </h3>
-                <div className="bg-gradient-to-br from-primary-50 to-blue-50 rounded-lg p-6 border-2 border-primary-200">
-                  <div className="prose max-w-none">
-                    <pre className="text-gray-800 whitespace-pre-wrap font-sans text-base leading-relaxed">
-                      {questions}
-                    </pre>
-                  </div>
-                </div>
-              </div>
-
               {/* Bottom CTA */}
-              <div className="mt-6 bg-blue-50 rounded-xl p-6 border-2 border-blue-200">
-                <div className="flex items-start gap-4">
-                  <div className="bg-blue-500 rounded-full p-2">
-                    <Play className="h-6 w-6 text-white" />
+              <div className="w-full max-w-2xl mx-auto bg-white rounded-xl shadow-lg p-8 overflow-hidden">
+                <div className="flex flex-col items-center text-center gap-4">
+                  
+                  <div className="bg-blue-500 rounded-full p-3">
+                    <Play className="h-7 w-7 text-white" />
                   </div>
-                  <div className="flex-1">
-                    <h4 className="font-bold text-lg text-gray-900 mb-2">
-                      Ready to Practice?
-                    </h4>
-                    <p className="text-gray-700 mb-4">
-                      Start a comprehensive, real-time interview session. The AI will ask dynamic questions based on your answers, 
-                      covering technical depth, problem-solving, system design, and more. You'll receive instant feedback after each answer.
-                    </p>
-                    <button
-                      onClick={() => {
-                        // Navigate to new Redis-based interview flow
-                        navigate("/interview-flow");
-                      }}
-                      className="w-full sm:w-auto px-8 py-3 bg-primary-600 text-white rounded-lg font-bold hover:bg-primary-700 transition-colors flex items-center justify-center gap-2 shadow-md"
-                    >
-                      <Play className="h-5 w-5" />
-                      Begin Full Interview
-                    </button>
-                  </div>
+                  
+                  <h4 className="font-bold text-xl text-gray-900 mt-2">
+                    Ready to Practice?
+                  </h4>
+                  
+                  <p className="text-gray-600 mb-3 max-w-lg">
+                    Start a comprehensive, real-time interview session. The AI will ask dynamic questions based on your answers and provide instant feedback.
+                  </p>
+                  
+                  <button
+                    onClick={() => navigate("/interview-flow")}
+                    className="w-full sm:w-auto px-8 py-3 bg-blue-600 text-white rounded-lg font-bold hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                  >
+                    <Play className="h-5 w-5" />
+                    Begin Full Interview
+                  </button>
                 </div>
               </div>
             </div>

@@ -1,46 +1,159 @@
-import React, { createContext, useState, useEffect } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
+import { auth } from "../config/firebase.js";
+import {
+  onAuthStateChanged,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  signOut,
+  updateProfile,
+  GoogleAuthProvider,
+  signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult
+} from "firebase/auth";
 
 export const AuthContext = createContext(null);
 
-export function AuthProvider({ children }) {
-  const [user, setUser] = useState(() => {
-    const storedUser = localStorage.getItem("user");
-    return storedUser ? JSON.parse(storedUser) : null;
-  });
-  const [token, setToken] = useState(() => localStorage.getItem("token") || null);
+export const AuthProvider = ({ children }) => {
+  const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    // Check if token exists and validate it
-    const storedToken = localStorage.getItem("token");
-    const storedUser = localStorage.getItem("user");
-    
-    if (storedToken && storedUser) {
-      setToken(storedToken);
-      setUser(JSON.parse(storedUser));
+  // Helper function to get and store Firebase ID token
+  const updateToken = async (firebaseUser) => {
+    if (firebaseUser) {
+      try {
+        const token = await firebaseUser.getIdToken();
+        localStorage.setItem("firebaseToken", token);
+        // Set up token refresh
+        firebaseUser.getIdToken(true); // Force refresh to get latest token
+      } catch (error) {
+        console.error("Error getting Firebase token:", error);
+        localStorage.removeItem("firebaseToken");
+      }
+    } else {
+      localStorage.removeItem("firebaseToken");
     }
-    setLoading(false);
-  }, []);
-
-  const login = (userData, tokenValue) => {
-    setUser(userData);
-    setToken(tokenValue);
-    localStorage.setItem("token", tokenValue);
-    localStorage.setItem("user", JSON.stringify(userData));
   };
 
-  const logout = () => {
+  useEffect(() => {
+    const unsub = onAuthStateChanged(auth, async (firebaseUser) => {
+      if (firebaseUser) {
+        await updateToken(firebaseUser);
+        setUser(firebaseUser);
+      } else {
+        localStorage.removeItem("firebaseToken");
+        setUser(null);
+      }
+      setLoading(false);
+    });
+
+    // Handle redirect result for Google sign-in fallback
+    // This runs once on mount to check if we're returning from a redirect
+    getRedirectResult(auth)
+      .then(async (result) => {
+        if (result?.user) {
+          await updateToken(result.user);
+          setUser(result.user);
+          // Sync user to backend
+          try {
+            const { syncUser } = await import("../api/authAPI.jsx");
+            await syncUser();
+          } catch (syncError) {
+            console.error("User sync error (non-critical):", syncError);
+          }
+          // Store flag to indicate we should redirect to dashboard
+          // The Login/Register pages will check this and redirect
+          sessionStorage.setItem("googleRedirectComplete", "true");
+        }
+      })
+      .catch((error) => {
+        if (error && error.code !== "auth/no-auth-event") {
+          console.error("Google redirect sign-in error:", error);
+        }
+      });
+
+    // Set up token refresh every 50 minutes (tokens expire after 1 hour)
+    const tokenRefreshInterval = setInterval(async () => {
+      const currentUser = auth.currentUser;
+      if (currentUser) {
+        try {
+          const token = await currentUser.getIdToken(true);
+          localStorage.setItem("firebaseToken", token);
+        } catch (error) {
+          console.error("Error refreshing token:", error);
+        }
+      }
+    }, 50 * 60 * 1000); // 50 minutes
+
+    return () => {
+      unsub();
+      clearInterval(tokenRefreshInterval);
+    };
+  }, []);
+
+  const signup = async (email, password, displayName) => {
+    const userCredential = await createUserWithEmailAndPassword(
+      auth,
+      email,
+      password
+    );
+
+    if (displayName) {
+      await updateProfile(userCredential.user, { displayName });
+    }
+
+    // Get and store token
+    await updateToken(userCredential.user);
+    setUser(userCredential.user);
+
+    return userCredential.user;
+  };
+
+  const login = async (email, password) => {
+    const userCredential = await signInWithEmailAndPassword(
+      auth,
+      email,
+      password
+    );
+    
+    // Get and store token
+    await updateToken(userCredential.user);
+    setUser(userCredential.user);
+    
+    return userCredential.user;
+  };
+
+  const logout = async () => {
+    await signOut(auth);
+    localStorage.removeItem("firebaseToken");
     setUser(null);
-    setToken(null);
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
+  };
+
+  const googleLogin = async () => {
+    const provider = new GoogleAuthProvider();
+    provider.setCustomParameters({ prompt: "select_account" });
+
+    try {
+      const result = await signInWithPopup(auth, provider);
+      await updateToken(result.user);
+      setUser(result.user);
+      return result.user;
+    } catch (error) {
+      if (error?.code === "auth/popup-blocked") {
+        // Fallback to redirect flow
+        await signInWithRedirect(auth, provider);
+        return null;
+      }
+      console.error("Google sign-in error:", error);
+      throw error;
+    }
   };
 
   return (
-    <AuthContext.Provider value={{ user, setUser, token, setToken, login, logout, loading }}>
+    <AuthContext.Provider value={{ user, loading, login, signup, logout, googleLogin }}>
       {children}
     </AuthContext.Provider>
   );
-}
+};
 
-export default AuthProvider;
+export const useAuth = () => useContext(AuthContext);

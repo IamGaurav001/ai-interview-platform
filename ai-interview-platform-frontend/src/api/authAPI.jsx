@@ -1,4 +1,5 @@
 import axios from "./axiosInstance";
 
-export const registerUser = (data) => axios.post("/auth/register", data);
-export const loginUser = (data) => axios.post("/auth/login", data);
+// Sync Firebase user to MongoDB backend
+// This ensures the user exists in MongoDB after Firebase authentication
+export const syncUser = () => axios.post("/auth/sync");

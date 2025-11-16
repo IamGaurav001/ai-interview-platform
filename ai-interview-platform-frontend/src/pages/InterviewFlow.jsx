@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { startInterview, nextInterviewStep, endInterview, getActiveSession } from "../api/interviewAPI";
+import { startInterview, nextInterviewStep, endInterview, getActiveSession, evaluateVoiceAnswer } from "../api/interviewAPI";
 import {
   MessageSquare,
   Send,
@@ -13,6 +13,8 @@ import {
   Volume2,
   Play,
   Pause,
+  Mic,
+  Square,
 } from "lucide-react";
 
 const InterviewFlow = () => {
@@ -33,6 +35,11 @@ const InterviewFlow = () => {
   const [isPlayingFeedback, setIsPlayingFeedback] = useState(false);
   const [questionAudio, setQuestionAudio] = useState(null);
   const [feedbackAudio, setFeedbackAudio] = useState(null);
+  const [isRecording, setIsRecording] = useState(false);
+  const [mediaRecorder, setMediaRecorder] = useState(null);
+  const [recordedAudio, setRecordedAudio] = useState(null);
+  const [transcribedText, setTranscribedText] = useState("");
+  const [recordingTime, setRecordingTime] = useState(0);
 
   // Check for active session on mount
   useEffect(() => {
@@ -50,8 +57,29 @@ const InterviewFlow = () => {
         feedbackAudio.pause();
         feedbackAudio.src = "";
       }
+      // Stop recording if active
+      if (mediaRecorder && isRecording) {
+        mediaRecorder.stop();
+      }
+      // Stop browser TTS
+      window.speechSynthesis.cancel();
     };
-  }, [questionAudio, feedbackAudio]);
+  }, [questionAudio, feedbackAudio, mediaRecorder, isRecording]);
+
+  // Recording timer
+  useEffect(() => {
+    let interval = null;
+    if (isRecording) {
+      interval = setInterval(() => {
+        setRecordingTime((time) => time + 1);
+      }, 1000);
+    } else {
+      setRecordingTime(0);
+    }
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [isRecording]);
 
   const checkActiveSession = async () => {
     try {
@@ -126,6 +154,8 @@ const InterviewFlow = () => {
           { role: "user", text: currentAnswer.trim(), timestamp: new Date().toISOString() }
         ];
 
+        setConversationHistory(updatedHistory);
+
         // Add feedback and next question
         if (res.data.feedback) {
           setFeedback(res.data.feedback);
@@ -145,8 +175,10 @@ const InterviewFlow = () => {
 
         if (res.data.isComplete) {
           // Interview is complete
+          const finalCount = res.data.questionCount ?? questionCount;
+          setQuestionCount(finalCount);
           setIsComplete(true);
-          handleEndInterview();
+          handleEndInterview(true);
         } else if (res.data.question) {
           // Add interviewer's next question to history
           const finalHistory = [
@@ -321,13 +353,158 @@ const InterviewFlow = () => {
     }
   };
 
-  const handleEndInterview = async () => {
-    // Confirm with user before ending
-    const confirmed = window.confirm(
-      `Are you sure you want to end the interview? You've answered ${questionCount} questions. This action cannot be undone.`
-    );
-    
-    if (!confirmed) {
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const recorder = new MediaRecorder(stream, {
+        mimeType: "audio/webm;codecs=opus",
+      });
+
+      const chunks = [];
+
+      recorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          chunks.push(event.data);
+        }
+      };
+
+      recorder.onstop = () => {
+        const blob = new Blob(chunks, { type: "audio/webm" });
+        setRecordedAudio(blob);
+        // Stop all tracks
+        stream.getTracks().forEach((track) => track.stop());
+      };
+
+      recorder.start();
+      setMediaRecorder(recorder);
+      setIsRecording(true);
+      setRecordedAudio(null);
+      setTranscribedText("");
+    } catch (err) {
+      console.error("Error starting recording:", err);
+      setError("Failed to access microphone. Please check permissions.");
+    }
+  };
+
+  const stopRecording = () => {
+    if (mediaRecorder && isRecording) {
+      mediaRecorder.stop();
+      setIsRecording(false);
+    }
+  };
+
+  const handleSubmitVoiceAnswer = async () => {
+    if (!recordedAudio) {
+      setError("Please record an answer first");
+      return;
+    }
+
+    setLoading(true);
+    setError("");
+    setTranscribedText("");
+
+    try {
+      const formData = new FormData();
+      formData.append("audio", recordedAudio, "answer.webm");
+      formData.append("domain", "Resume-Based");
+      formData.append("question", currentQuestion);
+
+      const res = await evaluateVoiceAnswer(formData);
+
+      if (res.data && res.data.success) {
+        const transcribed = res.data.transcribedText || "";
+        setTranscribedText(transcribed);
+        setCurrentAnswer(transcribed);
+
+        // Clear recording
+        setRecordedAudio(null);
+
+        // Now continue the interview flow using nextInterviewStep
+        // This will get feedback and next question
+        try {
+          const nextRes = await nextInterviewStep(transcribed.trim());
+          
+          if (nextRes.data.success) {
+            // Add user answer to history
+            const updatedHistory = [
+              ...conversationHistory,
+              { role: "user", text: transcribed.trim(), timestamp: new Date().toISOString() }
+            ];
+
+            setConversationHistory(updatedHistory);
+
+            // Add feedback and next question
+            if (nextRes.data.feedback) {
+              setFeedback(nextRes.data.feedback);
+            }
+
+            // Set audio URLs if available
+            if (nextRes.data.feedbackAudioUrl) {
+              setFeedbackAudioUrl(nextRes.data.feedbackAudioUrl);
+            }
+            if (nextRes.data.questionAudioUrl) {
+              setQuestionAudioUrl(nextRes.data.questionAudioUrl);
+            }
+
+            if (nextRes.data.isComplete) {
+              // Interview is complete
+              const finalCount = nextRes.data.questionCount ?? questionCount;
+              setQuestionCount(finalCount);
+              setIsComplete(true);
+              handleEndInterview(true);
+            } else if (nextRes.data.question) {
+              // Add interviewer's next question to history
+              const finalHistory = [
+                ...updatedHistory,
+                { role: "interviewer", text: nextRes.data.question, timestamp: new Date().toISOString() }
+              ];
+              setConversationHistory(finalHistory);
+              setCurrentQuestion(nextRes.data.question);
+              setQuestionCount(nextRes.data.questionCount || questionCount + 1);
+              setCurrentAnswer("");
+              setTranscribedText(""); // Clear transcribed text for next question
+            }
+          } else {
+            setError(nextRes.data.message || "Failed to process answer");
+          }
+        } catch (nextErr) {
+          console.error("Next step error after voice answer:", nextErr);
+          // Still show the transcribed text and feedback from voice evaluation
+          if (res.data.feedback) {
+            setFeedback(res.data.feedback.overall_feedback || res.data.feedback);
+          }
+          if (res.data.audioUrl) {
+            setFeedbackAudioUrl(res.data.audioUrl);
+          }
+          setError("Voice transcribed successfully, but failed to continue interview. Please try submitting again.");
+        }
+      } else {
+        setError(res.data?.error || "Invalid response from server");
+      }
+    } catch (err) {
+      console.error("Evaluate voice error:", err);
+      if (err.networkError) {
+        setError("Cannot connect to server. Please make sure the backend is running.");
+      } else {
+        setError(err.response?.data?.error || err.message || "Failed to evaluate voice answer");
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleEndInterview = async (skipConfirm = false) => {
+    // Confirm with user before ending, unless auto-complete
+    const shouldProceed =
+      skipConfirm ||
+      window.confirm(
+        `Are you sure you want to end the interview? You've answered ${questionCount} questions. This action cannot be undone.`
+      );
+
+    if (!shouldProceed) {
+      if (!skipConfirm) {
+        setIsComplete(false);
+      }
       return;
     }
 
@@ -535,11 +712,67 @@ const InterviewFlow = () => {
 
           {/* Answer Input */}
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-3">Your Answer</label>
+            <div className="flex items-center justify-between mb-3">
+              <label className="block text-sm font-semibold text-gray-700">Your Answer</label>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-gray-500">or</span>
+                <button
+                  onClick={isRecording ? stopRecording : startRecording}
+                  disabled={loading || isComplete}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg font-semibold transition-colors ${
+                    isRecording
+                      ? "bg-red-600 text-white hover:bg-red-700"
+                      : "bg-gray-600 text-white hover:bg-gray-700"
+                  } disabled:opacity-50 disabled:cursor-not-allowed`}
+                >
+                  {isRecording ? (
+                    <>
+                      <Square className="h-4 w-4" />
+                      <span>Stop Recording</span>
+                      <span className="text-xs">({recordingTime}s)</span>
+                    </>
+                  ) : (
+                    <>
+                      <Mic className="h-4 w-4" />
+                      <span>Record Answer</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+
+            {/* Transcribed text display */}
+            {transcribedText && (
+              <div className="mb-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                <p className="text-sm text-gray-700">
+                  <strong>Transcribed:</strong> {transcribedText}
+                </p>
+              </div>
+            )}
+
+            {/* Recorded audio preview */}
+            {recordedAudio && !transcribedText && (
+              <div className="mb-3 p-3 bg-green-50 border border-green-200 rounded-lg flex items-center gap-3">
+                <Volume2 className="h-5 w-5 text-green-600" />
+                <audio
+                  src={URL.createObjectURL(recordedAudio)}
+                  controls
+                  className="flex-1"
+                />
+                <button
+                  onClick={handleSubmitVoiceAnswer}
+                  disabled={loading}
+                  className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {loading ? "Processing..." : "Submit Voice Answer"}
+                </button>
+              </div>
+            )}
+
             <textarea
               value={currentAnswer}
               onChange={(e) => setCurrentAnswer(e.target.value)}
-              placeholder="Type your detailed answer here... Be specific and provide examples."
+              placeholder="Type your detailed answer here... Be specific and provide examples. Or use the Record Answer button above."
               className="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-600 focus:border-transparent resize-none"
               rows="8"
               disabled={loading || isComplete}
