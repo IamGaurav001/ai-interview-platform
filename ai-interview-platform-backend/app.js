@@ -9,7 +9,7 @@ import { errorHandler } from "./middleware/errorMiddleware.js";
 import mongoose from "mongoose";
 import redisClient from "./config/redis.js";
 
-dotenv.config(); 
+dotenv.config();
 const app = express();
 
 connectDB();
