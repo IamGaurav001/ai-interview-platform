@@ -15,7 +15,7 @@ function App() {
   return (
     <BrowserRouter>
       <Navbar />
-      <main className="min-h-screen w-full overflow-x-hidden">
+      <main className="pt-20 min-h-screen w-full overflow-x-hidden">
         <Routes>
           {/* Public Routes */}
           <Route path="/" element={<Landing />} />
