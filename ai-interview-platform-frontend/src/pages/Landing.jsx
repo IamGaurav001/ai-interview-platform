@@ -171,25 +171,22 @@ const scaleIn = {
 };
 
 const headerVariant = {
-  hidden: { y: -30, opacity: 0 }, // Start 30px up and invisible
+  hidden: { y: -30, opacity: 0 }, 
   visible: {
     y: 0,
-    opacity: 1, // Animate to original position and visible
+    opacity: 1, 
     transition: {
       duration: 0.4,
       ease: "easeOut",
     },
   },
 };
-/* --- End Animation Variants --- */
 
 
-/* --- The Main Landing Page Component --- */
 const Landing = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  // If the user is logged in, redirect them to the dashboard
   useEffect(() => {
     if (user) {
       navigate("/dashboard", { replace: true });
@@ -287,18 +284,14 @@ const Landing = () => {
               variants={scaleIn}
             >
               <div className="relative max-w-4xl mx-auto w-full">
-                {/* Glow effect */}
                 <div className="absolute -inset-0.5 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-2xl blur-lg opacity-40"></div>
-                {/* The main mockup card */}
                 <div className="relative bg-white/50 backdrop-blur-sm rounded-2xl p-4 shadow-2xl border border-slate-200/50">
                   <div className="bg-slate-100 rounded-lg p-6 border border-slate-200/80">
-                    {/* Mock UI window buttons */}
                     <div className="flex items-center gap-2 mb-4">
                       <span className="h-3 w-3 bg-slate-300 rounded-full"></span>
                       <span className="h-3 w-3 bg-slate-300 rounded-full"></span>
                       <span className="h-3 w-3 bg-slate-300 rounded-full"></span>
                     </div>
-                    {/* Mock UI content */}
                     <div className="bg-white rounded-md shadow p-6">
                       <h4 className="font-semibold text-indigo-600 mb-3 text-left">
                         AI Feedback: "Behavioral Question"
@@ -341,8 +334,8 @@ const Landing = () => {
       <motion.section 
         className="py-20 bg-white/70 backdrop-blur-md border-t border-slate-200/50"
         initial="hidden"
-        whileInView="visible" // Animate when this section scrolls into view
-        viewport={{ once: true, amount: 0.1 }} // Animate once, when 10% is visible
+        whileInView="visible" 
+        viewport={{ once: true, amount: 0.1 }} 
         variants={staggerContainer}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -358,9 +351,8 @@ const Landing = () => {
 
           <motion.div 
             className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-8"
-            variants={staggerContainer} // Stagger the children inside
+            variants={staggerContainer}
           >
-            {/* Feature 1 (Large) */}
             <motion.div 
               className="md:col-span-2 bg-gradient-to-br from-indigo-50 to-purple-50 p-8 rounded-2xl shadow-xl shadow-slate-900/5 border border-white"
               variants={fadeInUp}
@@ -378,7 +370,6 @@ const Landing = () => {
               </p>
             </motion.div>
 
-            {/* Feature 2 (Small) */}
             <motion.div 
               className="bg-white p-8 rounded-2xl shadow-xl shadow-slate-900/5 border border-slate-200/50"
               variants={fadeInUp}
