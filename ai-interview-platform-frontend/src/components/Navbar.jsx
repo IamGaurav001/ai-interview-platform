@@ -1,16 +1,16 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { 
-  LogOut, 
-  User, 
-  Menu, 
-  X, 
-  LayoutDashboard, 
-  History, 
-  FileText, 
+import {
+  LogOut,
+  User,
+  Menu,
+  X,
+  LayoutDashboard,
+  History,
+  FileText,
   ChevronDown,
-  Settings
+  Settings,
 } from "lucide-react";
 import logo from "../assets/intervueai-logo.png";
 
@@ -18,16 +18,17 @@ const Navbar = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  
+
   // State for UI interactions
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
-  
+
   const dropdownRef = useRef(null);
 
   // Helper to get display name/initials
-  const userDisplayName = (user?.displayName && user.displayName.trim()) || user?.email || "User";
+  const userDisplayName =
+    (user?.displayName && user.displayName.trim()) || user?.email || "User";
   const userInitials = userDisplayName.slice(0, 2).toUpperCase();
 
   // Handle scroll effect
@@ -39,7 +40,6 @@ const Navbar = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Handle click outside for dropdown
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -50,7 +50,6 @@ const Navbar = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Close mobile menu on route change
   useEffect(() => {
     setMobileMenuOpen(false);
   }, [location]);
@@ -75,26 +74,25 @@ const Navbar = () => {
   return (
     <nav
       className={`fixed top-0 w-full z-50 transition-all duration-300 ${
-        isScrolled 
-          ? "bg-white/80 backdrop-blur-md shadow-sm border-b border-gray-200/50 py-2" 
+        isScrolled
+          ? "bg-white/80 backdrop-blur-md shadow-sm border-b border-gray-200/50 py-2"
           : "bg-white border-b border-transparent py-4"
       }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center">
-          
           {/* Logo Section */}
-          <Link to={user ? "/dashboard" : "/"} className="flex items-center gap-2 group">
-            <img 
-              src={logo} 
-              alt="InterVueAI" 
-              className="h-10 w-auto transition-transform duration-300 group-hover:scale-105" 
+          <Link
+            to={user ? "/dashboard" : "/"}
+            className="flex items-center gap-2 group"
+          >
+            <img
+              src={logo}
+              alt="InterVueAI"
+              className="h-10 w-auto transition-transform duration-300 group-hover:scale-105"
             />
-            {/* Optional: Add text next to logo if logo image doesn't have text */}
-            {/* <span className="font-bold text-xl text-gray-900 tracking-tight">InterVue<span className="text-primary-600">AI</span></span> */}
           </Link>
 
-          {/* Desktop Navigation */}
           {user && (
             <div className="hidden md:flex items-center bg-gray-100/50 rounded-full p-1 border border-gray-200/50 backdrop-blur-sm">
               {navLinks.map((link) => {
@@ -110,7 +108,11 @@ const Navbar = () => {
                         : "text-gray-600 hover:text-gray-900 hover:bg-gray-200/50"
                     }`}
                   >
-                    <Icon className={`h-4 w-4 ${active ? "text-primary-600" : "text-gray-400"}`} />
+                    <Icon
+                      className={`h-4 w-4 ${
+                        active ? "text-primary-600" : "text-gray-400"
+                      }`}
+                    />
                     {link.label}
                   </Link>
                 );
@@ -118,17 +120,15 @@ const Navbar = () => {
             </div>
           )}
 
-          {/* Right Section: Auth Buttons / Profile */}
           <div className="flex items-center gap-4">
             {user ? (
               <div className="flex items-center gap-4">
-                {/* Desktop Profile Dropdown */}
                 <div className="relative hidden md:block" ref={dropdownRef}>
                   <button
                     onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
                     className={`flex items-center gap-3 pl-1 pr-2 py-1 rounded-full transition-all duration-200 border ${
-                      profileDropdownOpen 
-                        ? "bg-gray-50 border-primary-200 ring-2 ring-primary-50" 
+                      profileDropdownOpen
+                        ? "bg-gray-50 border-primary-200 ring-2 ring-primary-50"
                         : "bg-white border-gray-200 hover:border-gray-300 hover:shadow-sm"
                     }`}
                   >
@@ -138,23 +138,34 @@ const Navbar = () => {
                     <span className="text-sm font-medium text-gray-700 max-w-[100px] truncate">
                       {userDisplayName}
                     </span>
-                    <ChevronDown className={`h-4 w-4 text-gray-400 transition-transform duration-200 ${profileDropdownOpen ? "rotate-180" : ""}`} />
+                    <ChevronDown
+                      className={`h-4 w-4 text-gray-400 transition-transform duration-200 ${
+                        profileDropdownOpen ? "rotate-180" : ""
+                      }`}
+                    />
                   </button>
 
                   {/* Dropdown Menu */}
                   {profileDropdownOpen && (
                     <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-lg border border-gray-100 py-2 animate-in fade-in zoom-in-95 duration-100 origin-top-right">
                       <div className="px-4 py-3 border-b border-gray-100 mb-1">
-                        <p className="text-xs text-gray-500 font-medium uppercase tracking-wider">Signed in as</p>
-                        <p className="text-sm font-semibold text-gray-900 truncate">{user.email}</p>
+                        <p className="text-xs text-gray-500 font-medium uppercase tracking-wider">
+                          Signed in as
+                        </p>
+                        <p className="text-sm font-semibold text-gray-900 truncate">
+                          {user.email}
+                        </p>
                       </div>
-                      
-                      <Link to="/settings" className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-primary-600 transition-colors">
+
+                      <Link
+                        to="/settings"
+                        className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-primary-600 transition-colors"
+                      >
                         <Settings className="h-4 w-4" /> Settings
                       </Link>
-                      
+
                       <div className="h-px bg-gray-100 my-1" />
-                      
+
                       <button
                         onClick={handleLogout}
                         className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
@@ -208,7 +219,9 @@ const Navbar = () => {
                   {userInitials}
                 </div>
                 <div>
-                  <p className="font-semibold text-gray-900">{userDisplayName}</p>
+                  <p className="font-semibold text-gray-900">
+                    {userDisplayName}
+                  </p>
                   <p className="text-xs text-gray-500">{user.email}</p>
                 </div>
               </div>
@@ -218,8 +231,8 @@ const Navbar = () => {
               {user ? (
                 <>
                   {navLinks.map((link) => {
-                     const Icon = link.icon;
-                     return (
+                    const Icon = link.icon;
+                    return (
                       <Link
                         key={link.path}
                         to={link.path}
@@ -232,7 +245,7 @@ const Navbar = () => {
                         <Icon className="h-5 w-5" />
                         {link.label}
                       </Link>
-                     )
+                    );
                   })}
                   <button
                     onClick={handleLogout}
