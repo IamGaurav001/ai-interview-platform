@@ -1,5 +1,5 @@
 import React from "react";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Login from "./pages/Login";
@@ -9,18 +9,35 @@ import SequentialInterview from "./pages/SequentialInterview";
 import InterviewFlow from "./pages/InterviewFlow";
 import History from "./pages/History";
 import ResumeUpload from "./pages/ResumeUpload";
+import Settings from "./pages/Settings";
 import Landing from "./pages/Landing.jsx";
+import WatchDemo from "./pages/WatchDemo";
+
+const Layout = ({ children }) => {
+  const location = useLocation();
+  const hideNavbarRoutes = ["/login", "/register"];
+  const showNavbar = !hideNavbarRoutes.includes(location.pathname);
+
+  return (
+    <>
+      {showNavbar && <Navbar />}
+      <main className={`min-h-screen w-full overflow-x-hidden bg-slate-50 ${showNavbar ? "pt-24" : ""}`}>
+        {children}
+      </main>
+    </>
+  );
+};
 
 function App() {
   return (
     <BrowserRouter>
-      <Navbar />
-      <main className="pt-20 min-h-screen w-full overflow-x-hidden">
+      <Layout>
         <Routes>
           {/* Public Routes */}
           <Route path="/" element={<Landing />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/demo" element={<WatchDemo />} />
 
           {/* Protected Routes */}
           <Route
@@ -63,8 +80,16 @@ function App() {
               </ProtectedRoute>
             }
           />
+          <Route
+            path="/settings"
+            element={
+              <ProtectedRoute>
+                <Settings />
+              </ProtectedRoute>
+            }
+          />
         </Routes>
-      </main>
+      </Layout>
     </BrowserRouter>
   );
 }

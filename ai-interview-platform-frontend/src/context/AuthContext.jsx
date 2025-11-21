@@ -47,31 +47,6 @@ export const AuthProvider = ({ children }) => {
       setLoading(false);
     });
 
-    // Handle redirect result for Google sign-in fallback
-    // This runs once on mount to check if we're returning from a redirect
-    getRedirectResult(auth)
-      .then(async (result) => {
-        if (result?.user) {
-          await updateToken(result.user);
-          setUser(result.user);
-          // Sync user to backend
-          try {
-            const { syncUser } = await import("../api/authAPI.jsx");
-            await syncUser();
-          } catch (syncError) {
-            console.error("User sync error (non-critical):", syncError);
-          }
-          // Store flag to indicate we should redirect to dashboard
-          // The Login/Register pages will check this and redirect
-          sessionStorage.setItem("googleRedirectComplete", "true");
-        }
-      })
-      .catch((error) => {
-        if (error && error.code !== "auth/no-auth-event") {
-          console.error("Google redirect sign-in error:", error);
-        }
-      });
-
     // Set up token refresh every 50 minutes (tokens expire after 1 hour)
     const tokenRefreshInterval = setInterval(async () => {
       const currentUser = auth.currentUser;
