@@ -9,11 +9,18 @@ export const syncUser = async (req, res) => {
     // User is already created/updated by verifyFirebaseToken middleware
     const user = req.user;
     
+    // Update nickname if provided in request body (e.g. during registration)
+    if (req.body.nickname && user.nickname !== req.body.nickname) {
+      user.nickname = req.body.nickname;
+      await user.save();
+    }
+    
     res.json({
       success: true,
       user: {
         _id: user._id,
         name: user.name,
+        nickname: user.nickname,
         email: user.email,
         firebaseUid: user.firebaseUid,
         resumeUrl: user.resumeUrl,
