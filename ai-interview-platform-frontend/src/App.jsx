@@ -15,7 +15,7 @@ import WatchDemo from "./pages/WatchDemo";
 
 const Layout = ({ children }) => {
   const location = useLocation();
-  const hideNavbarRoutes = ["/login", "/register"];
+  const hideNavbarRoutes = ["/login", "/register", "/interview-flow", "/sequential-interview"];
   const showNavbar = !hideNavbarRoutes.includes(location.pathname);
 
   return (

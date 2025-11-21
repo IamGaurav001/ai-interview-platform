@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { getHistory, getWeakAreas } from "../api/interviewAPI";
@@ -16,7 +16,17 @@ import {
   Sparkles,
   Target,
   Zap,
+  Activity
 } from "lucide-react";
+import {
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer
+} from "recharts";
 import Loader from "../components/Loader";
 import { motion } from "framer-motion";
 
@@ -26,6 +36,9 @@ const Dashboard = () => {
     totalInterviews: 0,
     averageScore: 0,
     weakAreas: [],
+  });
+  const [chartData, setChartData] = useState({
+    trend: []
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -54,6 +67,9 @@ const Dashboard = () => {
           ? (allScores.reduce((a, b) => a + b, 0) / allScores.length).toFixed(1)
           : 0;
 
+      // Process Chart Data
+      processChartData(history);
+
       setStats({
         totalInterviews,
         averageScore: avgScore,
@@ -75,6 +91,33 @@ const Dashboard = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const processChartData = (historyData) => {
+    if (!historyData || !historyData.groupedHistory) return;
+
+    // 1. Trend Data (Last 10 sessions)
+    let allSessions = [];
+    Object.keys(historyData.groupedHistory).forEach(domain => {
+      historyData.groupedHistory[domain].forEach(session => {
+        allSessions.push({
+          date: new Date(session.createdAt || session.date),
+          score: parseFloat(session.score || 0),
+          domain: domain
+        });
+      });
+    });
+
+    // Sort by date ascending
+    allSessions.sort((a, b) => a.date - b.date);
+
+    const trend = allSessions.slice(-10).map(s => ({
+      date: s.date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+      score: s.score,
+      fullDate: s.date.toLocaleDateString()
+    }));
+
+    setChartData({ trend });
   };
 
   const userDisplayName =
@@ -145,71 +188,99 @@ const Dashboard = () => {
           </motion.div>
         )}
 
-        {/* Stats Cards */}
-        <motion.div
-          variants={itemVariants}
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6 mb-10"
-        >
-          <StatCard
-            title="Total Interviews"
-            value={stats.totalInterviews}
-            icon={Briefcase}
-            color="blue"
-            trend="+2 this week"
-          />
-          <StatCard
-            title="Average Score"
-            value={stats.averageScore > 0 ? `${stats.averageScore}/10` : "N/A"}
-            icon={TrendingUp}
-            color="green"
-            trend="Top 15%"
-          />
-          <div className="sm:col-span-2 lg:col-span-1">
-            <StatCard
-              title="Focus Areas"
-              value={stats.weakAreas.length}
-              icon={Target}
-              color="orange"
-              trend="Action needed"
-            />
-          </div>
-        </motion.div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Main Actions Column */}
-          <div className="lg:col-span-2 space-y-8">
-            {/* 1. Primary CTA */}
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+          {/* Main Content Column (Left - 75%) */}
+          <div className="lg:col-span-3 space-y-10">
+            
+            {/* 1. Start New Interview (Hero) */}
             <motion.div variants={itemVariants}>
               <Link
                 to="/upload-resume"
-                className="group relative block overflow-hidden rounded-2xl bg-orange-600 p-8 shadow-xl transition-all duration-300 hover:shadow-2xl hover:scale-[1.01]"
+                className="group relative block overflow-hidden rounded-3xl bg-gradient-to-br from-orange-600 to-orange-700 p-8 sm:p-10 shadow-xl transition-all duration-300 hover:shadow-2xl hover:scale-[1.01]"
               >
                 <div className="absolute top-0 right-0 -mt-10 -mr-10 h-64 w-64 rounded-full bg-white opacity-10 blur-3xl transition-all duration-500 group-hover:scale-125"></div>
-                <div className="relative z-10 flex items-center justify-between">
+                <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
                   <div>
                     <div className="inline-flex items-center gap-2 rounded-full bg-white/20 px-3 py-1 text-xs font-medium text-white backdrop-blur-md mb-4">
                       <Sparkles className="h-3 w-3" />
-                      <span>AI-Powered</span>
+                      <span>AI-Powered Interviewer</span>
                     </div>
-                    <h2 className="text-3xl font-bold text-white mb-3">
+                    <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
                       Start New Interview
                     </h2>
-                    <p className="text-lg text-blue-100 max-w-md">
-                      Practice with personalized AI-generated questions based on your resume and job description.
+                    <p className="text-lg text-orange-100 max-w-xl leading-relaxed">
+                      Practice with personalized AI-generated questions based on your resume. Get instant feedback and improve your confidence.
                     </p>
+                    
+                    <div className="mt-8 inline-flex items-center gap-3 px-6 py-3 bg-white text-orange-600 rounded-xl font-bold shadow-lg group-hover:bg-orange-50 transition-colors">
+                      <span>Begin Session</span>
+                      <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                    </div>
                   </div>
-                  <div className="hidden sm:flex h-16 w-16 items-center justify-center rounded-full bg-white/20 backdrop-blur-md transition-transform duration-300 group-hover:rotate-12">
-                    <Mic className="h-8 w-8 text-white" />
+                  <div className="hidden sm:flex h-24 w-24 items-center justify-center rounded-full bg-white/20 backdrop-blur-md transition-transform duration-300 group-hover:rotate-12 border border-white/30">
+                    <Mic className="h-10 w-10 text-white" />
                   </div>
-                </div>
-                <div className="mt-8 flex items-center gap-2 text-white font-semibold group-hover:gap-4 transition-all">
-                  <span>Begin Session</span>
-                  <ArrowRight className="h-5 w-5" />
                 </div>
               </Link>
             </motion.div>
 
-            {/* 2. Secondary Actions */}
+            {/* 2. Analytics Section */}
+            {chartData.trend.length > 0 && (
+              <motion.div variants={itemVariants}>
+                <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                  <div className="flex items-center justify-between mb-6">
+                    <div>
+                      <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+                        <Activity className="h-5 w-5 text-orange-600" />
+                        Performance Trend
+                      </h3>
+                      <p className="text-sm text-slate-500">Your scores over the last 10 sessions</p>
+                    </div>
+                  </div>
+                  <div className="h-64 w-full">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <AreaChart data={chartData.trend} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                        <defs>
+                          <linearGradient id="colorScore" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="#ea580c" stopOpacity={0.2}/>
+                            <stop offset="95%" stopColor="#ea580c" stopOpacity={0}/>
+                          </linearGradient>
+                        </defs>
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                        <XAxis 
+                          dataKey="date" 
+                          axisLine={false} 
+                          tickLine={false} 
+                          tick={{ fill: '#64748b', fontSize: 12 }} 
+                          dy={10}
+                        />
+                        <YAxis 
+                          domain={[0, 10]} 
+                          axisLine={false} 
+                          tickLine={false} 
+                          tick={{ fill: '#64748b', fontSize: 12 }} 
+                        />
+                        <Tooltip 
+                          contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                          cursor={{ stroke: '#ea580c', strokeWidth: 1, strokeDasharray: '4 4' }}
+                        />
+                        <Area 
+                          type="monotone" 
+                          dataKey="score" 
+                          stroke="#ea580c" 
+                          strokeWidth={3}
+                          fillOpacity={1} 
+                          fill="url(#colorScore)" 
+                          activeDot={{ r: 6, strokeWidth: 0, fill: '#ea580c' }}
+                        />
+                      </AreaChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
+            {/* 3. Quick Actions */}
             <motion.div variants={itemVariants}>
               <h3 className="text-xl font-bold text-slate-800 mb-4 flex items-center gap-2">
                 <Zap className="h-5 w-5 text-amber-500" />
@@ -238,9 +309,35 @@ const Dashboard = () => {
             </motion.div>
           </div>
 
-          {/* Sidebar Column */}
-          <div className="lg:col-span-1 space-y-8">
-            {/* 3. Weak Areas */}
+          {/* Sidebar Column (Right - 25%) */}
+          <div className="lg:col-span-1 space-y-6">
+            
+            {/* 1. Stats Stack */}
+            <motion.div variants={itemVariants} className="space-y-4">
+              <StatCard
+                title="Total Interviews"
+                value={stats.totalInterviews}
+                icon={Briefcase}
+                color="blue"
+                trend="+2 this week"
+              />
+              <StatCard
+                title="Average Score"
+                value={stats.averageScore > 0 ? `${stats.averageScore}/10` : "N/A"}
+                icon={TrendingUp}
+                color="green"
+                trend="Top 15%"
+              />
+              <StatCard
+                title="Focus Areas"
+                value={stats.weakAreas.length}
+                icon={Target}
+                color="orange"
+                trend="Action needed"
+              />
+            </motion.div>
+
+            {/* 2. Weak Areas */}
             <motion.div
               variants={itemVariants}
               className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6"
@@ -302,7 +399,7 @@ const Dashboard = () => {
               )}
             </motion.div>
 
-            {/* 4. Quick Tips */}
+            {/* 3. Quick Tips */}
             <motion.div
               variants={itemVariants}
               className="bg-blue-800 rounded-2xl shadow-lg p-6 text-white"

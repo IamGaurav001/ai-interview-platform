@@ -16,10 +16,12 @@ import {
   Mic,
   Square,
   StopCircle,
-  AlertCircle
+  AlertCircle,
+  Bot
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import AudioVisualizer from "../components/AudioVisualizer";
+import SpeakingAvatar from "../components/SpeakingAvatar";
 
 const SequentialInterview = () => {
   const navigate = useNavigate();
@@ -568,9 +570,13 @@ const SequentialInterview = () => {
             <div className="flex items-start justify-between gap-6 mb-8">
               <div className="flex-1">
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="h-10 w-10 bg-orange-100 rounded-lg flex items-center justify-center">
-                    <MessageSquare className="h-5 w-5 text-orange-600" />
-                  </div>
+                  <SpeakingAvatar 
+                    isSpeaking={
+                      playingAudio[`question_${currentQuestionIndex}`] || 
+                      playingAudio[`feedback_${currentQuestionIndex}`]
+                    } 
+                    size="small" 
+                  />
                   <h2 className="text-xl font-bold text-slate-900">Question {currentQuestionIndex + 1}</h2>
                 </div>
                 <p className="text-xl text-slate-800 leading-relaxed font-medium">{currentQuestion}</p>
@@ -617,6 +623,17 @@ const SequentialInterview = () => {
 
             {/* Answer Input */}
             <div className="space-y-4">
+              {/* Error Display - Moved to top for visibility */}
+              {error && (
+                <motion.div 
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="bg-red-50 border-2 border-red-200 text-red-700 px-5 py-4 rounded-xl flex items-center gap-3 mb-2 shadow-sm"
+                >
+                  <AlertCircle className="h-5 w-5 flex-shrink-0" />
+                  <span className="font-medium">{error}</span>
+                </motion.div>
+              )}
               <div className="flex items-center justify-between">
                 <label className="block text-sm font-semibold text-slate-700">Your Answer</label>
                 <div className="flex items-center gap-3">
@@ -705,16 +722,7 @@ const SequentialInterview = () => {
               </div>
             </div>
 
-            {error && (
-              <motion.div 
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="mt-6 bg-red-50 border border-red-200 text-red-700 px-6 py-4 rounded-xl flex items-center gap-3"
-              >
-                <AlertCircle className="h-5 w-5 flex-shrink-0" />
-                <span className="font-medium">{error}</span>
-              </motion.div>
-            )}
+
 
             {/* Previous Answer Feedback */}
             {hasAnswerForCurrent && hasFeedbackForCurrent && (

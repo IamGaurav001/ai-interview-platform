@@ -113,7 +113,7 @@ const Register = () => {
         <div className="absolute inset-0 bg-blue-900/40 z-10" />
         <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1557683316-973673baf926?q=80&w=2029&auto=format&fit=crop')] bg-cover bg-center opacity-20" />
         
-        <div className="relative z-20 flex flex-col justify-between h-full p-12 text-white">
+        <div className="relative z-20 flex flex-col justify-between h-full p-8 text-white">
           <motion.div 
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -128,12 +128,12 @@ const Register = () => {
             </Link>
           </motion.div>
 
-          <div className="space-y-6 max-w-lg">
+          <div className="space-y-4 max-w-lg">
             <motion.h1 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.2 }}
-              className="text-4xl font-bold leading-tight"
+              className="text-3xl font-bold leading-tight"
             >
               Start your journey to career success today
             </motion.h1>
@@ -141,7 +141,7 @@ const Register = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.3 }}
-              className="text-lg text-slate-300"
+              className="text-base text-slate-300"
             >
               Create an account to access personalized interview simulations, detailed feedback, and progress tracking.
             </motion.p>
@@ -150,15 +150,15 @@ const Register = () => {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.5, delay: 0.4 }}
-              className="flex gap-4 pt-4"
+              className="flex gap-3 pt-2"
             >
               {[
                 "AI-Powered Mock Interviews",
                 "Detailed Feedback",
                 "Progress Tracking"
               ].map((feature, index) => (
-                <div key={index} className="flex items-center gap-2 text-sm text-slate-300 bg-white/5 px-3 py-1.5 rounded-full backdrop-blur-sm border border-white/10">
-                  <CheckCircle2 className="h-4 w-4 text-primary-400" />
+                <div key={index} className="flex items-center gap-2 text-xs text-slate-300 bg-white/5 px-2.5 py-1 rounded-full backdrop-blur-sm border border-white/10">
+                  <CheckCircle2 className="h-3.5 w-3.5 text-primary-400" />
                   <span>{feature}</span>
                 </div>
               ))}
@@ -169,7 +169,7 @@ const Register = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.5, delay: 0.5 }}
-            className="text-sm text-slate-400"
+            className="text-xs text-slate-400"
           >
             © 2024 AI Interview Platform. All rights reserved.
           </motion.div>
@@ -177,18 +177,26 @@ const Register = () => {
       </div>
 
       {/* Right Side - Register Form */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-4 sm:p-8 lg:p-12 bg-white">
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-4 bg-white relative">
+        {/* Mobile Back Button */}
+        <div className="absolute top-4 left-4 lg:hidden">
+          <Link to="/" className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors p-2">
+            <ArrowLeft className="h-5 w-5" />
+            <span className="font-medium text-sm">Back</span>
+          </Link>
+        </div>
+
         <motion.div 
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.5 }}
-          className="w-full max-w-md space-y-8"
+          className="w-full max-w-md space-y-4 mt-8 lg:mt-0"
         >
           <div className="text-center lg:text-left">
-            <h2 className="text-3xl font-bold tracking-tight text-gray-900">
+            <h2 className="text-2xl font-bold tracking-tight text-gray-900">
               Create Account
             </h2>
-            <p className="mt-2 text-sm text-gray-600">
+            <p className="mt-1 text-sm text-gray-600">
               Start your interview preparation journey
             </p>
           </div>
@@ -197,7 +205,7 @@ const Register = () => {
             <motion.div 
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: "auto" }}
-              className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm flex items-start gap-2"
+              className="bg-red-50 border border-red-200 text-red-700 px-3 py-2 rounded-lg text-sm flex items-start gap-2"
             >
               <div className="mt-0.5">
                 <svg className="h-4 w-4 text-red-500" viewBox="0 0 20 20" fill="currentColor">
@@ -208,15 +216,15 @@ const Register = () => {
             </motion.div>
           )}
 
-          <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-            <div className="space-y-5">
+          <form className="mt-4 space-y-4" onSubmit={handleSubmit}>
+            <div className="space-y-3">
               <div>
-                <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1.5">
+                <label htmlFor="name" className="block text-xs font-medium text-gray-700 mb-1">
                   Full Name
                 </label>
                 <div className="relative group">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <User className="h-5 w-5 text-gray-400 group-focus-within:text-primary-600 transition-colors" />
+                    <User className="h-4 w-4 text-gray-400 group-focus-within:text-primary-600 transition-colors" />
                   </div>
                   <input
                     id="name"
@@ -225,19 +233,19 @@ const Register = () => {
                     required
                     value={formData.name}
                     onChange={handleChange}
-                    className="block w-full pl-10 pr-3 py-3 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all bg-gray-50 focus:bg-white"
+                    className="block w-full pl-9 pr-3 py-2 border border-gray-200 rounded-lg text-base md:text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all bg-gray-50 focus:bg-white"
                     placeholder="John Doe"
                   />
                 </div>
               </div>
 
               <div>
-                <label htmlFor="nickname" className="block text-sm font-medium text-gray-700 mb-1.5">
+                <label htmlFor="nickname" className="block text-xs font-medium text-gray-700 mb-1">
                   Nickname (Optional)
                 </label>
                 <div className="relative group">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <User className="h-5 w-5 text-gray-400 group-focus-within:text-primary-600 transition-colors" />
+                    <User className="h-4 w-4 text-gray-400 group-focus-within:text-primary-600 transition-colors" />
                   </div>
                   <input
                     id="nickname"
@@ -245,19 +253,19 @@ const Register = () => {
                     type="text"
                     value={formData.nickname}
                     onChange={handleChange}
-                    className="block w-full pl-10 pr-3 py-3 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all bg-gray-50 focus:bg-white"
+                    className="block w-full pl-9 pr-3 py-2 border border-gray-200 rounded-lg text-base md:text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all bg-gray-50 focus:bg-white"
                     placeholder="CoolDev"
                   />
                 </div>
               </div>
 
               <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1.5">
+                <label htmlFor="email" className="block text-xs font-medium text-gray-700 mb-1">
                   Email Address
                 </label>
                 <div className="relative group">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Mail className="h-5 w-5 text-gray-400 group-focus-within:text-primary-600 transition-colors" />
+                    <Mail className="h-4 w-4 text-gray-400 group-focus-within:text-primary-600 transition-colors" />
                   </div>
                   <input
                     id="email"
@@ -267,53 +275,55 @@ const Register = () => {
                     required
                     value={formData.email}
                     onChange={handleChange}
-                    className="block w-full pl-10 pr-3 py-3 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all bg-gray-50 focus:bg-white"
+                    className="block w-full pl-9 pr-3 py-2 border border-gray-200 rounded-lg text-base md:text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all bg-gray-50 focus:bg-white"
                     placeholder="you@example.com"
                   />
                 </div>
               </div>
 
-              <div>
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1.5">
-                  Password
-                </label>
-                <div className="relative group">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Lock className="h-5 w-5 text-gray-400 group-focus-within:text-primary-600 transition-colors" />
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label htmlFor="password" className="block text-xs font-medium text-gray-700 mb-1">
+                    Password
+                  </label>
+                  <div className="relative group">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <Lock className="h-4 w-4 text-gray-400 group-focus-within:text-primary-600 transition-colors" />
+                    </div>
+                    <input
+                      id="password"
+                      name="password"
+                      type="password"
+                      autoComplete="new-password"
+                      required
+                      value={formData.password}
+                      onChange={handleChange}
+                      className="block w-full pl-9 pr-3 py-2 border border-gray-200 rounded-lg text-base md:text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all bg-gray-50 focus:bg-white"
+                      placeholder="••••••••"
+                    />
                   </div>
-                  <input
-                    id="password"
-                    name="password"
-                    type="password"
-                    autoComplete="new-password"
-                    required
-                    value={formData.password}
-                    onChange={handleChange}
-                    className="block w-full pl-10 pr-3 py-3 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all bg-gray-50 focus:bg-white"
-                    placeholder="••••••••"
-                  />
                 </div>
-              </div>
 
-              <div>
-                <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1.5">
-                  Confirm Password
-                </label>
-                <div className="relative group">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Lock className="h-5 w-5 text-gray-400 group-focus-within:text-primary-600 transition-colors" />
+                <div>
+                  <label htmlFor="confirmPassword" className="block text-xs font-medium text-gray-700 mb-1">
+                    Confirm Password
+                  </label>
+                  <div className="relative group">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <Lock className="h-4 w-4 text-gray-400 group-focus-within:text-primary-600 transition-colors" />
+                    </div>
+                    <input
+                      id="confirmPassword"
+                      name="confirmPassword"
+                      type="password"
+                      autoComplete="new-password"
+                      required
+                      value={formData.confirmPassword}
+                      onChange={handleChange}
+                      className="block w-full pl-9 pr-3 py-2 border border-gray-200 rounded-lg text-base md:text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all bg-gray-50 focus:bg-white"
+                      placeholder="••••••••"
+                    />
                   </div>
-                  <input
-                    id="confirmPassword"
-                    name="confirmPassword"
-                    type="password"
-                    autoComplete="new-password"
-                    required
-                    value={formData.confirmPassword}
-                    onChange={handleChange}
-                    className="block w-full pl-10 pr-3 py-3 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all bg-gray-50 focus:bg-white"
-                    placeholder="••••••••"
-                  />
                 </div>
               </div>
             </div>
@@ -321,17 +331,17 @@ const Register = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full relative flex justify-center items-center py-3 px-4 border border-transparent rounded-xl shadow-sm text-sm font-semibold text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-600 disabled:opacity-70 disabled:cursor-not-allowed transition-all transform active:scale-[0.98]"
+              className="w-full relative flex justify-center items-center py-2.5 px-4 border border-transparent rounded-lg shadow-sm text-sm font-semibold text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-600 disabled:opacity-70 disabled:cursor-not-allowed transition-all transform active:scale-[0.98]"
             >
               {loading ? (
                 <>
-                  <Loader2 className="animate-spin h-5 w-5 mr-2" />
+                  <Loader2 className="animate-spin h-4 w-4 mr-2" />
                   Creating Account...
                 </>
               ) : (
                 <>
                   <div className="absolute left-4 inset-y-0 flex items-center">
-                    <ArrowRight className="h-5 w-5 text-white/80" />
+                    <ArrowRight className="h-4 w-4 text-white/80" />
                   </div>
                   Create Account
                 </>
@@ -343,7 +353,7 @@ const Register = () => {
             <div className="absolute inset-0 flex items-center">
               <div className="w-full border-t border-gray-200" />
             </div>
-            <div className="relative flex justify-center text-sm">
+            <div className="relative flex justify-center text-xs">
               <span className="px-4 bg-white text-gray-500">Or continue with</span>
             </div>
           </div>
@@ -352,7 +362,7 @@ const Register = () => {
             type="button"
             onClick={handleGoogleSignup}
             disabled={loading}
-            className="w-full flex items-center justify-center gap-3 py-3 px-4 border border-gray-200 rounded-xl shadow-sm bg-white text-gray-700 hover:bg-gray-50 hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-200 disabled:opacity-70 disabled:cursor-not-allowed transition-all transform active:scale-[0.98]"
+            className="w-full flex items-center justify-center gap-3 py-2.5 px-4 border border-gray-200 rounded-lg shadow-sm bg-white text-gray-700 hover:bg-gray-50 hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-200 disabled:opacity-70 disabled:cursor-not-allowed transition-all transform active:scale-[0.98]"
           >
             <svg className="h-5 w-5" viewBox="0 0 24 24" aria-hidden="true">
               <path
@@ -372,7 +382,7 @@ const Register = () => {
                 d="M12 5.38c1.62 0 3.07.56 4.21 1.66l3.15-3.15C17.46 1.64 14.97.5 12 .5 7.7.5 3.99 3.02 2.18 7.05l3.7 2.84c.86-2.59 3.27-4.51 6.12-4.51z"
               />
             </svg>
-            <span className="font-medium">Sign up with Google</span>
+            <span className="font-medium text-sm">Sign up with Google</span>
           </button>
 
           <div className="text-center">

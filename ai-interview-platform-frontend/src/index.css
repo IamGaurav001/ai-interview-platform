@@ -147,10 +147,9 @@ button[class*="bg-primary"]:active {
   transform: scale(0.98);
 }
 
-/* Fix for buttons that might be hidden */
-button:not([disabled]) {
+/* Fix for buttons that might be hidden - exclude navigation buttons */
+button[class*="bg-primary"]:not([disabled]) {
   opacity: 1 !important;
-  visibility: visible !important;
 }
 
 /* Ensure text is visible on colored backgrounds */

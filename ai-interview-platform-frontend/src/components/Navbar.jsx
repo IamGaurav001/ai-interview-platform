@@ -24,6 +24,7 @@ const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
+  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
 
   const dropdownRef = useRef(null);
 
@@ -31,6 +32,15 @@ const Navbar = () => {
   const userDisplayName =
     (user?.displayName && user.displayName.trim()) || user?.email || "User";
   const userInitials = userDisplayName.slice(0, 2).toUpperCase();
+
+  // Handle window resize
+  useEffect(() => {
+    const handleResize = () => {
+      setWindowWidth(window.innerWidth);
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   // Handle scroll effect
   useEffect(() => {
@@ -95,7 +105,7 @@ const Navbar = () => {
             >
               <img
                 src={logo}
-                alt="InterVueAI"
+                alt="PrepHire"
                 className="h-9 w-auto transition-transform duration-300 group-hover:scale-105"
               />
             </Link>
@@ -199,16 +209,18 @@ const Navbar = () => {
                   </div>
 
                   {/* Mobile Menu Toggle */}
-                  <button
-                    onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                    className="md:hidden p-2 rounded-xl text-gray-600 hover:bg-gray-100 active:scale-95 transition-transform"
-                  >
-                    {mobileMenuOpen ? (
-                      <X className="h-6 w-6" />
-                    ) : (
-                      <Menu className="h-6 w-6" />
-                    )}
-                  </button>
+                  {windowWidth < 768 && (
+                    <button
+                      onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                      className="p-2 rounded-xl text-gray-600 hover:bg-gray-100 active:scale-95 transition-transform"
+                    >
+                      {mobileMenuOpen ? (
+                        <X className="h-6 w-6" />
+                      ) : (
+                        <Menu className="h-6 w-6" />
+                      )}
+                    </button>
+                  )}
                 </div>
               ) : (
                 <div className="flex items-center gap-3">
@@ -232,13 +244,13 @@ const Navbar = () => {
 
         {/* Mobile Menu Overlay */}
         <AnimatePresence>
-          {mobileMenuOpen && (
+          {mobileMenuOpen && windowWidth < 768 && (
             <motion.div
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
               transition={{ duration: 0.3, ease: "easeInOut" }}
-              className="md:hidden border-t border-gray-100 bg-white/50 backdrop-blur-xl rounded-b-2xl overflow-hidden"
+              className="border-t border-gray-100 bg-white/50 backdrop-blur-xl rounded-b-2xl overflow-hidden"
             >
               <div className="px-4 py-6 space-y-4">
                 {user && (
@@ -275,6 +287,20 @@ const Navbar = () => {
                           </Link>
                         );
                       })}
+                      
+                      {/* Settings Link */}
+                      <Link
+                        to="/settings"
+                        className={`flex items-center gap-3 px-4 py-3 rounded-xl text-base font-medium transition-colors ${
+                          isActive("/settings")
+                            ? "bg-primary-50 text-primary-700"
+                            : "text-gray-600 hover:bg-gray-50/80 hover:text-gray-900"
+                        }`}
+                      >
+                        <Settings className="h-5 w-5" />
+                        Settings
+                      </Link>
+                      
                       <button
                         onClick={handleLogout}
                         className="w-full flex items-center gap-3 px-4 py-3 mt-4 rounded-xl text-base font-medium text-red-600 hover:bg-red-50/80 transition-colors"

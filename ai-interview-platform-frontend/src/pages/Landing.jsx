@@ -2,6 +2,7 @@ import React, { useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { useAuth } from "../context/AuthContext";
+import logo from "../assets/intervueai-logo.png";
 import { 
   Mic, 
   FileText, 
@@ -115,6 +116,30 @@ const Landing = () => {
   const y1 = useTransform(scrollY, [0, 500], [0, 200]);
   const y2 = useTransform(scrollY, [0, 500], [0, -150]);
 
+  const mockInterviews = [
+    {
+      question: "Can you describe a challenging project you worked on and how you overcame obstacles?",
+      answer: "In my previous role, we faced a critical database scaling issue..."
+    },
+    {
+      question: "How do you handle constructive criticism?",
+      answer: "I view it as an opportunity to grow and improve my skills..."
+    },
+    {
+      question: "Tell me about a time you showed leadership.",
+      answer: "I took the initiative to organize a team hackathon..."
+    }
+  ];
+
+  const [currentInterviewIndex, setCurrentInterviewIndex] = React.useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentInterviewIndex((prevIndex) => (prevIndex + 1) % mockInterviews.length);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, []);
+
   useEffect(() => {
     if (user) {
       navigate("/dashboard", { replace: true });
@@ -124,7 +149,7 @@ const Landing = () => {
   return (
     <>
       {/* Hero Section */}
-      <section className="relative min-h-[90vh] flex items-center justify-center px-4 sm:px-6 lg:px-8 overflow-hidden">
+      <section className="relative min-h-[90vh] flex items-center justify-center px-2 sm:px-6 lg:px-8 overflow-hidden">
           {/* Animated Background Elements */}
           <motion.div style={{ y: y1 }} className="absolute top-20 left-10 w-72 h-72 bg-blue-300/30 rounded-full blur-3xl" />
           <motion.div style={{ y: y2 }} className="absolute bottom-20 right-10 w-96 h-96 bg-orange-400/30 rounded-full blur-3xl" />
@@ -205,7 +230,7 @@ const Landing = () => {
                         <Brain className="h-6 w-6 text-orange-600" />
                       </div>
                       <div className="bg-white p-4 rounded-2xl rounded-tl-none shadow-sm border border-slate-200 max-w-md">
-                        <p className="text-sm text-slate-700 font-medium">Can you describe a challenging project you worked on and how you overcame obstacles?</p>
+                        <p className="text-sm text-slate-700 font-medium">{mockInterviews[currentInterviewIndex].question}</p>
                       </div>
                     </div>
 
@@ -216,7 +241,7 @@ const Landing = () => {
                       </div>
                       <div className="bg-orange-600 p-4 rounded-2xl rounded-tr-none shadow-md max-w-md">
                         <p className="text-sm text-white">
-                          In my previous role, we faced a critical database scaling issue...
+                          {mockInterviews[currentInterviewIndex].answer}
                           <motion.span 
                             animate={{ opacity: [0, 1, 0] }} 
                             transition={{ repeat: Infinity, duration: 0.8 }}
@@ -402,7 +427,7 @@ const Landing = () => {
                 Loved by job seekers
               </h2>
               <p className="text-lg text-slate-600">
-                Join thousands of candidates who aced their interviews with IntervueAI.
+                Join thousands of candidates who aced their interviews with PrepHire.
               </p>
             </motion.div>
 
@@ -476,10 +501,7 @@ const Landing = () => {
           <div className="grid md:grid-cols-4 gap-8 mb-8">
             <div className="col-span-1 md:col-span-2">
               <Link to="/" className="flex items-center gap-2 mb-4">
-                <div className="h-8 w-8 bg-orange-600 rounded-lg flex items-center justify-center text-white font-bold">
-                  I
-                </div>
-                <span className="text-xl font-bold text-slate-900">IntervueAI</span>
+              <img src={logo} alt="Logo" className="h-8 w-auto" />
               </Link>
               <p className="text-slate-500 max-w-xs">
                 The smartest way to prepare for your next interview. AI-powered feedback, tailored to you.
@@ -504,7 +526,7 @@ const Landing = () => {
           </div>
           <div className="pt-8 border-t border-slate-100 flex flex-col md:flex-row justify-between items-center gap-4">
             <p className="text-sm text-slate-400">
-              © {new Date().getFullYear()} IntervueAI. All rights reserved.
+              © {new Date().getFullYear()} PrepHire. All rights reserved.
             </p>
             <div className="flex gap-6 text-sm text-slate-500">
               <Link to="/privacy" className="hover:text-orange-600">Privacy Policy</Link>
