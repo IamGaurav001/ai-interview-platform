@@ -16,7 +16,9 @@ import {
   Sparkles,
   Target,
   Zap,
-  Activity
+  Activity,
+  MessageCircle,
+  Brain
 } from "lucide-react";
 import {
   AreaChart,
@@ -29,7 +31,7 @@ import {
 } from "recharts";
 import Loader from "../components/Loader";
 import PageLayout from "../components/PageLayout";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 
 const Dashboard = () => {
   const { user } = useAuth();
@@ -43,6 +45,18 @@ const Dashboard = () => {
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [currentQAIndex, setCurrentQAIndex] = useState(0);
+  const [recentQAs, setRecentQAs] = useState([]);
+
+  // Auto-rotate Q&A preview every 5 seconds
+  useEffect(() => {
+    if (recentQAs.length > 1) {
+      const interval = setInterval(() => {
+        setCurrentQAIndex((prev) => (prev + 1) % recentQAs.length);
+      }, 5000);
+      return () => clearInterval(interval);
+    }
+  }, [recentQAs.length]);
 
   useEffect(() => {
     fetchDashboardData();
@@ -57,7 +71,7 @@ const Dashboard = () => {
       ]);
 
       const history = historyRes.data;
-      const weakAreas = weakAreasRes.data.analysis || [];
+      const apiWeakAreas = weakAreasRes.data.analysis || [];
 
       // Calculate stats
       const totalInterviews = history.total || 0;
@@ -71,10 +85,22 @@ const Dashboard = () => {
       // Process Chart Data
       processChartData(history);
 
+      // Extract specific weaknesses from interview feedback
+      const specificWeaknesses = extractWeaknessesFromHistory(history);
+      
+      // Combine API weak areas with extracted weaknesses, prioritize specific ones
+      let combinedWeaknesses = specificWeaknesses.length > 0 
+        ? specificWeaknesses 
+        : apiWeakAreas;
+
+      // Extract recent Q&A pairs for preview
+      const qaList = extractRecentQAs(history);
+      setRecentQAs(qaList);
+
       setStats({
         totalInterviews,
         averageScore: avgScore,
-        weakAreas: weakAreas.slice(0, 3), // Still get top 3
+        weakAreas: combinedWeaknesses.slice(0, 5), // Top 5 weaknesses
       });
     } catch (err) {
       console.error("Dashboard error:", err);
@@ -92,6 +118,141 @@ const Dashboard = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const extractWeaknessesFromHistory = (historyData) => {
+    console.log('📊 Extracting weaknesses from history:', historyData);
+    
+    if (!historyData || !historyData.groupedHistory) {
+      console.log('❌ No grouped history found');
+      return [];
+    }
+
+    const weaknessMap = new Map();
+    let totalFeedbackItems = 0;
+
+    // Iterate through all sessions and extract weaknesses from feedback
+    Object.keys(historyData.groupedHistory).forEach(domain => {
+      console.log(`🔍 Processing domain: ${domain}`);
+      
+      historyData.groupedHistory[domain].forEach((session, idx) => {
+        console.log(`  📝 Session ${idx + 1}:`, session);
+        
+        if (session.feedback && Array.isArray(session.feedback)) {
+          console.log(`    ✅ Found ${session.feedback.length} feedback items`);
+          totalFeedbackItems += session.feedback.length;
+          
+          session.feedback.forEach((fb, fbIdx) => {
+            console.log(`      📋 Feedback ${fbIdx + 1}:`, fb);
+            
+            // Extract areas with low scores (below 7 for more sensitivity)
+            const areas = [];
+            
+            if (fb.correctness !== undefined && fb.correctness < 7) {
+              areas.push({ name: 'Technical Accuracy', score: fb.correctness });
+              console.log(`        ⚠️ Low correctness: ${fb.correctness}`);
+            }
+            if (fb.clarity !== undefined && fb.clarity < 7) {
+              areas.push({ name: 'Communication Clarity', score: fb.clarity });
+              console.log(`        ⚠️ Low clarity: ${fb.clarity}`);
+            }
+            if (fb.confidence !== undefined && fb.confidence < 7) {
+              areas.push({ name: 'Confidence & Delivery', score: fb.confidence });
+              console.log(`        ⚠️ Low confidence: ${fb.confidence}`);
+            }
+
+            // Also check for specific weakness mentions in feedback text
+            if (fb.overall_feedback) {
+              const feedback = fb.overall_feedback.toLowerCase();
+              console.log(`        💬 Feedback text: ${feedback.substring(0, 100)}...`);
+              
+              if (feedback.includes('structure') || feedback.includes('organization')) {
+                areas.push({ name: 'Answer Structure', score: fb.clarity || 5 });
+              }
+              if (feedback.includes('example') || feedback.includes('specific')) {
+                areas.push({ name: 'Providing Examples', score: fb.correctness || 5 });
+              }
+              if (feedback.includes('depth') || feedback.includes('detail')) {
+                areas.push({ name: 'Answer Depth', score: fb.correctness || 5 });
+              }
+              if (feedback.includes('concise') || feedback.includes('rambling')) {
+                areas.push({ name: 'Conciseness', score: fb.clarity || 5 });
+              }
+              if (feedback.includes('technical') && feedback.includes('knowledge')) {
+                areas.push({ name: 'Technical Knowledge', score: fb.correctness || 5 });
+              }
+            }
+
+            console.log(`        🎯 Extracted ${areas.length} weakness areas`);
+
+            // Add to weakness map
+            areas.forEach(area => {
+              if (weaknessMap.has(area.name)) {
+                const existing = weaknessMap.get(area.name);
+                existing.totalScore += area.score;
+                existing.count += 1;
+              } else {
+                weaknessMap.set(area.name, {
+                  _id: area.name,
+                  totalScore: area.score,
+                  count: 1,
+                  attempts: 1
+                });
+              }
+            });
+          });
+        } else {
+          console.log(`    ❌ No feedback array found`);
+        }
+      });
+    });
+
+    console.log(`📈 Total feedback items processed: ${totalFeedbackItems}`);
+    console.log(`📊 Weakness map size: ${weaknessMap.size}`);
+
+    // Convert to array and calculate average scores
+    const weaknesses = Array.from(weaknessMap.values()).map(w => ({
+      _id: w._id,
+      avgScore: parseFloat((w.totalScore / w.count).toFixed(1)),
+      attempts: w.count
+    }));
+
+    // Sort by lowest score first
+    weaknesses.sort((a, b) => a.avgScore - b.avgScore);
+
+    console.log('✅ Final weaknesses:', weaknesses);
+    return weaknesses;
+  };
+
+  const extractRecentQAs = (historyData) => {
+    if (!historyData || !historyData.groupedHistory) {
+      return [];
+    }
+
+    const qaList = [];
+    
+    // Iterate through all sessions and extract Q&A pairs
+    Object.keys(historyData.groupedHistory).forEach(domain => {
+      historyData.groupedHistory[domain].forEach(session => {
+        if (session.feedback && Array.isArray(session.feedback)) {
+          session.feedback.forEach(fb => {
+            if (fb.question && fb.user_answer) {
+              qaList.push({
+                question: fb.question,
+                answer: fb.user_answer,
+                score: fb.overall_score || ((fb.correctness + fb.clarity + fb.confidence) / 3).toFixed(1),
+                clarity: fb.clarity,
+                pace: fb.confidence >= 7 ? 'Optimal' : 'Needs Work',
+                confidence: fb.confidence >= 7 ? 'Strong' : fb.confidence >= 5 ? 'Moderate' : 'Weak'
+              });
+            }
+          });
+        }
+      });
+    });
+
+    // Return the 5 most recent Q&As
+    return qaList.slice(-5);
   };
 
   const processChartData = (historyData) => {
@@ -228,19 +389,174 @@ const Dashboard = () => {
               </Link>
             </motion.div>
 
-            {/* 2. Analytics Section */}
-            {chartData.trend.length > 0 && (
+            {/* 2. Recent Interview Preview - Animated Q&A */}
+            {recentQAs.length > 0 && (
               <motion.div variants={itemVariants}>
-                <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-                  <div className="flex items-center justify-between mb-6">
-                    <div>
-                      <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-                        <Activity className="h-5 w-5 text-indigo-600" />
-                        Performance Trend
-                      </h3>
-                      <p className="text-sm text-slate-500">Your scores over the last 10 sessions</p>
+                <div className="bg-gradient-to-br from-slate-50 to-indigo-50 p-5 rounded-2xl shadow-lg border border-indigo-100 relative overflow-hidden">
+                  {/* Animated background elements */}
+                  <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-200 rounded-full blur-3xl opacity-20 animate-pulse"></div>
+                  <div className="absolute bottom-0 left-0 w-48 h-48 bg-blue-200 rounded-full blur-3xl opacity-20 animate-pulse" style={{ animationDelay: '1s' }}></div>
+                  
+                  <div className="relative z-10">
+                    <div className="flex items-center justify-between mb-4">
+                      <div>
+                        <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+                          <Brain className="h-6 w-6 text-indigo-600" />
+                          Recent Interview Preview
+                        </h3>
+                        <p className="text-sm text-slate-500 mt-1">Auto-rotating through your latest sessions</p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {recentQAs.map((_, idx) => (
+                          <motion.div
+                            key={idx}
+                            className={`h-2 rounded-full transition-all duration-300 ${
+                              idx === currentQAIndex ? 'w-8 bg-indigo-600' : 'w-2 bg-slate-300'
+                            }`}
+                            animate={{
+                              scale: idx === currentQAIndex ? 1.2 : 1
+                            }}
+                          />
+                        ))}
+                      </div>
                     </div>
+
+                    <AnimatePresence mode="wait">
+                      <motion.div
+                        key={currentQAIndex}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -20 }}
+                        transition={{ duration: 0.5 }}
+                        className="grid grid-cols-1 lg:grid-cols-3 gap-4"
+                      >
+                        {/* Question & Answer Section */}
+                        <div className="lg:col-span-2 space-y-3">
+                          {/* Question */}
+                          <div className="bg-white rounded-xl p-4 shadow-sm border border-slate-200">
+                            <div className="flex items-start gap-3">
+                              <div className="h-8 w-8 bg-indigo-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                                <MessageCircle className="h-4 w-4 text-indigo-600" />
+                              </div>
+                              <div className="flex-1">
+                                <h4 className="text-xs font-bold text-indigo-600 mb-1.5">QUESTION</h4>
+                                <p className="text-base text-slate-800 leading-relaxed">
+                                  {recentQAs[currentQAIndex].question}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Answer */}
+                          <div className="bg-white rounded-xl p-4 shadow-sm border border-slate-200">
+                            <div className="flex items-start gap-3">
+                              <div className="h-8 w-8 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                                <Mic className="h-4 w-4 text-blue-600" />
+                              </div>
+                              <div className="flex-1">
+                                <h4 className="text-xs font-bold text-blue-600 mb-1.5">YOUR ANSWER</h4>
+                                <p className="text-sm text-slate-700 leading-relaxed line-clamp-3">
+                                  {recentQAs[currentQAIndex].answer}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Score Card with Circular Progress */}
+                        <div className="bg-white rounded-xl p-4 shadow-sm border border-slate-200 flex flex-col items-center justify-center">
+                          <div className="relative w-32 h-32 mb-4">
+                            {/* Animated circular progress */}
+                            <svg className="w-full h-full transform -rotate-90">
+                              <circle
+                                cx="64"
+                                cy="64"
+                                r="56"
+                                stroke="#f1f5f9"
+                                strokeWidth="10"
+                                fill="none"
+                              />
+                              <motion.circle
+                                cx="64"
+                                cy="64"
+                                r="56"
+                                stroke="url(#scoreGradient)"
+                                strokeWidth="10"
+                                fill="none"
+                                strokeLinecap="round"
+                                initial={{ strokeDasharray: "0 440" }}
+                                animate={{ 
+                                  strokeDasharray: `${(recentQAs[currentQAIndex].score / 10) * 352} 352` 
+                                }}
+                                transition={{ duration: 1, ease: "easeOut" }}
+                              />
+                              <defs>
+                                <linearGradient id="scoreGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                  <stop offset="0%" stopColor="#10b981" />
+                                  <stop offset="100%" stopColor="#3b82f6" />
+                                </linearGradient>
+                              </defs>
+                            </svg>
+                            <div className="absolute inset-0 flex flex-col items-center justify-center">
+                              <motion.div
+                                key={`score-${currentQAIndex}`}
+                                initial={{ scale: 0 }}
+                                animate={{ scale: 1 }}
+                                transition={{ delay: 0.3, type: "spring" }}
+                                className="text-center"
+                              >
+                                <div className="text-3xl font-bold bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">
+                                  {recentQAs[currentQAIndex].score}
+                                </div>
+                                <div className="text-sm text-slate-500 font-medium">/10</div>
+                              </motion.div>
+                            </div>
+                          </div>
+
+                          {/* Metrics */}
+                          <div className="w-full space-y-2">
+                            <div className="flex items-center justify-between text-sm">
+                              <span className="text-slate-600">Clarity</span>
+                              <span className="font-bold text-slate-900">
+                                {recentQAs[currentQAIndex].clarity >= 7 ? 'High' : 
+                                 recentQAs[currentQAIndex].clarity >= 5 ? 'Medium' : 'Low'}
+                              </span>
+                            </div>
+                            <div className="flex items-center justify-between text-sm">
+                              <span className="text-slate-600">Pace</span>
+                              <span className="font-bold text-slate-900">
+                                {recentQAs[currentQAIndex].pace}
+                              </span>
+                            </div>
+                            <div className="flex items-center justify-between text-sm">
+                              <span className="text-slate-600">Confidence</span>
+                              <span className="font-bold text-slate-900">
+                                {recentQAs[currentQAIndex].confidence}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </motion.div>
+                    </AnimatePresence>
                   </div>
+                </div>
+              </motion.div>
+            )}
+
+            {/* 3. Analytics Section */}
+            <motion.div variants={itemVariants}>
+              <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                <div className="flex items-center justify-between mb-6">
+                  <div>
+                    <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+                      <Activity className="h-5 w-5 text-indigo-600" />
+                      Performance Trend
+                    </h3>
+                    <p className="text-sm text-slate-500">Your scores over the last 10 sessions</p>
+                  </div>
+                </div>
+                
+                {chartData.trend.length > 0 ? (
                   <div className="h-64 w-full">
                     <ResponsiveContainer width="100%" height="100%">
                       <AreaChart data={chartData.trend} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
@@ -280,11 +596,30 @@ const Dashboard = () => {
                       </AreaChart>
                     </ResponsiveContainer>
                   </div>
-                </div>
-              </motion.div>
-            )}
+                ) : (
+                  <div className="h-64 w-full flex flex-col items-center justify-center bg-gradient-to-br from-indigo-50 to-blue-50 rounded-xl border-2 border-dashed border-indigo-200">
+                    <div className="text-center px-6">
+                      <div className="h-16 w-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <Activity className="h-8 w-8 text-indigo-600" />
+                      </div>
+                      <h4 className="text-lg font-bold text-slate-900 mb-2">No Data Yet</h4>
+                      <p className="text-sm text-slate-600 max-w-sm">
+                        Complete your first interview to start tracking your performance over time.
+                      </p>
+                      <Link 
+                        to="/upload-resume"
+                        className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700 transition-colors"
+                      >
+                        Start First Interview
+                        <ArrowRight className="h-4 w-4" />
+                      </Link>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </motion.div>
 
-            {/* 3. Quick Actions */}
+            {/* 4. Quick Actions */}
             <motion.div variants={itemVariants}>
               <h3 className="text-xl font-bold text-slate-800 mb-4 flex items-center gap-2">
                 <Zap className="h-5 w-5 text-amber-500" />
@@ -446,13 +781,24 @@ const StatCard = ({ title, value, icon: Icon, color, trend }) => {
   const [bgColor, textColor, borderColor] = colors[color].split(" ");
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 transition-all duration-300 hover:shadow-md hover:-translate-y-1">
+    <motion.div 
+      className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 transition-all duration-300 hover:shadow-md hover:-translate-y-1 group"
+      whileHover={{ scale: 1.02 }}
+      transition={{ type: "spring", stiffness: 300 }}
+    >
       <div className="flex items-start justify-between mb-4">
-        <div
-          className={`h-12 w-12 ${bgColor} rounded-xl flex items-center justify-center ${borderColor} border`}
+        <motion.div
+          className={`h-12 w-12 ${bgColor} rounded-xl flex items-center justify-center ${borderColor} border relative`}
+          whileHover={{ rotate: [0, -10, 10, -10, 0] }}
+          transition={{ duration: 0.5 }}
         >
           <Icon className={`h-6 w-6 ${textColor}`} />
-        </div>
+          <motion.div
+            className={`absolute inset-0 ${bgColor} rounded-xl opacity-50`}
+            animate={{ scale: [1, 1.2, 1] }}
+            transition={{ duration: 2, repeat: Infinity, repeatDelay: 1 }}
+          />
+        </motion.div>
         {trend && (
           <span className="text-xs font-medium bg-slate-100 text-slate-600 px-2 py-1 rounded-full">
             {trend}
@@ -461,11 +807,16 @@ const StatCard = ({ title, value, icon: Icon, color, trend }) => {
       </div>
       <div>
         <p className="text-sm font-medium text-slate-500 mb-1">{title}</p>
-        <h3 className="text-3xl font-bold text-slate-900 tracking-tight">
+        <motion.h3 
+          className="text-3xl font-bold text-slate-900 tracking-tight"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+        >
           {value}
-        </h3>
+        </motion.h3>
       </div>
-    </div>
+    </motion.div>
   );
 };
 

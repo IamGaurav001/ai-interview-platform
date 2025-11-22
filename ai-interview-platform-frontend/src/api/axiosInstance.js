@@ -1,8 +1,13 @@
 import axios from "axios";
 import { auth } from "../config/firebase.js";
 
+// Use environment variable for production, fallback to proxy for development
+const baseURL = import.meta.env.VITE_API_BASE_URL 
+  ? `${import.meta.env.VITE_API_BASE_URL}/api`
+  : "/api";
+
 const axiosInstance = axios.create({
-  baseURL: "/api",
+  baseURL,
   timeout: 30000, // 30 seconds timeout (can be overridden per request)
 });
 

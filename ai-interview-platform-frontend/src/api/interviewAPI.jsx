@@ -10,6 +10,7 @@ export const getWeakAreas = () => axios.get("/interview/weak-areas");
 export const startInterview = () => axios.post("/interview/start");
 export const nextInterviewStep = (answer) => axios.post("/interview/next", { answer });
 export const endInterview = () => axios.post("/interview/end");
+export const cancelInterview = () => axios.post("/interview/cancel");
 export const getActiveSession = () => axios.get("/interview/active-session");
 
 // ✅ Voice answer evaluation
@@ -19,3 +20,4 @@ export const evaluateVoiceAnswer = (formData) =>
       "Content-Type": "multipart/form-data",
     },
   });
+

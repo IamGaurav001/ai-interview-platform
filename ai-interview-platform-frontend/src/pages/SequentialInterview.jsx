@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { evaluateAnswer, saveCompleteSession, evaluateVoiceAnswer } from "../api/interviewAPI";
+import { evaluateAnswer, saveCompleteSession, evaluateVoiceAnswer, cancelInterview } from "../api/interviewAPI";
 import {
   MessageSquare,
   Send,
@@ -17,12 +17,15 @@ import {
   Square,
   StopCircle,
   AlertCircle,
-  Bot
+
+  Bot,
+  LogOut
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import AudioVisualizer from "../components/AudioVisualizer";
 import SpeakingAvatar from "../components/SpeakingAvatar";
 import PageLayout from "../components/PageLayout";
+import ConfirmModal from "../components/ConfirmModal";
 
 const SequentialInterview = () => {
   const navigate = useNavigate();
@@ -59,6 +62,7 @@ const SequentialInterview = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [showSummary, setShowSummary] = useState(false);
+  const [showExitModal, setShowExitModal] = useState(false);
   const [saving, setSaving] = useState(false);
   const [questionAudioUrls, setQuestionAudioUrls] = useState({});
   const [feedbackAudioUrls, setFeedbackAudioUrls] = useState({});
@@ -286,6 +290,19 @@ const SequentialInterview = () => {
       setShowSummary(true);
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleExitInterview = async () => {
+    try {
+      // Call the cancel API to clear the session in Redis
+      await cancelInterview();
+      console.log("✅ Interview session cancelled");
+    } catch (err) {
+      console.error("❌ Error cancelling interview:", err);
+      // Navigate anyway even if the API call fails
+    } finally {
+      navigate("/dashboard");
     }
   };
 
@@ -549,6 +566,15 @@ const SequentialInterview = () => {
             <span className="text-sm font-semibold text-indigo-600 uppercase tracking-wider">
               Question {currentQuestionIndex + 1} <span className="text-slate-400">/</span> {questions.length}
             </span>
+            <button
+              onClick={() => setShowExitModal(true)}
+              className="text-sm font-semibold text-slate-500 hover:text-slate-700 hover:bg-slate-100 px-3 py-1.5 rounded-lg transition-colors flex items-center gap-2"
+            >
+              <LogOut className="h-4 w-4" />
+              Exit
+            </button>
+          </div>
+          <div className="flex items-center justify-between mb-3">
             <span className="text-sm font-bold text-slate-700">{Math.round(progress)}%</span>
           </div>
           <div className="w-full bg-slate-100 rounded-full h-3 overflow-hidden">
@@ -844,6 +870,17 @@ const SequentialInterview = () => {
           </motion.div>
         </AnimatePresence>
       </div>
+      {/* Exit Confirmation Modal */}
+      <ConfirmModal
+        isOpen={showExitModal}
+        onClose={() => setShowExitModal(false)}
+        onConfirm={handleExitInterview}
+        title="Exit Interview?"
+        message="Are you sure you want to exit? Your progress in this session will not be saved."
+        confirmText="Exit without Saving"
+        cancelText="Continue Interview"
+        type="warning"
+      />
     </PageLayout>
   );
 };

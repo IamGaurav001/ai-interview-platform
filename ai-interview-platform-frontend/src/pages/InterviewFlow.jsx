@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { startInterview, nextInterviewStep, endInterview, getActiveSession, evaluateVoiceAnswer } from "../api/interviewAPI";
+import { startInterview, nextInterviewStep, endInterview, getActiveSession, evaluateVoiceAnswer, cancelInterview } from "../api/interviewAPI";
 import {
   MessageSquare,
   Send,
@@ -17,7 +17,8 @@ import {
   Square,
   StopCircle,
   Bot,
-  User
+  User,
+  LogOut
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import AudioVisualizer from "../components/AudioVisualizer";
@@ -51,6 +52,7 @@ const InterviewFlow = () => {
   
   // Modal state
   const [showEndModal, setShowEndModal] = useState(false);
+  const [showExitModal, setShowExitModal] = useState(false);
 
   // Check for active session on mount
   useEffect(() => {
@@ -537,6 +539,19 @@ const InterviewFlow = () => {
     handleEndInterview(true);
   };
 
+  const handleExitInterview = async () => {
+    try {
+      // Call the cancel API to clear the session in Redis
+      await cancelInterview();
+      console.log("✅ Interview session cancelled");
+    } catch (err) {
+      console.error("❌ Error cancelling interview:", err);
+      // Navigate anyway even if the API call fails
+    } finally {
+      navigate("/dashboard");
+    }
+  };
+
   if (loading && !currentQuestion) {
     return (
       <PageLayout>
@@ -655,12 +670,21 @@ const InterviewFlow = () => {
                 Question {questionCount} / ~25
               </span>
             </div>
-            <button
-              onClick={() => handleEndInterview()}
-              className="text-sm font-semibold text-red-600 hover:text-red-700 hover:bg-red-50 px-4 py-2 rounded-lg transition-colors"
-            >
-              End Interview
-            </button>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setShowExitModal(true)}
+                className="text-sm font-semibold text-slate-500 hover:text-slate-700 hover:bg-slate-100 px-4 py-2 rounded-lg transition-colors flex items-center gap-2"
+              >
+                <LogOut className="h-4 w-4" />
+                Exit
+              </button>
+              <button
+                onClick={() => handleEndInterview()}
+                className="text-sm font-semibold text-red-600 hover:text-red-700 hover:bg-red-50 px-4 py-2 rounded-lg transition-colors"
+              >
+                End Interview
+              </button>
+            </div>
           </div>
           <div className="mt-3 w-full bg-slate-100 rounded-full h-2 overflow-hidden">
             <motion.div
@@ -987,6 +1011,18 @@ const InterviewFlow = () => {
           "Questions Answered": questionCount,
           "Status": "In Progress"
         }}
+      />
+
+      {/* Exit Confirmation Modal */}
+      <ConfirmModal
+        isOpen={showExitModal}
+        onClose={() => setShowExitModal(false)}
+        onConfirm={handleExitInterview}
+        title="Exit Interview?"
+        message="Are you sure you want to exit? Your progress in this session will not be saved."
+        confirmText="Exit without Saving"
+        cancelText="Continue Interview"
+        type="warning"
       />
     </div>
     </PageLayout>
