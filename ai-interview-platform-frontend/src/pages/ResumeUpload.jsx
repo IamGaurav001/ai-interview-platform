@@ -17,6 +17,7 @@ import {
   Target,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import PageLayout from "../components/PageLayout";
 
 const ResumeUpload = () => {
   const navigate = useNavigate();
@@ -209,7 +210,8 @@ const ResumeUpload = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 py-12 px-4 sm:px-6 lg:px-8 font-sans text-slate-900">
+    <PageLayout>
+      <div className="max-w-4xl mx-auto py-12">
       <motion.div
         className="max-w-4xl mx-auto"
         variants={containerVariants}
@@ -218,8 +220,8 @@ const ResumeUpload = () => {
       >
         {/* Header */}
         <motion.div className="text-center mb-10" variants={itemVariants}>
-          <div className="inline-flex items-center justify-center p-3 bg-orange-100 rounded-full mb-4">
-            <Sparkles className="h-8 w-8 text-orange-600" />
+          <div className="inline-flex items-center justify-center p-3 bg-indigo-100 rounded-full mb-4">
+            <Sparkles className="h-8 w-8 text-indigo-600" />
           </div>
           <h1 className="text-4xl sm:text-5xl font-bold text-slate-900 mb-4 tracking-tight">
             AI Resume Analysis
@@ -245,10 +247,10 @@ const ResumeUpload = () => {
                 <div
                   className={`relative group flex flex-col items-center justify-center w-full p-10 border-2 border-dashed rounded-2xl transition-all duration-300 cursor-pointer ${
                     isDragging
-                      ? "border-orange-500 bg-orange-50 scale-[1.02]"
+                      ? "border-indigo-500 bg-indigo-50 scale-[1.02]"
                       : file
-                      ? "border-orange-200 bg-orange-50/50"
-                      : "border-slate-300 bg-slate-50 hover:bg-slate-100 hover:border-orange-400"
+                      ? "border-indigo-200 bg-indigo-50/50"
+                      : "border-slate-300 bg-slate-50 hover:bg-slate-100 hover:border-indigo-400"
                   }`}
                   onDragOver={(e) => {
                     e.preventDefault();
@@ -276,7 +278,7 @@ const ResumeUpload = () => {
                         className="flex flex-col items-center text-center"
                       >
                         <div className="h-16 w-16 bg-white rounded-2xl shadow-sm flex items-center justify-center mb-4">
-                          <FileText className="h-8 w-8 text-orange-600" />
+                          <FileText className="h-8 w-8 text-indigo-600" />
                         </div>
                         <p className="text-lg font-semibold text-slate-900 mb-1">
                           {file.name}
@@ -309,11 +311,11 @@ const ResumeUpload = () => {
                         exit={{ opacity: 0 }}
                         className="flex flex-col items-center text-center"
                       >
-                        <div className="h-16 w-16 bg-orange-100 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
-                          <Upload className="h-8 w-8 text-orange-600" />
+                        <div className="h-16 w-16 bg-indigo-100 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
+                          <Upload className="h-8 w-8 text-indigo-600" />
                         </div>
                         <p className="text-lg font-medium text-slate-700 mb-2">
-                          <span className="text-orange-600 font-bold">Click to upload</span> or drag and drop
+                          <span className="text-indigo-600 font-bold">Click to upload</span> or drag and drop
                         </p>
                         <p className="text-sm text-slate-400">
                           PDF files only (Max 5MB)
@@ -363,7 +365,7 @@ const ResumeUpload = () => {
                   className={`relative w-full py-4 px-6 rounded-xl font-bold text-lg text-white shadow-lg transition-all duration-300 flex items-center justify-center gap-3 overflow-hidden ${
                     loading || !file
                       ? "bg-slate-300 cursor-not-allowed shadow-none"
-                      : "bg-orange-600 hover:shadow-orange-200 hover:scale-[1.01] active:scale-[0.99]"
+                      : "bg-indigo-600 hover:shadow-indigo-200 hover:scale-[1.01] active:scale-[0.99]"
                   }`}
                 >
                   {loading ? (
@@ -428,7 +430,7 @@ const ResumeUpload = () => {
                         .slice(0, 3)
                         .map((q, i) => (
                           <div key={i} className="flex gap-3">
-                            <span className="font-mono text-orange-500 font-bold">
+                            <span className="font-mono text-indigo-500 font-bold">
                               {i + 1}.
                             </span>
                             <p className="text-slate-700 font-medium line-clamp-2">
@@ -447,7 +449,7 @@ const ResumeUpload = () => {
                   <div className="flex flex-col sm:flex-row gap-4 justify-center">
                     <button
                       onClick={() => navigate("/interview-flow")}
-                      className="flex-1 py-4 px-8 bg-orange-600 text-white rounded-xl font-bold text-lg hover:bg-orange-700 transition-all shadow-lg hover:shadow-orange-200 flex items-center justify-center gap-2 group"
+                      className="flex-1 py-4 px-8 bg-indigo-600 text-white rounded-xl font-bold text-lg hover:bg-indigo-700 transition-all shadow-lg hover:shadow-indigo-200 flex items-center justify-center gap-2 group"
                     >
                       <Play className="h-5 w-5 fill-current" />
                       Start Full Interview
@@ -485,7 +487,8 @@ const ResumeUpload = () => {
           />
         </motion.div>
       </motion.div>
-    </div>
+      </div>
+    </PageLayout>
   );
 };
 
@@ -497,11 +500,11 @@ const StepCard = ({ icon: Icon, step, title, description }) => (
     }}
     className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 relative overflow-hidden group hover:shadow-md transition-shadow"
   >
-    <div className="absolute -right-4 -top-4 text-9xl font-bold text-slate-50 opacity-50 group-hover:text-orange-50 transition-colors select-none">
+    <div className="absolute -right-4 -top-4 text-9xl font-bold text-slate-50 opacity-50 group-hover:text-indigo-50 transition-colors select-none">
       {step}
     </div>
     <div className="relative z-10">
-      <div className="h-12 w-12 bg-orange-50 rounded-xl flex items-center justify-center mb-4 text-orange-600 group-hover:scale-110 transition-transform duration-300">
+      <div className="h-12 w-12 bg-indigo-50 rounded-xl flex items-center justify-center mb-4 text-indigo-600 group-hover:scale-110 transition-transform duration-300">
         <Icon className="h-6 w-6" />
       </div>
       <h3 className="text-lg font-bold text-slate-900 mb-2">{title}</h3>

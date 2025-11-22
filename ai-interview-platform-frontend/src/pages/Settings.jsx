@@ -3,6 +3,7 @@ import { useAuth } from "../context/AuthContext";
 import { updateUserProfile } from "../api/authAPI";
 import { User, Mail, Save, Loader2, CheckCircle2, AlertCircle } from "lucide-react";
 import { motion } from "framer-motion";
+import PageLayout from "../components/PageLayout";
 
 const Settings = () => {
   const { user } = useAuth();
@@ -58,7 +59,8 @@ const Settings = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+    <PageLayout>
+      <div className="max-w-4xl mx-auto py-10">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -123,7 +125,7 @@ const Settings = () => {
                 </label>
                 <div className="relative group">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <User className="h-5 w-5 text-gray-400 group-focus-within:text-primary-600 transition-colors" />
+                    <User className="h-5 w-5 text-gray-400 group-focus-within:text-indigo-600 transition-colors" />
                   </div>
                   <input
                     id="name"
@@ -131,7 +133,7 @@ const Settings = () => {
                     type="text"
                     value={formData.name}
                     onChange={handleChange}
-                    className="block w-full pl-10 pr-3 py-2.5 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all"
+                    className="block w-full pl-10 pr-3 py-2.5 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
                   />
                 </div>
               </div>
@@ -142,7 +144,7 @@ const Settings = () => {
                 </label>
                 <div className="relative group">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <User className="h-5 w-5 text-gray-400 group-focus-within:text-primary-600 transition-colors" />
+                    <User className="h-5 w-5 text-gray-400 group-focus-within:text-indigo-600 transition-colors" />
                   </div>
                   <input
                     id="nickname"
@@ -151,7 +153,7 @@ const Settings = () => {
                     value={formData.nickname}
                     onChange={handleChange}
                     placeholder="How should we call you?"
-                    className="block w-full pl-10 pr-3 py-2.5 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all"
+                    className="block w-full pl-10 pr-3 py-2.5 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
                   />
                 </div>
               </div>
@@ -161,7 +163,7 @@ const Settings = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className="flex items-center justify-center gap-2 px-6 py-2.5 border border-transparent rounded-xl shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-600 disabled:opacity-70 disabled:cursor-not-allowed transition-all active:scale-[0.98]"
+                className="flex items-center justify-center gap-2 px-6 py-2.5 border border-transparent rounded-xl shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-600 disabled:opacity-70 disabled:cursor-not-allowed transition-all active:scale-[0.98]"
               >
                 {loading ? (
                   <>
@@ -179,7 +181,8 @@ const Settings = () => {
           </form>
         </div>
       </motion.div>
-    </div>
+      </div>
+    </PageLayout>
   );
 };
 

@@ -23,6 +23,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import AudioVisualizer from "../components/AudioVisualizer";
 import ConfirmModal from "../components/ConfirmModal";
 import SpeakingAvatar from "../components/SpeakingAvatar";
+import PageLayout from "../components/PageLayout";
 
 const InterviewFlow = () => {
   const navigate = useNavigate();
@@ -538,18 +539,21 @@ const InterviewFlow = () => {
 
   if (loading && !currentQuestion) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
-        <div className="text-center">
-          <Loader2 className="h-12 w-12 animate-spin text-orange-600 mx-auto mb-4" />
-          <p className="text-slate-600 font-medium">Starting your interview...</p>
+      <PageLayout>
+        <div className="min-h-[60vh] flex items-center justify-center">
+          <div className="text-center">
+            <Loader2 className="h-12 w-12 animate-spin text-indigo-600 mx-auto mb-4" />
+            <p className="text-slate-600 font-medium">Starting your interview...</p>
+          </div>
         </div>
-      </div>
+      </PageLayout>
     );
   }
 
   if (isComplete && summary) {
     return (
-      <div className="min-h-screen bg-slate-50 py-12 px-4 sm:px-6 lg:px-8">
+      <PageLayout>
+        <div className="max-w-4xl mx-auto py-12">
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -565,7 +569,7 @@ const InterviewFlow = () => {
 
           <div className="bg-white rounded-2xl shadow-xl p-8 border border-slate-200 mb-8">
             <h2 className="text-2xl font-bold text-slate-900 mb-6 flex items-center gap-3">
-              Overall Score: <span className="text-orange-600">{summary.overallScore}/10</span>
+              Overall Score: <span className="text-indigo-600">{summary.overallScore}/10</span>
             </h2>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
@@ -582,14 +586,14 @@ const InterviewFlow = () => {
                   ))}
                 </ul>
               </div>
-              <div className="bg-orange-50 rounded-xl p-6 border border-orange-100">
-                <h3 className="text-lg font-semibold text-orange-900 mb-4 flex items-center gap-2">
+              <div className="bg-indigo-50 rounded-xl p-6 border border-indigo-100">
+                <h3 className="text-lg font-semibold text-indigo-900 mb-4 flex items-center gap-2">
                   <AlertCircle className="h-5 w-5" /> Areas for Improvement
                 </h3>
                 <ul className="space-y-3">
                   {summary.weaknesses?.map((weakness, idx) => (
-                    <li key={idx} className="flex items-start gap-3 text-orange-800">
-                      <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-orange-500 flex-shrink-0" />
+                    <li key={idx} className="flex items-start gap-3 text-indigo-800">
+                      <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-indigo-500 flex-shrink-0" />
                       <span>{weakness}</span>
                     </li>
                   ))}
@@ -603,12 +607,12 @@ const InterviewFlow = () => {
             </div>
 
             {summary.recommendations && summary.recommendations.length > 0 && (
-              <div className="bg-orange-50 rounded-xl p-6 border border-orange-100">
-                <h3 className="text-lg font-semibold text-orange-900 mb-4">Key Recommendations</h3>
+              <div className="bg-indigo-50 rounded-xl p-6 border border-indigo-100">
+                <h3 className="text-lg font-semibold text-indigo-900 mb-4">Key Recommendations</h3>
                 <ul className="space-y-3">
                   {summary.recommendations.map((rec, idx) => (
-                    <li key={idx} className="flex items-start gap-3 text-orange-800">
-                      <ArrowRight className="h-5 w-5 mt-0.5 flex-shrink-0 text-orange-500" />
+                    <li key={idx} className="flex items-start gap-3 text-indigo-800">
+                      <ArrowRight className="h-5 w-5 mt-0.5 flex-shrink-0 text-indigo-500" />
                       <span>{rec}</span>
                     </li>
                   ))}
@@ -633,19 +637,21 @@ const InterviewFlow = () => {
             </button>
           </div>
         </motion.div>
-      </div>
+        </div>
+      </PageLayout>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
+    <PageLayout showNavbar={false}>
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
       {/* Sticky Header with Progress */}
       <div className="sticky top-0 z-20 bg-white border-b border-slate-200 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <h1 className="text-lg font-bold text-slate-900">AI Interview Session</h1>
-              <span className="text-sm font-semibold text-orange-600 bg-orange-50 px-3 py-1 rounded-full">
+              <span className="text-sm font-semibold text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full">
                 Question {questionCount} / ~25
               </span>
             </div>
@@ -658,7 +664,7 @@ const InterviewFlow = () => {
           </div>
           <div className="mt-3 w-full bg-slate-100 rounded-full h-2 overflow-hidden">
             <motion.div
-              className="bg-orange-600 h-full rounded-full"
+              className="bg-indigo-600 h-full rounded-full"
               initial={{ width: 0 }}
               animate={{ width: `${Math.min((questionCount / 25) * 100, 100)}%` }}
               transition={{ duration: 0.5 }}
@@ -681,14 +687,14 @@ const InterviewFlow = () => {
               className="bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden flex flex-col"
             >
               {/* Interviewer Header */}
-              <div className="bg-gradient-to-r from-orange-500 to-orange-600 p-6 text-white">
+              <div className="bg-gradient-to-r from-indigo-500 to-indigo-600 p-6 text-white">
                 <div className="flex items-center gap-4">
                   <div className="flex-shrink-0">
                     <SpeakingAvatar isSpeaking={isPlayingQuestion || isPlayingFeedback} size="large" />
                   </div>
                   <div>
                     <h2 className="text-2xl font-bold">AI Interviewer</h2>
-                    <p className="text-orange-100 text-sm">Evaluating your responses</p>
+                    <p className="text-indigo-100 text-sm">Evaluating your responses</p>
                   </div>
                 </div>
               </div>
@@ -697,7 +703,7 @@ const InterviewFlow = () => {
               <div className="flex-1 overflow-y-auto p-6 space-y-6">
                 <div>
                   <div className="flex items-center justify-between mb-4">
-                    <span className="text-xs font-bold text-orange-600 uppercase tracking-wider bg-orange-50 px-3 py-1 rounded-full">
+                    <span className="text-xs font-bold text-indigo-600 uppercase tracking-wider bg-indigo-50 px-3 py-1 rounded-full">
                       Current Question
                     </span>
                     <button
@@ -710,7 +716,7 @@ const InterviewFlow = () => {
                       }}
                       className={`flex items-center gap-2 px-4 py-2 rounded-lg font-semibold text-sm transition-all shadow-sm ${
                         isPlayingQuestion 
-                          ? "bg-orange-100 text-orange-700" 
+                          ? "bg-indigo-100 text-indigo-700" 
                           : "bg-slate-100 text-slate-700 hover:bg-slate-200"
                       }`}
                     >
@@ -792,15 +798,15 @@ const InterviewFlow = () => {
                   <h4 className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-3">Interview Tips</h4>
                   <ul className="space-y-2 text-sm text-slate-700">
                     <li className="flex items-start gap-2">
-                      <span className="text-orange-500 mt-1">•</span>
+                      <span className="text-indigo-500 mt-1">•</span>
                       <span>Be specific and provide concrete examples</span>
                     </li>
                     <li className="flex items-start gap-2">
-                      <span className="text-orange-500 mt-1">•</span>
+                      <span className="text-indigo-500 mt-1">•</span>
                       <span>Structure your answer clearly (situation, action, result)</span>
                     </li>
                     <li className="flex items-start gap-2">
-                      <span className="text-orange-500 mt-1">•</span>
+                      <span className="text-indigo-500 mt-1">•</span>
                       <span>Take your time to think before answering</span>
                     </li>
                   </ul>
@@ -853,7 +859,7 @@ const InterviewFlow = () => {
                   className={`flex items-center gap-2 px-5 py-2.5 rounded-lg font-bold transition-all shadow-md ${
                     isRecording
                       ? "bg-red-500 text-white animate-pulse ring-4 ring-red-100"
-                      : "bg-orange-600 text-white hover:bg-orange-700"
+                      : "bg-indigo-600 text-white hover:bg-indigo-700"
                   } disabled:opacity-50 disabled:cursor-not-allowed`}
                 >
                   {isRecording ? (
@@ -884,9 +890,9 @@ const InterviewFlow = () => {
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0 }}
-                    className="p-4 bg-orange-50 border border-orange-200 rounded-xl"
+                    className="p-4 bg-indigo-50 border border-indigo-200 rounded-xl"
                   >
-                    <p className="text-sm text-orange-900">
+                    <p className="text-sm text-indigo-900">
                       <span className="font-bold">Transcribed:</span> {transcribedText}
                     </p>
                   </motion.div>
@@ -901,8 +907,8 @@ const InterviewFlow = () => {
                   className="p-4 bg-slate-50 border border-slate-200 rounded-xl"
                 >
                   <div className="flex items-center gap-4 mb-3">
-                    <div className="h-10 w-10 bg-orange-100 rounded-full flex items-center justify-center">
-                      <Volume2 className="h-5 w-5 text-orange-600" />
+                    <div className="h-10 w-10 bg-indigo-100 rounded-full flex items-center justify-center">
+                      <Volume2 className="h-5 w-5 text-indigo-600" />
                     </div>
                     <span className="text-sm font-semibold text-slate-700">Recorded Answer</span>
                   </div>
@@ -914,7 +920,7 @@ const InterviewFlow = () => {
                   <button
                     onClick={handleSubmitVoiceAnswer}
                     disabled={loading}
-                    className="w-full px-6 py-3 bg-orange-600 text-white rounded-lg hover:bg-orange-700 disabled:opacity-50 font-bold transition-colors shadow-md"
+                    className="w-full px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 font-bold transition-colors shadow-md"
                   >
                     {loading ? "Processing..." : "Submit Voice Answer"}
                   </button>
@@ -927,7 +933,7 @@ const InterviewFlow = () => {
                   value={currentAnswer}
                   onChange={(e) => setCurrentAnswer(e.target.value)}
                   placeholder="Type your detailed answer here... Be specific and provide examples from your experience."
-                  className="w-full p-5 border-2 border-slate-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 resize-none min-h-[300px] text-slate-800 leading-relaxed transition-all shadow-sm focus:shadow-md"
+                  className="w-full p-5 border-2 border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 resize-none min-h-[300px] text-slate-800 leading-relaxed transition-all shadow-sm focus:shadow-md"
                   disabled={loading || isComplete || isRecording}
                 />
                 <div className="absolute bottom-4 right-4 text-xs font-bold text-slate-400 bg-white px-3 py-1.5 rounded-lg border border-slate-200 shadow-sm">
@@ -944,7 +950,7 @@ const InterviewFlow = () => {
               <button
                 onClick={handleSubmitAnswer}
                 disabled={loading || isComplete || !currentAnswer.trim()}
-                className="w-full px-8 py-4 bg-orange-600 text-white rounded-xl font-bold hover:bg-orange-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-3 text-lg"
+                className="w-full px-8 py-4 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-3 text-lg"
               >
                 {loading ? (
                   <>
@@ -983,6 +989,7 @@ const InterviewFlow = () => {
         }}
       />
     </div>
+    </PageLayout>
   );
 };
 

@@ -12,6 +12,7 @@ import {
   Award,
   Star,
 } from "lucide-react";
+import PageLayout from "../components/PageLayout";
 
 // --- Animation Variants ---
 
@@ -43,13 +44,13 @@ const WatchDemo = () => {
   const y2 = useTransform(scrollY, [0, 500], [0, -100]);
 
   return (
-    <div className="font-sans bg-slate-50 text-slate-900 antialiased overflow-x-hidden selection:bg-orange-100 selection:text-orange-900">
-      <main className="pt-20">
+    <PageLayout>
+      <main>
         {/* Hero Section with Video */}
         <section className="relative min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8 overflow-hidden py-20">
           {/* Animated Background */}
           <motion.div style={{ y: y1 }} className="absolute top-20 left-10 w-72 h-72 bg-blue-300/30 rounded-full blur-3xl" />
-          <motion.div style={{ y: y2 }} className="absolute bottom-20 right-10 w-96 h-96 bg-orange-400/30 rounded-full blur-3xl" />
+          <motion.div style={{ y: y2 }} className="absolute bottom-20 right-10 w-96 h-96 bg-indigo-400/30 rounded-full blur-3xl" />
           <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20"></div>
 
           <div className="relative z-10 max-w-7xl mx-auto w-full">
@@ -66,7 +67,7 @@ const WatchDemo = () => {
 
               <motion.h1 variants={fadeInUp} className="text-4xl md:text-6xl lg:text-7xl font-extrabold tracking-tight text-slate-900 leading-[1.1] mb-6">
                 See IntervueAI in{" "}
-                <span className="text-orange-600">
+                <span className="text-indigo-600">
                   Action
                 </span>
               </motion.h1>
@@ -83,7 +84,7 @@ const WatchDemo = () => {
               transition={{ duration: 0.8, delay: 0.3 }}
               className="relative max-w-6xl mx-auto"
             >
-              <div className="relative bg-white rounded-3xl shadow-2xl shadow-orange-200/50 border border-slate-200 p-4 overflow-hidden">
+              <div className="relative bg-white rounded-3xl shadow-2xl shadow-indigo-200/50 border border-slate-200 p-4 overflow-hidden">
                 {/* Video Container */}
                 <div className="relative bg-slate-900 rounded-2xl overflow-hidden aspect-video">
                   {/* Placeholder for demo video */}
@@ -168,8 +169,8 @@ const WatchDemo = () => {
                 className="absolute -bottom-8 -left-8 bg-white p-5 rounded-2xl shadow-2xl border border-slate-100 hidden lg:block"
               >
                 <div className="flex items-center gap-3">
-                  <div className="h-12 w-12 bg-orange-100 rounded-xl flex items-center justify-center">
-                    <Users className="h-6 w-6 text-orange-600" />
+                  <div className="h-12 w-12 bg-indigo-100 rounded-xl flex items-center justify-center">
+                    <Users className="h-6 w-6 text-indigo-600" />
                   </div>
                   <div>
                     <p className="text-xs text-slate-500 font-semibold uppercase tracking-wide">Active Users</p>
@@ -232,7 +233,7 @@ const WatchDemo = () => {
                 4.9/5 Average Rating
               </div>
               <div className="flex items-center gap-2">
-                <Users className="h-5 w-5 text-orange-500" />
+                <Users className="h-5 w-5 text-indigo-500" />
                 10,000+ Users
               </div>
             </motion.div>
@@ -250,7 +251,7 @@ const WatchDemo = () => {
               className="grid grid-cols-2 md:grid-cols-4 gap-8"
             >
               <motion.div variants={fadeInUp} className="text-center">
-                <div className="inline-flex items-center justify-center h-12 w-12 rounded-xl bg-orange-100 text-orange-600 mb-3">
+                <div className="inline-flex items-center justify-center h-12 w-12 rounded-xl bg-indigo-100 text-indigo-600 mb-3">
                   <Users className="h-6 w-6" />
                 </div>
                 <div className="text-3xl md:text-4xl font-bold text-slate-900 mb-1">10K+</div>
@@ -284,7 +285,7 @@ const WatchDemo = () => {
           </div>
         </section>
       </main>
-    </div>
+    </PageLayout>
   );
 };
 

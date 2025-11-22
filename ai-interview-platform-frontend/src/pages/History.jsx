@@ -16,6 +16,7 @@ import {
   ArrowRight
 } from "lucide-react";
 import Loader from "../components/Loader";
+import PageLayout from "../components/PageLayout";
 import { motion, AnimatePresence } from "framer-motion";
 
 // --- Utility Functions ---
@@ -184,54 +185,64 @@ const History = () => {
     }));
   };
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center"><Loader /></div>;
+  if (loading) return (
+    <PageLayout>
+      <div className="min-h-[60vh] flex items-center justify-center">
+        <Loader />
+      </div>
+    </PageLayout>
+  );
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
-        <div className="text-center p-8 bg-white rounded-2xl shadow-xl border border-red-100 max-w-md">
-          <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
-          <h3 className="text-xl font-bold text-slate-900 mb-2">Error Loading History</h3>
-          <p className="text-slate-600 mb-6">{error}</p>
-          <button onClick={fetchHistory} className="px-6 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors">
-            Try Again
-          </button>
+      <PageLayout>
+        <div className="min-h-[60vh] flex items-center justify-center">
+          <div className="text-center p-8 bg-white/80 backdrop-blur-xl rounded-2xl shadow-xl border border-red-100 max-w-md">
+            <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+            <h3 className="text-xl font-bold text-slate-900 mb-2">Error Loading History</h3>
+            <p className="text-slate-600 mb-6">{error}</p>
+            <button onClick={fetchHistory} className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors">
+              Try Again
+            </button>
+          </div>
         </div>
-      </div>
+      </PageLayout>
     );
   }
 
   if (!history || history.total === 0) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 p-4">
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-center max-w-lg"
-        >
-          <div className="bg-white p-8 rounded-3xl shadow-xl border border-slate-200">
-            <div className="h-20 w-20 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-6">
-              <MessageSquare className="h-10 w-10 text-orange-600" />
+      <PageLayout>
+        <div className="min-h-[60vh] flex flex-col items-center justify-center p-4">
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-center max-w-lg"
+          >
+            <div className="bg-white/80 backdrop-blur-xl p-8 rounded-3xl shadow-xl border border-slate-200">
+              <div className="h-20 w-20 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <MessageSquare className="h-10 w-10 text-indigo-600" />
+              </div>
+              <h2 className="text-2xl font-bold text-slate-900 mb-3">No Interviews Yet</h2>
+              <p className="text-slate-600 mb-8 text-lg">
+                Start your first AI interview to track your progress and get detailed feedback.
+              </p>
+              <a
+                href="/upload-resume"
+                className="inline-flex items-center px-8 py-4 bg-indigo-600 text-white rounded-xl font-semibold hover:bg-indigo-700 transition-all shadow-lg hover:shadow-xl hover:-translate-y-1"
+              >
+                Start Interview <ArrowRight className="ml-2 h-5 w-5" />
+              </a>
             </div>
-            <h2 className="text-2xl font-bold text-slate-900 mb-3">No Interviews Yet</h2>
-            <p className="text-slate-600 mb-8 text-lg">
-              Start your first AI interview to track your progress and get detailed feedback.
-            </p>
-            <a
-              href="/upload-resume"
-              className="inline-flex items-center px-8 py-4 bg-orange-600 text-white rounded-xl font-semibold hover:bg-orange-700 transition-all shadow-lg hover:shadow-xl hover:-translate-y-1"
-            >
-              Start Interview <ArrowRight className="ml-2 h-5 w-5" />
-            </a>
-          </div>
-        </motion.div>
-      </div>
+          </motion.div>
+        </div>
+      </PageLayout>
     );
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-7xl mx-auto">
+    <PageLayout>
+      <div className="max-w-7xl mx-auto py-8">
         {/* Header */}
         <motion.div 
           initial={{ opacity: 0, y: -20 }}
@@ -279,7 +290,7 @@ const History = () => {
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
-              className="px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-orange-500"
+              className="px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
             >
               <option value="date">Most Recent</option>
               <option value="score">Highest Score</option>
@@ -309,15 +320,15 @@ const History = () => {
           )}
         </div>
       </div>
-    </div>
+    </PageLayout>
   );
 };
 
 const SummaryCard = ({ title, value, subValue, icon: Icon, color, delay }) => {
   const colors = {
-    blue: "bg-blue-50 text-orange-600 border-blue-100",
-    purple: "bg-purple-50 text-red-500 border-purple-100",
-    yellow: "bg-yellow-50 text-yellow-600 border-yellow-100",
+    blue: "bg-indigo-50 text-indigo-600 border-indigo-100",
+    purple: "bg-purple-50 text-purple-600 border-purple-100",
+    yellow: "bg-amber-50 text-amber-600 border-amber-100",
   };
 
   return (
@@ -434,14 +445,14 @@ const SessionCard = ({ session, index, isExpanded, onToggle }) => {
             <div className="p-6 space-y-8">
               {/* Summary Section */}
               {summaryFeedback.summary && (
-                <div className="bg-orange-50 rounded-xl p-6 border border-orange-100">
-                  <h4 className="text-sm font-bold text-orange-900 uppercase tracking-wide mb-3 flex items-center gap-2">
+                <div className="bg-indigo-50/50 rounded-xl p-6 border border-indigo-100">
+                  <h4 className="text-sm font-bold text-indigo-900 uppercase tracking-wide mb-3 flex items-center gap-2">
                     <Star className="h-4 w-4" /> Executive Summary
                   </h4>
-                  <p className="text-orange-900 leading-relaxed">{summaryFeedback.summary}</p>
+                  <p className="text-indigo-900 leading-relaxed">{summaryFeedback.summary}</p>
                   
                   {(summaryFeedback.strengths || summaryFeedback.weaknesses) && (
-                    <div className="grid md:grid-cols-2 gap-6 mt-6 pt-6 border-t border-orange-100/50">
+                    <div className="grid md:grid-cols-2 gap-6 mt-6 pt-6 border-t border-indigo-100/50">
                       {summaryFeedback.strengths?.length > 0 && (
                         <div>
                           <h5 className="text-xs font-bold text-green-700 uppercase mb-3 flex items-center gap-2">
@@ -459,13 +470,13 @@ const SessionCard = ({ session, index, isExpanded, onToggle }) => {
                       )}
                       {summaryFeedback.weaknesses?.length > 0 && (
                         <div>
-                          <h5 className="text-xs font-bold text-orange-700 uppercase mb-3 flex items-center gap-2">
+                          <h5 className="text-xs font-bold text-indigo-700 uppercase mb-3 flex items-center gap-2">
                             <TrendingUp className="h-3 w-3" /> Growth Areas
                           </h5>
                           <ul className="space-y-2">
                             {summaryFeedback.weaknesses.map((w, i) => (
                               <li key={i} className="text-sm text-slate-700 flex items-start gap-2">
-                                <span className="h-1.5 w-1.5 rounded-full bg-orange-500 mt-1.5 flex-shrink-0" />
+                                <span className="h-1.5 w-1.5 rounded-full bg-indigo-500 mt-1.5 flex-shrink-0" />
                                 {w}
                               </li>
                             ))}
@@ -545,7 +556,7 @@ const QuestionItem = ({ question, answer, feedback, index }) => {
 
               <div>
                 <h5 className="text-xs font-bold text-slate-500 uppercase mb-2">AI Feedback</h5>
-                <div className="bg-orange-50/50 p-4 rounded-lg border border-orange-100">
+                <div className="bg-indigo-50/30 p-4 rounded-lg border border-indigo-100">
                   <p className="text-slate-800 text-sm leading-relaxed mb-3">{feedbackText}</p>
                   
                   {(scores.correctness !== undefined || scores.clarity !== undefined) && (

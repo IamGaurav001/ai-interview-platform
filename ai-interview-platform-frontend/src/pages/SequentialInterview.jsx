@@ -22,6 +22,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import AudioVisualizer from "../components/AudioVisualizer";
 import SpeakingAvatar from "../components/SpeakingAvatar";
+import PageLayout from "../components/PageLayout";
 
 const SequentialInterview = () => {
   const navigate = useNavigate();
@@ -410,16 +411,19 @@ const SequentialInterview = () => {
 
   if (questions.length === 0) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
-        <Loader2 className="h-12 w-12 animate-spin text-orange-600" />
-      </div>
+      <PageLayout>
+        <div className="min-h-[60vh] flex items-center justify-center">
+          <Loader2 className="h-12 w-12 animate-spin text-indigo-600" />
+        </div>
+      </PageLayout>
     );
   }
 
   if (showSummary) {
     const overallScore = calculateOverallScore();
     return (
-      <div className="min-h-screen bg-slate-50 py-12 px-4 sm:px-6 lg:px-8">
+      <PageLayout>
+        <div className="max-w-4xl mx-auto py-12">
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -436,7 +440,7 @@ const SequentialInterview = () => {
           {/* Overall Score Card */}
           <div className="bg-white rounded-2xl shadow-xl p-8 border border-slate-200 mb-8 text-center">
             <h2 className="text-2xl font-bold text-slate-900 mb-4">Overall Score</h2>
-            <div className="text-7xl font-bold text-orange-600 mb-2 tracking-tight">{overallScore}/10</div>
+            <div className="text-7xl font-bold text-indigo-600 mb-2 tracking-tight">{overallScore}/10</div>
             <p className="text-slate-500 font-medium">
               Based on {feedbacks.length} question{feedbacks.length !== 1 ? "s" : ""}
             </p>
@@ -455,7 +459,7 @@ const SequentialInterview = () => {
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-3">
-                      <span className="px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-sm font-bold">
+                      <span className="px-3 py-1 bg-indigo-100 text-indigo-700 rounded-full text-sm font-bold">
                         Question {idx + 1}
                       </span>
                       {feedbacks[idx] && (
@@ -494,9 +498,9 @@ const SequentialInterview = () => {
                       </div>
                     </div>
                     {feedbacks[idx].overall_feedback && (
-                      <div className="bg-orange-50 rounded-lg p-5 border border-orange-100">
-                        <h4 className="text-sm font-bold text-orange-900 uppercase tracking-wide mb-2">Feedback</h4>
-                        <p className="text-orange-800 leading-relaxed">{feedbacks[idx].overall_feedback}</p>
+                      <div className="bg-indigo-50 rounded-lg p-5 border border-indigo-100">
+                        <h4 className="text-sm font-bold text-indigo-900 uppercase tracking-wide mb-2">Feedback</h4>
+                        <p className="text-indigo-800 leading-relaxed">{feedbacks[idx].overall_feedback}</p>
                       </div>
                     )}
                   </div>
@@ -523,6 +527,7 @@ const SequentialInterview = () => {
           </div>
         </motion.div>
       </div>
+      </PageLayout>
     );
   }
 
@@ -532,8 +537,8 @@ const SequentialInterview = () => {
   const hasFeedbackForCurrent = feedbacks[currentQuestionIndex] !== undefined;
 
   return (
-    <div className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-4xl mx-auto">
+    <PageLayout>
+      <div className="max-w-4xl mx-auto py-8">
         {/* Progress Bar */}
         <motion.div 
           initial={{ opacity: 0, y: -20 }}
@@ -541,14 +546,14 @@ const SequentialInterview = () => {
           className="mb-8 bg-white rounded-2xl p-6 shadow-sm border border-slate-200"
         >
           <div className="flex items-center justify-between mb-3">
-            <span className="text-sm font-semibold text-orange-600 uppercase tracking-wider">
+            <span className="text-sm font-semibold text-indigo-600 uppercase tracking-wider">
               Question {currentQuestionIndex + 1} <span className="text-slate-400">/</span> {questions.length}
             </span>
             <span className="text-sm font-bold text-slate-700">{Math.round(progress)}%</span>
           </div>
           <div className="w-full bg-slate-100 rounded-full h-3 overflow-hidden">
             <motion.div
-              className="bg-orange-600 h-full rounded-full"
+              className="bg-indigo-600 h-full rounded-full"
               initial={{ width: 0 }}
               animate={{ width: `${progress}%` }}
               transition={{ duration: 0.5 }}
@@ -565,7 +570,7 @@ const SequentialInterview = () => {
             exit={{ opacity: 0, x: -20 }}
             className="bg-white rounded-2xl shadow-xl p-8 border border-slate-200 mb-6 relative overflow-hidden"
           >
-            <div className="absolute top-0 left-0 w-1 h-full bg-orange-500" />
+            <div className="absolute top-0 left-0 w-1 h-full bg-indigo-500" />
             
             <div className="flex items-start justify-between gap-6 mb-8">
               <div className="flex-1">
@@ -594,8 +599,8 @@ const SequentialInterview = () => {
                   }}
                   className={`flex items-center justify-center h-12 w-12 rounded-full transition-all shadow-md hover:shadow-lg flex-shrink-0 ${
                     playingAudio[`question_${currentQuestionIndex}`]
-                      ? "bg-orange-100 text-orange-600 hover:bg-orange-200" 
-                      : "bg-orange-600 text-white hover:bg-orange-700"
+                      ? "bg-indigo-100 text-indigo-600 hover:bg-indigo-200" 
+                      : "bg-indigo-600 text-white hover:bg-indigo-700"
                   }`}
                   title={
                     playingAudio[`question_${currentQuestionIndex}`]
@@ -674,9 +679,9 @@ const SequentialInterview = () => {
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0 }}
-                    className="p-4 bg-orange-50 border border-orange-100 rounded-xl"
+                    className="p-4 bg-indigo-50 border border-indigo-100 rounded-xl"
                   >
-                    <p className="text-sm text-orange-900">
+                    <p className="text-sm text-indigo-900">
                       <span className="font-semibold">Transcribed:</span> {transcribedText}
                     </p>
                   </motion.div>
@@ -701,7 +706,7 @@ const SequentialInterview = () => {
                   <button
                     onClick={handleSubmitVoiceAnswer}
                     disabled={loading}
-                    className="px-6 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium transition-colors shadow-sm"
+                    className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium transition-colors shadow-sm"
                   >
                     {loading ? "Processing..." : "Submit Voice"}
                   </button>
@@ -713,7 +718,7 @@ const SequentialInterview = () => {
                   value={currentAnswer}
                   onChange={(e) => setCurrentAnswer(e.target.value)}
                   placeholder="Type your detailed answer here... Be specific and provide examples."
-                  className="w-full p-5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent resize-none min-h-[200px] text-slate-700 leading-relaxed transition-shadow shadow-sm focus:shadow-md"
+                  className="w-full p-5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none min-h-[200px] text-slate-700 leading-relaxed transition-shadow shadow-sm focus:shadow-md"
                   disabled={loading}
                 />
                 <div className="absolute bottom-4 right-4 text-xs font-medium text-slate-400 bg-white px-2 py-1 rounded-md border border-slate-100 shadow-sm">
@@ -755,11 +760,11 @@ const SequentialInterview = () => {
                   </div>
                 </div>
                 {feedbacks[currentQuestionIndex].overall_feedback && (
-                  <div className="bg-orange-50 rounded-xl p-6 border border-orange-100">
+                  <div className="bg-indigo-50 rounded-xl p-6 border border-indigo-100">
                     <div className="flex items-start gap-4">
                       <div className="flex-1">
-                        <h4 className="text-sm font-bold text-orange-900 uppercase tracking-wide mb-2">Overall Feedback</h4>
-                        <p className="text-orange-800 leading-relaxed">{feedbacks[currentQuestionIndex].overall_feedback}</p>
+                        <h4 className="text-sm font-bold text-indigo-900 uppercase tracking-wide mb-2">Overall Feedback</h4>
+                        <p className="text-indigo-800 leading-relaxed">{feedbacks[currentQuestionIndex].overall_feedback}</p>
                       </div>
                       {feedbackAudioUrls[currentQuestionIndex] && (
                         <button
@@ -775,7 +780,7 @@ const SequentialInterview = () => {
                               );
                             }
                           }}
-                          className="flex items-center justify-center h-10 w-10 rounded-full bg-white text-orange-600 hover:bg-orange-50 shadow-sm border border-orange-200 transition-colors flex-shrink-0"
+                          className="flex items-center justify-center h-10 w-10 rounded-full bg-white text-indigo-600 hover:bg-indigo-50 shadow-sm border border-indigo-200 transition-colors flex-shrink-0"
                           title={
                             playingAudio[`feedback_${currentQuestionIndex}`]
                               ? "Stop audio"
@@ -816,7 +821,7 @@ const SequentialInterview = () => {
               <button
                 onClick={handleSubmitAnswer}
                 disabled={loading || !currentAnswer.trim() || saving}
-                className="flex items-center gap-2 px-8 py-3 bg-orange-600 text-white rounded-xl font-semibold hover:bg-orange-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5"
+                className="flex items-center gap-2 px-8 py-3 bg-indigo-600 text-white rounded-xl font-semibold hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5"
               >
                 {loading ? (
                   <>
@@ -839,7 +844,7 @@ const SequentialInterview = () => {
           </motion.div>
         </AnimatePresence>
       </div>
-    </div>
+    </PageLayout>
   );
 };
 

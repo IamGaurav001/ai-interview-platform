@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { MessageSquare, Send, RefreshCw, Star, TrendingUp, CheckCircle, AlertCircle, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import PageLayout from "../components/PageLayout";
 
 const AnswerEvaluation = () => {
   const [question, setQuestion] = useState("");
@@ -73,8 +74,8 @@ const AnswerEvaluation = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-4xl mx-auto">
+    <PageLayout>
+      <div className="max-w-4xl mx-auto py-12">
         <motion.div 
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -94,7 +95,7 @@ const AnswerEvaluation = () => {
             className="bg-white rounded-2xl shadow-xl p-8 border border-slate-200"
           >
             <h2 className="text-2xl font-bold text-slate-900 mb-6 flex items-center gap-2">
-              <Send className="h-6 w-6 text-orange-600" />
+              <Send className="h-6 w-6 text-indigo-600" />
               Submit for Evaluation
             </h2>
             
@@ -105,7 +106,7 @@ const AnswerEvaluation = () => {
                   Interview Question
                 </label>
                 <textarea
-                  className="w-full p-4 rounded-xl bg-slate-50 text-slate-900 border border-slate-300 focus:ring-2 focus:ring-orange-500 focus:border-transparent resize-none transition-shadow shadow-sm focus:shadow-md"
+                  className="w-full p-4 rounded-xl bg-slate-50 text-slate-900 border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none transition-shadow shadow-sm focus:shadow-md"
                   rows="3"
                   placeholder="Enter the interview question you were asked..."
                   value={question}
@@ -119,7 +120,7 @@ const AnswerEvaluation = () => {
                   Your Answer
                 </label>
                 <textarea
-                  className="w-full p-4 rounded-xl bg-slate-50 text-slate-900 border border-slate-300 focus:ring-2 focus:ring-orange-500 focus:border-transparent resize-none transition-shadow shadow-sm focus:shadow-md"
+                  className="w-full p-4 rounded-xl bg-slate-50 text-slate-900 border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none transition-shadow shadow-sm focus:shadow-md"
                   rows="8"
                   placeholder="Enter your answer here... Be as detailed as possible for better evaluation."
                   value={answer}
@@ -135,7 +136,7 @@ const AnswerEvaluation = () => {
                 <button
                   onClick={submitForEvaluation}
                   disabled={loading || !question.trim() || !answer.trim()}
-                  className="inline-flex items-center px-8 py-4 bg-orange-600 hover:bg-orange-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-semibold rounded-xl transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5"
+                  className="inline-flex items-center px-8 py-4 bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-semibold rounded-xl transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5"
                 >
                   {loading ? (
                     <>
@@ -181,7 +182,7 @@ const AnswerEvaluation = () => {
                       
                       <div className="bg-blue-50 rounded-xl p-6 border border-blue-100">
                         <div className="flex items-center mb-4">
-                          <MessageSquare className="h-5 w-5 text-orange-600 mr-2" />
+                          <MessageSquare className="h-5 w-5 text-indigo-600 mr-2" />
                           <h4 className="text-lg font-semibold text-blue-900">Clarity</h4>
                         </div>
                         {renderScoreBar(evaluation.clarity || 0, "Communication")}
@@ -198,9 +199,9 @@ const AnswerEvaluation = () => {
 
                     {/* Overall Feedback */}
                     {evaluation.overall_feedback && (
-                      <div className="bg-orange-50 rounded-xl p-6 border border-orange-100">
-                        <h4 className="text-lg font-semibold text-orange-900 mb-3">Overall Feedback</h4>
-                        <p className="text-orange-800 leading-relaxed">
+                      <div className="bg-indigo-50 rounded-xl p-6 border border-indigo-100">
+                        <h4 className="text-lg font-semibold text-indigo-900 mb-3">Overall Feedback</h4>
+                        <p className="text-indigo-800 leading-relaxed">
                           {evaluation.overall_feedback}
                         </p>
                       </div>
@@ -239,7 +240,7 @@ const AnswerEvaluation = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="bg-blue-800 rounded-2xl p-8 shadow-lg text-white"
+            className="bg-indigo-900 rounded-2xl p-8 shadow-lg text-white"
           >
             <h3 className="text-xl font-bold mb-6 flex items-center gap-2">
               <Star className="h-5 w-5 text-yellow-400" />
@@ -248,19 +249,19 @@ const AnswerEvaluation = () => {
             <div className="grid md:grid-cols-2 gap-8">
               <div className="space-y-4">
                 <div className="flex items-start gap-3">
-                  <div className="h-2 w-2 bg-blue-400 rounded-full mt-2 flex-shrink-0" />
+                  <div className="h-2 w-2 bg-indigo-400 rounded-full mt-2 flex-shrink-0" />
                   <p className="text-slate-300 text-sm leading-relaxed">
                     Be specific and provide concrete examples from your experience using the STAR method (Situation, Task, Action, Result).
                   </p>
                 </div>
                 <div className="flex items-start gap-3">
-                  <div className="h-2 w-2 bg-blue-400 rounded-full mt-2 flex-shrink-0" />
+                  <div className="h-2 w-2 bg-indigo-400 rounded-full mt-2 flex-shrink-0" />
                   <p className="text-slate-300 text-sm leading-relaxed">
                     Explain your thought process and reasoning behind your approach, not just the final solution.
                   </p>
                 </div>
                 <div className="flex items-start gap-3">
-                  <div className="h-2 w-2 bg-blue-400 rounded-full mt-2 flex-shrink-0" />
+                  <div className="h-2 w-2 bg-indigo-400 rounded-full mt-2 flex-shrink-0" />
                   <p className="text-slate-300 text-sm leading-relaxed">
                     Mention trade-offs and alternative solutions when relevant to show depth of understanding.
                   </p>
@@ -268,19 +269,19 @@ const AnswerEvaluation = () => {
               </div>
               <div className="space-y-4">
                 <div className="flex items-start gap-3">
-                  <div className="h-2 w-2 bg-green-400 rounded-full mt-2 flex-shrink-0" />
+                  <div className="h-2 w-2 bg-emerald-400 rounded-full mt-2 flex-shrink-0" />
                   <p className="text-slate-300 text-sm leading-relaxed">
                     Use clear, concise language and avoid unnecessary jargon unless it's industry-standard.
                   </p>
                 </div>
                 <div className="flex items-start gap-3">
-                  <div className="h-2 w-2 bg-green-400 rounded-full mt-2 flex-shrink-0" />
+                  <div className="h-2 w-2 bg-emerald-400 rounded-full mt-2 flex-shrink-0" />
                   <p className="text-slate-300 text-sm leading-relaxed">
                     Structure your answer with a clear beginning, middle, and end to keep the interviewer engaged.
                   </p>
                 </div>
                 <div className="flex items-start gap-3">
-                  <div className="h-2 w-2 bg-green-400 rounded-full mt-2 flex-shrink-0" />
+                  <div className="h-2 w-2 bg-emerald-400 rounded-full mt-2 flex-shrink-0" />
                   <p className="text-slate-300 text-sm leading-relaxed">
                     Ask clarifying questions if the question is ambiguous before diving into your answer.
                   </p>
@@ -290,7 +291,7 @@ const AnswerEvaluation = () => {
           </motion.div>
         </div>
       </div>
-    </div>
+    </PageLayout>
   );
 };
 
