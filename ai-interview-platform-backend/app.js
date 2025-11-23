@@ -53,13 +53,17 @@ app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
 
-(async () => {
-  try {
-    await redisClient.connect();
-    console.log("✅ Redis connected successfully");
-  } catch (err) {
-    console.error("❌ Redis connection failed:", err.message);
-  }
-
-  app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
-})();
+// Start server immediately (don't wait for Redis)
+app.listen(PORT, () => {
+  console.log(`🚀 Server running on port ${PORT}`);
+  
+  // Connect to Redis in background (non-blocking)
+  redisClient.connect()
+    .then(() => {
+      console.log("✅ Redis connected successfully");
+    })
+    .catch((err) => {
+      console.error("❌ Redis connection failed:", err.message);
+      console.log("⚠️  Server running without Redis. Some features may not work.");
+    });
+});

@@ -1369,3 +1369,33 @@ export const getActiveSession = async (req, res) => {
     });
   }
 };
+
+// Cancel Interview (Exit without saving)
+export const cancelInterview = async (req, res) => {
+  try {
+    const userId = req.user._id.toString();
+    const sessionKey = `session:${userId}`;
+    const feedbackKey = `feedback:${userId}`;
+
+    // Delete Redis session and feedback without saving to MongoDB
+    try {
+      await redisClient.del(sessionKey);
+      await redisClient.del(feedbackKey);
+      console.log("✅ Interview session cancelled and Redis cleaned up");
+    } catch (redisError) {
+      console.warn("⚠️ Failed to cleanup Redis:", redisError.message);
+    }
+
+    res.json({
+      success: true,
+      message: "Interview cancelled successfully. Session data has been cleared.",
+    });
+  } catch (error) {
+    console.error("❌ Error cancelling interview:", error.message);
+    res.status(500).json({
+      success: false,
+      error: "Failed to cancel interview",
+      details: error.message,
+    });
+  }
+};

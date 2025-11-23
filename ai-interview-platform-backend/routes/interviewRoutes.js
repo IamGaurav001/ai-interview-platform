@@ -14,6 +14,7 @@ import {
   endInterview,
   getActiveSession,
   evaluateVoiceAnswer,
+  cancelInterview,
 } from "../controllers/interviewController.js";
 import { getWeakAreas } from "../controllers/interviewController.js";
 
@@ -70,6 +71,7 @@ router.get("/weak-areas", verifyFirebaseToken, getWeakAreas);
 router.post("/start", verifyFirebaseToken, rateLimiter(5, 60), startInterview);
 router.post("/next", verifyFirebaseToken, rateLimiter(20, 60), nextInterviewStep);
 router.post("/end", verifyFirebaseToken, rateLimiter(5, 60), endInterview);
+router.post("/cancel", verifyFirebaseToken, rateLimiter(5, 60), cancelInterview);
 router.get("/active-session", verifyFirebaseToken, getActiveSession);
 
 // ✅ Voice answer evaluation endpoint
