@@ -297,7 +297,6 @@ const Dashboard = () => {
     );
   }
 
-  // Animation variants
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -329,7 +328,6 @@ const Dashboard = () => {
         initial="hidden"
         animate="visible"
       >
-        {/* Welcome Section */}
         <motion.div className="mb-10" variants={itemVariants}>
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
@@ -354,10 +352,8 @@ const Dashboard = () => {
         )}
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-          {/* Main Content Column (Left - 75%) */}
           <div className="lg:col-span-3 space-y-10">
             
-            {/* 1. Start New Interview (Hero) */}
             <motion.div variants={itemVariants}>
               <Link
                 to="/upload-resume"
@@ -619,36 +615,8 @@ const Dashboard = () => {
               </div>
             </motion.div>
 
-            {/* 4. Quick Actions */}
-            <motion.div variants={itemVariants}>
-              <h3 className="text-xl font-bold text-slate-800 mb-4 flex items-center gap-2">
-                <Zap className="h-5 w-5 text-amber-500" />
-                Quick Actions
-              </h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                <ActionCard
-                  to="/upload-resume"
-                  icon={FileText}
-                  title="Upload Resume"
-                  description="Update your profile for better questions"
-                  iconColor="text-red-500"
-                  bgColor="bg-purple-50"
-                  borderColor="border-purple-100"
-                />
-                <ActionCard
-                  to="/history"
-                  icon={Clock}
-                  title="View History"
-                  description="Review past performance and feedback"
-                  iconColor="text-cyan-600"
-                  bgColor="bg-cyan-50"
-                  borderColor="border-cyan-100"
-                />
-              </div>
-            </motion.div>
           </div>
 
-          {/* Sidebar Column (Right - 25%) */}
           <div className="lg:col-span-1 space-y-6">
             
             {/* 1. Stats Stack */}
@@ -667,76 +635,9 @@ const Dashboard = () => {
                 color="green"
                 trend="Top 15%"
               />
-              <StatCard
-                title="Focus Areas"
-                value={stats.weakAreas.length}
-                icon={Target}
-                color="orange"
-                trend="Action needed"
-              />
+
             </motion.div>
 
-            {/* 2. Weak Areas */}
-            <motion.div
-              variants={itemVariants}
-              className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6"
-            >
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2">
-                  <AlertCircle className="h-5 w-5 text-orange-500" />
-                  Areas to Improve
-                </h2>
-              </div>
-              
-              {stats.weakAreas.length > 0 ? (
-                <div className="space-y-5">
-                  {stats.weakAreas.map((area, idx) => (
-                    <div key={idx} className="group">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="font-semibold text-slate-700 text-sm truncate flex-1 mr-2">
-                          {area._id}
-                        </span>
-                        <span className="text-xs font-bold text-orange-600 bg-orange-50 px-2 py-1 rounded-md">
-                          {parseFloat(area.avgScore).toFixed(1)}/10
-                        </span>
-                      </div>
-                      <div className="w-full bg-slate-100 rounded-full h-2 mb-3 overflow-hidden">
-                        <motion.div
-                          initial={{ width: 0 }}
-                          animate={{ width: `${Math.min((parseFloat(area.avgScore) / 10) * 100, 100)}%` }}
-                          transition={{ duration: 1, delay: 0.5 + idx * 0.1 }}
-                          className="bg-orange-600 h-full rounded-full"
-                        />
-                      </div>
-                      <div className="flex items-center justify-between">
-                         <p className="text-xs text-slate-400">
-                           Based on {area.attempts} session{area.attempts !== 1 ? "s" : ""}
-                         </p>
-                         <Link 
-                            to={`/practice?topic=${encodeURIComponent(area._id)}`}
-                            className="text-xs font-semibold text-orange-600 hover:text-orange-800 transition-colors flex items-center gap-1 opacity-0 group-hover:opacity-100 transform translate-x-[-10px] group-hover:translate-x-0 transition-all duration-300"
-                         >
-                            Practice
-                            <ArrowRight className="h-3 w-3" />
-                         </Link>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-8">
-                  <div className="bg-green-50 h-16 w-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <CheckCircle2 className="h-8 w-8 text-green-500" />
-                  </div>
-                  <p className="text-base font-semibold text-slate-800 mb-1">
-                    All systems go!
-                  </p>
-                  <p className="text-sm text-slate-500">
-                    You're performing well across all tracked topics.
-                  </p>
-                </div>
-              )}
-            </motion.div>
 
             {/* 3. Quick Tips */}
             <motion.div
