@@ -560,24 +560,24 @@ const SequentialInterview = () => {
         <motion.div 
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-8 bg-white rounded-2xl p-6 shadow-sm border border-slate-200"
+          className="mb-6 sm:mb-8 bg-white rounded-2xl p-4 sm:p-6 shadow-sm border border-slate-200"
         >
           <div className="flex items-center justify-between mb-3">
-            <span className="text-sm font-semibold text-indigo-600 uppercase tracking-wider">
+            <span className="text-xs sm:text-sm font-semibold text-indigo-600 uppercase tracking-wider">
               Question {currentQuestionIndex + 1} <span className="text-slate-400">/</span> {questions.length}
             </span>
             <button
               onClick={() => setShowExitModal(true)}
-              className="text-sm font-semibold text-slate-500 hover:text-slate-700 hover:bg-slate-100 px-3 py-1.5 rounded-lg transition-colors flex items-center gap-2"
+              className="text-xs sm:text-sm font-semibold text-slate-500 hover:text-slate-700 hover:bg-slate-100 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg transition-colors flex items-center gap-1 sm:gap-2"
             >
-              <LogOut className="h-4 w-4" />
+              <LogOut className="h-3 w-3 sm:h-4 sm:w-4" />
               Exit
             </button>
           </div>
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-sm font-bold text-slate-700">{Math.round(progress)}%</span>
+          <div className="flex items-center justify-between mb-2 sm:mb-3">
+            <span className="text-xs sm:text-sm font-bold text-slate-700">{Math.round(progress)}%</span>
           </div>
-          <div className="w-full bg-slate-100 rounded-full h-3 overflow-hidden">
+          <div className="w-full bg-slate-100 rounded-full h-2 sm:h-3 overflow-hidden">
             <motion.div
               className="bg-indigo-600 h-full rounded-full"
               initial={{ width: 0 }}
@@ -598,9 +598,9 @@ const SequentialInterview = () => {
           >
             <div className="absolute top-0 left-0 w-1 h-full bg-indigo-500" />
             
-            <div className="flex items-start justify-between gap-6 mb-8">
-              <div className="flex-1">
-                <div className="flex items-center gap-3 mb-4">
+            <div className="flex flex-col sm:flex-row items-start justify-between gap-4 sm:gap-6 mb-6 sm:mb-8">
+              <div className="flex-1 w-full">
+                <div className="flex items-center gap-3 mb-3 sm:mb-4">
                   <SpeakingAvatar 
                     isSpeaking={
                       playingAudio[`question_${currentQuestionIndex}`] || 
@@ -608,9 +608,9 @@ const SequentialInterview = () => {
                     } 
                     size="small" 
                   />
-                  <h2 className="text-lg sm:text-xl font-bold text-slate-900">Question {currentQuestionIndex + 1}</h2>
+                  <h2 className="text-base sm:text-lg md:text-xl font-bold text-slate-900">Question {currentQuestionIndex + 1}</h2>
                 </div>
-                <p className="text-lg sm:text-xl text-slate-800 leading-relaxed font-medium">{currentQuestion}</p>
+                <p className="text-base sm:text-lg md:text-xl text-slate-800 leading-relaxed font-medium">{currentQuestion}</p>
               </div>
               
               {questionAudioUrls[currentQuestionIndex] && (
@@ -623,7 +623,7 @@ const SequentialInterview = () => {
                       playAudio(questionAudioUrls[currentQuestionIndex], "question", currentQuestionIndex);
                     }
                   }}
-                  className={`flex items-center justify-center h-12 w-12 rounded-full transition-all shadow-md hover:shadow-lg flex-shrink-0 ${
+                  className={`self-end sm:self-start flex items-center justify-center h-10 w-10 sm:h-12 sm:w-12 rounded-full transition-all shadow-md hover:shadow-lg flex-shrink-0 ${
                     playingAudio[`question_${currentQuestionIndex}`]
                       ? "bg-indigo-100 text-indigo-600 hover:bg-indigo-200" 
                       : "bg-indigo-600 text-white hover:bg-indigo-700"
@@ -635,9 +635,9 @@ const SequentialInterview = () => {
                   }
                 >
                   {playingAudio[`question_${currentQuestionIndex}`] ? (
-                    <Pause className="h-5 w-5" />
+                    <Pause className="h-4 w-4 sm:h-5 sm:w-5" />
                   ) : (
-                    <Volume2 className="h-5 w-5" />
+                    <Volume2 className="h-4 w-4 sm:h-5 sm:w-5" />
                   )}
                 </button>
               )}

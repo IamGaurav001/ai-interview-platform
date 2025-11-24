@@ -666,25 +666,25 @@ const InterviewFlow = () => {
       <div className="sticky top-0 z-20 bg-white border-b border-slate-200 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <h1 className="text-lg font-bold text-slate-900">AI Interview Session</h1>
-              <span className="text-sm font-semibold text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full">
-                Question {questionCount} / ~25
+            <div className="flex items-center gap-2 sm:gap-4">
+              <h1 className="hidden sm:block text-lg font-bold text-slate-900">AI Interview Session</h1>
+              <span className="text-xs sm:text-sm font-semibold text-indigo-600 bg-indigo-50 px-2 sm:px-3 py-1 rounded-full whitespace-nowrap">
+                Q {questionCount} / ~25
               </span>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 sm:gap-3">
               <button
                 onClick={() => setShowExitModal(true)}
-                className="text-sm font-semibold text-slate-500 hover:text-slate-700 hover:bg-slate-100 px-4 py-2 rounded-lg transition-colors flex items-center gap-2"
+                className="text-xs sm:text-sm font-semibold text-slate-500 hover:text-slate-700 hover:bg-slate-100 px-2 sm:px-4 py-1.5 sm:py-2 rounded-lg transition-colors flex items-center gap-1 sm:gap-2"
               >
-                <LogOut className="h-4 w-4" />
-                Exit
+                <LogOut className="h-3 w-3 sm:h-4 sm:w-4" />
+                <span className="hidden sm:inline">Exit</span>
               </button>
               <button
                 onClick={() => handleEndInterview()}
-                className="text-sm font-semibold text-red-600 hover:text-red-700 hover:bg-red-50 px-4 py-2 rounded-lg transition-colors"
+                className="text-xs sm:text-sm font-semibold text-red-600 hover:text-red-700 hover:bg-red-50 px-2 sm:px-4 py-1.5 sm:py-2 rounded-lg transition-colors whitespace-nowrap"
               >
-                End Interview
+                End <span className="hidden sm:inline">Interview</span>
               </button>
             </div>
           </div>
