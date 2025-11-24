@@ -18,7 +18,8 @@ import {
   StopCircle,
   Bot,
   User,
-  LogOut
+  LogOut,
+  ChevronDown
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import AudioVisualizer from "../components/AudioVisualizer";
@@ -53,6 +54,7 @@ const InterviewFlow = () => {
   // Modal state
   const [showEndModal, setShowEndModal] = useState(false);
   const [showExitModal, setShowExitModal] = useState(false);
+  const [showTips, setShowTips] = useState(false);
 
   // Check for active session on mount
   useEffect(() => {
@@ -698,8 +700,8 @@ const InterviewFlow = () => {
       </div>
 
       {/* Split Screen Layout */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-[calc(100vh-180px)]">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 lg:h-[calc(100vh-180px)] h-auto min-h-[calc(100vh-180px)]">
           
           {/* LEFT PANEL - INTERVIEWER */}
           <AnimatePresence mode="wait">
@@ -724,7 +726,7 @@ const InterviewFlow = () => {
               </div>
 
               {/* Question Content */}
-              <div className="flex-1 overflow-y-auto p-6 space-y-6">
+              <div className="flex-1 lg:overflow-y-auto p-4 sm:p-6 space-y-4 sm:space-y-6">
                 <div>
                   <div className="flex items-center justify-between mb-4">
                     <span className="text-xs font-bold text-indigo-600 uppercase tracking-wider bg-indigo-50 px-3 py-1 rounded-full">
@@ -758,7 +760,7 @@ const InterviewFlow = () => {
                     </button>
                   </div>
                   
-                  <p className="text-2xl text-slate-900 leading-relaxed font-medium mb-4">
+                  <p className="text-lg sm:text-2xl text-slate-900 leading-relaxed font-medium mb-4">
                     {currentQuestion}
                   </p>
 
@@ -818,22 +820,41 @@ const InterviewFlow = () => {
                 )}
 
                 {/* Tips */}
-                <div className="bg-slate-50 rounded-xl p-5 border border-slate-200">
-                  <h4 className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-3">Interview Tips</h4>
-                  <ul className="space-y-2 text-sm text-slate-700">
-                    <li className="flex items-start gap-2">
-                      <span className="text-indigo-500 mt-1">•</span>
-                      <span>Be specific and provide concrete examples</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <span className="text-indigo-500 mt-1">•</span>
-                      <span>Structure your answer clearly (situation, action, result)</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <span className="text-indigo-500 mt-1">•</span>
-                      <span>Take your time to think before answering</span>
-                    </li>
-                  </ul>
+                <div className="bg-slate-50 rounded-xl border border-slate-200 overflow-hidden">
+                  <button 
+                    onClick={() => setShowTips(!showTips)}
+                    className="w-full flex items-center justify-between p-5 text-left hover:bg-slate-100 transition-colors"
+                  >
+                    <h4 className="text-xs font-bold text-slate-600 uppercase tracking-wider">Interview Tips</h4>
+                    <ChevronDown className={`h-4 w-4 text-slate-400 transition-transform duration-300 ${showTips ? "rotate-180" : ""}`} />
+                  </button>
+                  <AnimatePresence>
+                    {showTips && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.3, ease: "easeInOut" }}
+                      >
+                        <div className="px-5 pb-5">
+                          <ul className="space-y-2 text-sm text-slate-700">
+                            <li className="flex items-start gap-2">
+                              <span className="text-indigo-500 mt-1">•</span>
+                              <span>Be specific and provide concrete examples</span>
+                            </li>
+                            <li className="flex items-start gap-2">
+                              <span className="text-indigo-500 mt-1">•</span>
+                              <span>Structure your answer clearly (situation, action, result)</span>
+                            </li>
+                            <li className="flex items-start gap-2">
+                              <span className="text-indigo-500 mt-1">•</span>
+                              <span>Take your time to think before answering</span>
+                            </li>
+                          </ul>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
               </div>
             </motion.div>
@@ -860,7 +881,7 @@ const InterviewFlow = () => {
             </div>
 
             {/* Answer Input Area */}
-            <div className="flex-1 overflow-y-auto p-6 space-y-4">
+            <div className="flex-1 lg:overflow-y-auto p-4 sm:p-6 space-y-4">
               
               {/* Error Display - Moved to top for visibility */}
               {error && (
@@ -957,7 +978,7 @@ const InterviewFlow = () => {
                   value={currentAnswer}
                   onChange={(e) => setCurrentAnswer(e.target.value)}
                   placeholder="Type your detailed answer here... Be specific and provide examples from your experience."
-                  className="w-full p-5 border-2 border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 resize-none min-h-[300px] text-slate-800 leading-relaxed transition-all shadow-sm focus:shadow-md"
+                  className="w-full p-4 sm:p-5 border-2 border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 resize-none min-h-[200px] sm:min-h-[300px] text-slate-800 leading-relaxed transition-all shadow-sm focus:shadow-md"
                   disabled={loading || isComplete || isRecording}
                 />
                 <div className="absolute bottom-4 right-4 text-xs font-bold text-slate-400 bg-white px-3 py-1.5 rounded-lg border border-slate-200 shadow-sm">
@@ -970,7 +991,7 @@ const InterviewFlow = () => {
             </div>
 
             {/* Submit Button */}
-            <div className="p-6 bg-slate-50 border-t border-slate-200">
+            <div className="p-4 sm:p-6 bg-slate-50 border-t border-slate-200">
               <button
                 onClick={handleSubmitAnswer}
                 disabled={loading || isComplete || !currentAnswer.trim()}

@@ -62,7 +62,7 @@ const Landing = () => {
       </div>
 
       {/* Hero Section */}
-      <section className="relative z-10 pt-32 pb-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto text-center">
+      <section className="relative z-10 pt-24 sm:pt-32 pb-12 sm:pb-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto text-center">
         <motion.div 
           initial="hidden"
           animate="visible"
@@ -74,14 +74,14 @@ const Landing = () => {
             <span>AI-Powered Interview Prep</span>
           </motion.div>
           
-          <motion.h1 variants={fadeIn} className="text-5xl md:text-7xl font-bold tracking-tight mb-6 text-slate-900 leading-[1.1]">
+          <motion.h1 variants={fadeIn} className="text-4xl sm:text-5xl md:text-7xl font-bold tracking-tight mb-6 text-slate-900 leading-[1.1]">
             Master your interview. <br />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-blue-500">
               Land the job.
             </span>
           </motion.h1>
           
-          <motion.p variants={fadeIn} className="text-xl text-slate-500 mb-10 leading-relaxed max-w-2xl mx-auto">
+          <motion.p variants={fadeIn} className="text-lg sm:text-xl text-slate-500 mb-10 leading-relaxed max-w-2xl mx-auto">
             Practice with our hyper-realistic AI interviewer. Get instant feedback on your answers, body language, and speaking pace.
           </motion.p>
           
@@ -138,7 +138,7 @@ const Landing = () => {
           {/* Large Item */}
           <motion.div 
             whileHover={{ y: -5 }}
-            className="md:col-span-2 bg-gradient-to-br from-indigo-500 to-blue-600 rounded-3xl p-8 text-white relative overflow-hidden group"
+            className="md:col-span-2 bg-gradient-to-br from-indigo-500 to-blue-600 rounded-3xl p-6 sm:p-8 text-white relative overflow-hidden group"
           >
             <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -mr-16 -mt-16 transition-transform group-hover:scale-110" />
             <div className="relative z-10">
@@ -155,7 +155,7 @@ const Landing = () => {
           {/* Tall Item */}
           <motion.div 
             whileHover={{ y: -5 }}
-            className="md:row-span-2 bg-white border border-slate-200 rounded-3xl p-8 shadow-sm hover:shadow-md transition-all relative overflow-hidden group"
+            className="md:row-span-2 bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 shadow-sm hover:shadow-md transition-all relative overflow-hidden group"
           >
             <div className="absolute bottom-0 right-0 w-32 h-32 bg-green-50 rounded-full blur-2xl -mr-8 -mb-8" />
             <div className="h-12 w-12 bg-green-100 rounded-xl flex items-center justify-center mb-6 text-green-600">
@@ -179,7 +179,7 @@ const Landing = () => {
           {/* Standard Item */}
           <motion.div 
             whileHover={{ y: -5 }}
-            className="bg-white border border-slate-200 rounded-3xl p-8 shadow-sm hover:shadow-md transition-all group"
+            className="bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 shadow-sm hover:shadow-md transition-all group"
           >
             <div className="h-12 w-12 bg-orange-100 rounded-xl flex items-center justify-center mb-6 text-orange-600 group-hover:scale-110 transition-transform">
               <Brain className="h-6 w-6" />
@@ -193,7 +193,7 @@ const Landing = () => {
           {/* Standard Item */}
           <motion.div 
             whileHover={{ y: -5 }}
-            className="bg-white border border-slate-200 rounded-3xl p-8 shadow-sm hover:shadow-md transition-all group"
+            className="bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 shadow-sm hover:shadow-md transition-all group"
           >
             <div className="h-12 w-12 bg-blue-100 rounded-xl flex items-center justify-center mb-6 text-blue-600 group-hover:scale-110 transition-transform">
               <FileText className="h-6 w-6" />
@@ -207,8 +207,8 @@ const Landing = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="py-24 px-4 relative z-10">
-        <div className="max-w-5xl mx-auto bg-slate-900 rounded-[2.5rem] p-12 md:p-24 text-center relative overflow-hidden">
+      <section className="py-12 sm:py-24 px-4 relative z-10">
+        <div className="max-w-5xl mx-auto bg-slate-900 rounded-[2.5rem] p-8 sm:p-12 md:p-24 text-center relative overflow-hidden">
           {/* Abstract Shapes */}
           <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0">
              <div className="absolute top-[-20%] left-[20%] w-[60%] h-[60%] bg-indigo-500/30 rounded-full blur-3xl" />
@@ -216,7 +216,7 @@ const Landing = () => {
           </div>
           
           <div className="relative z-10">
-            <h2 className="text-4xl md:text-5xl font-bold text-white mb-6 tracking-tight">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-6 tracking-tight">
               Ready to upgrade your career?
             </h2>
             <p className="text-slate-300 text-xl mb-10 max-w-2xl mx-auto font-light">
@@ -236,11 +236,11 @@ const Landing = () => {
       </section>
 
       {/* Footer */}
-      <footer className="bg-white py-16 border-t border-slate-200 relative z-10">
+      <footer className="bg-white py-8 sm:py-16 border-t border-slate-200 relative z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid md:grid-cols-4 gap-12 mb-12">
-            <div className="col-span-1 md:col-span-1">
-              <img src={logo} alt="Logo" className="h-8 w-auto mb-6" />
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-8 md:gap-12 mb-8 md:mb-12">
+            <div className="col-span-2 md:col-span-1">
+              <img src={logo} alt="Logo" className="h-8 w-auto mb-4 sm:mb-6" />
               <p className="text-slate-500 text-sm leading-relaxed">
                 The smartest way to prepare for your next interview.
               </p>
@@ -261,15 +261,9 @@ const Landing = () => {
                 <li><Link to="/contact" className="hover:text-indigo-600 transition-colors">Contact</Link></li>
               </ul>
             </div>
-            <div>
-              <h4 className="font-bold text-slate-900 mb-6">Legal</h4>
-              <ul className="space-y-4 text-sm text-slate-500">
-                <li><Link to="/privacy" className="hover:text-indigo-600 transition-colors">Privacy Policy</Link></li>
-                <li><Link to="/terms" className="hover:text-indigo-600 transition-colors">Terms of Service</Link></li>
-              </ul>
-            </div>
+            
           </div>
-          <div className="pt-8 border-t border-slate-100 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-slate-400">
+          <div className="pt-6 md:pt-8 border-t border-slate-100 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-slate-400">
             <p>© {new Date().getFullYear()} PrepHire. All rights reserved.</p>
             <div className="flex gap-6">
               <a href="#" className="hover:text-slate-600">Twitter</a>
@@ -312,7 +306,7 @@ const HeroDashboardPreview = () => {
     <div className="rounded-3xl bg-slate-50 shadow-2xl ring-1 ring-slate-900/5 overflow-hidden flex flex-col w-full aspect-[16/9] md:aspect-[2.3/1] relative group">
       
       {/* Window Header */}
-      <div className="flex items-center justify-between border-b border-slate-200 bg-white px-6 py-4 z-20 shadow-sm">
+      <div className="flex items-center justify-between border-b border-slate-200 bg-white px-4 py-3 sm:px-6 sm:py-4 z-20 shadow-sm">
         <div className="flex items-center gap-4">
           <div className="flex space-x-2">
             <div className="h-3 w-3 rounded-full bg-[#FF5F56] shadow-sm" />
@@ -330,7 +324,7 @@ const HeroDashboardPreview = () => {
       </div>
 
       {/* Dashboard Content - Scrollable Area */}
-      <div className="flex-1 p-6 overflow-y-auto custom-scrollbar bg-slate-50/50 relative">
+      <div className="flex-1 p-4 sm:p-6 overflow-y-auto custom-scrollbar bg-slate-50/50 relative">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-6 pb-6">
           
           {/* LEFT COLUMN (3 cols) - AI & Stats */}

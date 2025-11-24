@@ -440,7 +440,7 @@ const SequentialInterview = () => {
     const overallScore = calculateOverallScore();
     return (
       <PageLayout>
-        <div className="max-w-4xl mx-auto py-12">
+        <div className="max-w-4xl mx-auto py-6 sm:py-12 px-4 sm:px-6">
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -450,14 +450,14 @@ const SequentialInterview = () => {
             <div className="mx-auto h-20 w-20 bg-emerald-100 rounded-full flex items-center justify-center mb-6 shadow-sm">
               <Trophy className="h-10 w-10 text-emerald-600" />
             </div>
-            <h1 className="text-4xl font-bold text-slate-900 mb-3">Interview Complete! 🎉</h1>
-            <p className="text-lg text-slate-600">Here's your performance summary</p>
+            <h1 className="text-2xl sm:text-4xl font-bold text-slate-900 mb-3">Interview Complete! 🎉</h1>
+            <p className="text-base sm:text-lg text-slate-600">Here's your performance summary</p>
           </div>
 
           {/* Overall Score Card */}
-          <div className="bg-white rounded-2xl shadow-xl p-8 border border-slate-200 mb-8 text-center">
-            <h2 className="text-2xl font-bold text-slate-900 mb-4">Overall Score</h2>
-            <div className="text-7xl font-bold text-indigo-600 mb-2 tracking-tight">{overallScore}/10</div>
+          <div className="bg-white rounded-2xl shadow-xl p-6 sm:p-8 border border-slate-200 mb-8 text-center">
+            <h2 className="text-xl sm:text-2xl font-bold text-slate-900 mb-4">Overall Score</h2>
+            <div className="text-5xl sm:text-7xl font-bold text-indigo-600 mb-2 tracking-tight">{overallScore}/10</div>
             <p className="text-slate-500 font-medium">
               Based on {feedbacks.length} question{feedbacks.length !== 1 ? "s" : ""}
             </p>
@@ -471,7 +471,7 @@ const SequentialInterview = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: idx * 0.1 }}
-                className="bg-white rounded-xl shadow-md p-6 border border-slate-200 hover:shadow-lg transition-shadow"
+                className="bg-white rounded-xl shadow-md p-4 sm:p-6 border border-slate-200 hover:shadow-lg transition-shadow"
               >
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex-1">
@@ -503,7 +503,7 @@ const SequentialInterview = () => {
 
                 {feedbacks[idx] && (
                   <div className="mt-6 pt-6 border-t border-slate-100">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 mb-6">
                       <div className="bg-green-50 rounded-lg p-4 border border-green-100">
                         {renderScoreBar(feedbacks[idx].correctness, "Correctness", "bg-green-500")}
                       </div>
@@ -537,7 +537,7 @@ const SequentialInterview = () => {
             </button>
             <button
               onClick={() => navigate("/dashboard")}
-              className="px-8 py-4 bg-white border-2 border-slate-200 text-slate-700 rounded-xl font-semibold hover:bg-slate-50 hover:border-slate-300 transition-all shadow-sm hover:shadow-md"
+              className="px-8 py-4 bg-white border-2 border-slate-200 text-slate-700 rounded-xl font-semibold hover:bg-slate-50 hover:border-slate-300 transition-all shadow-sm hover:shadow-md w-full sm:w-auto"
             >
               Back to Dashboard
             </button>
@@ -555,7 +555,7 @@ const SequentialInterview = () => {
 
   return (
     <PageLayout>
-      <div className="max-w-4xl mx-auto py-8">
+      <div className="max-w-4xl mx-auto py-4 sm:py-8 px-4 sm:px-6">
         {/* Progress Bar */}
         <motion.div 
           initial={{ opacity: 0, y: -20 }}
@@ -594,7 +594,7 @@ const SequentialInterview = () => {
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
-            className="bg-white rounded-2xl shadow-xl p-8 border border-slate-200 mb-6 relative overflow-hidden"
+            className="bg-white rounded-2xl shadow-xl p-4 sm:p-8 border border-slate-200 mb-6 relative overflow-hidden"
           >
             <div className="absolute top-0 left-0 w-1 h-full bg-indigo-500" />
             
@@ -608,9 +608,9 @@ const SequentialInterview = () => {
                     } 
                     size="small" 
                   />
-                  <h2 className="text-xl font-bold text-slate-900">Question {currentQuestionIndex + 1}</h2>
+                  <h2 className="text-lg sm:text-xl font-bold text-slate-900">Question {currentQuestionIndex + 1}</h2>
                 </div>
-                <p className="text-xl text-slate-800 leading-relaxed font-medium">{currentQuestion}</p>
+                <p className="text-lg sm:text-xl text-slate-800 leading-relaxed font-medium">{currentQuestion}</p>
               </div>
               
               {questionAudioUrls[currentQuestionIndex] && (
@@ -744,7 +744,7 @@ const SequentialInterview = () => {
                   value={currentAnswer}
                   onChange={(e) => setCurrentAnswer(e.target.value)}
                   placeholder="Type your detailed answer here... Be specific and provide examples."
-                  className="w-full p-5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none min-h-[200px] text-slate-700 leading-relaxed transition-shadow shadow-sm focus:shadow-md"
+                  className="w-full p-4 sm:p-5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none min-h-[200px] text-slate-700 leading-relaxed transition-shadow shadow-sm focus:shadow-md"
                   disabled={loading}
                 />
                 <div className="absolute bottom-4 right-4 text-xs font-medium text-slate-400 bg-white px-2 py-1 rounded-md border border-slate-100 shadow-sm">
@@ -766,7 +766,7 @@ const SequentialInterview = () => {
                   <CheckCircle2 className="h-6 w-6 text-emerald-600" />
                   Feedback
                 </h3>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 mb-6">
                   <div className="bg-green-50 rounded-xl p-4 border border-green-100">
                     {renderScoreBar(
                       feedbacks[currentQuestionIndex].correctness,
