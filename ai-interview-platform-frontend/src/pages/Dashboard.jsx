@@ -426,9 +426,7 @@ const Dashboard = () => {
                         transition={{ duration: 0.5 }}
                         className="grid grid-cols-1 lg:grid-cols-3 gap-4"
                       >
-                        {/* Question & Answer Section */}
                         <div className="lg:col-span-2 space-y-3">
-                          {/* Question */}
                           <div className="bg-white rounded-xl p-4 shadow-sm border border-slate-200">
                             <div className="flex items-start gap-3">
                               <div className="h-8 w-8 bg-indigo-100 rounded-lg flex items-center justify-center flex-shrink-0">
@@ -443,7 +441,6 @@ const Dashboard = () => {
                             </div>
                           </div>
 
-                          {/* Answer */}
                           <div className="bg-white rounded-xl p-4 shadow-sm border border-slate-200">
                             <div className="flex items-start gap-3">
                               <div className="h-8 w-8 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
@@ -639,7 +636,7 @@ const Dashboard = () => {
             </motion.div>
 
 
-            {/* 3. Quick Tips */}
+            {/* 2. Quick Tips */}
             <motion.div
               variants={itemVariants}
               className="bg-blue-800 rounded-2xl shadow-lg p-6 text-white"
