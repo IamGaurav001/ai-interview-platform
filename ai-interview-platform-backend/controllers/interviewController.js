@@ -915,6 +915,50 @@ export const endInterview = async (req, res) => {
       answers.push(pair.answer);
     });
 
+    // ✅ Handle case where no valid questions were answered
+    if (questions.length === 0) {
+      const emptySummary = {
+        overallScore: 0,
+        strengths: ["N/A"],
+        weaknesses: ["No questions answered"],
+        summary: "The interview was ended before any questions were answered.",
+        recommendations: ["Please complete at least one question to get an evaluation."],
+        technicalDepth: 0,
+        problemSolving: 0,
+        communication: 0,
+        experienceRelevance: 0,
+      };
+
+      // Save empty session
+      const interviewSession = await InterviewSession.create({
+        userId: req.user._id,
+        domain: "Resume-Based",
+        questions: [],
+        answers: [],
+        feedback: {
+          summary: emptySummary,
+          all: [],
+        },
+        score: 0,
+      });
+
+      // Cleanup Redis
+      try {
+        await redisClient.del(sessionKey);
+        await redisClient.del(`feedback:${userId}`);
+      } catch (redisError) {
+        console.warn("⚠️ Failed to cleanup Redis:", redisError.message);
+      }
+
+      return res.json({
+        success: true,
+        sessionId: interviewSession._id,
+        summary: emptySummary,
+        score: 0,
+        message: "Interview ended with no answers.",
+      });
+    }
+
     // Now map feedbacks from Redis cache to questions
     // The cached feedbacks are in chronological order (one per answer)
     // Ensure we have feedback for each question-answer pair
@@ -1038,19 +1082,18 @@ Return ONLY valid JSON, no markdown, no code blocks.`;
     } catch (error) {
       console.error("❌ Error generating summary:", error.message);
       finalSummary = {
-        overallScore: 7,
-        strengths: ["Good communication", "Relevant experience"],
-        weaknesses: ["Could improve technical depth"],
+        overallScore: 0,
+        strengths: ["N/A"],
+        weaknesses: ["Evaluation failed"],
         summary:
-          "Interview completed successfully. Due to service limitations, detailed evaluation could not be generated at this time.",
+          "Interview completed, but detailed evaluation could not be generated due to a service error.",
         recommendations: [
-          "Continue practicing technical questions",
-          "Review system design concepts",
+          "Please try again later",
         ],
-        technicalDepth: 7,
-        problemSolving: 7,
-        communication: 7,
-        experienceRelevance: 7,
+        technicalDepth: 0,
+        problemSolving: 0,
+        communication: 0,
+        experienceRelevance: 0,
       };
     }
 
