@@ -8,6 +8,7 @@ const userSchema = new mongoose.Schema(
     nickname: { type: String },
     resumeUrl: { type: String },
     skills: [String],
+    lastLoginAt: { type: Date, index: true }, 
   },
   { timestamps: true }
 );

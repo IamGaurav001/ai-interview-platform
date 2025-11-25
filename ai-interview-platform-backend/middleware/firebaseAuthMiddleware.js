@@ -1,15 +1,10 @@
 import admin from "../config/firebaseAdmin.js";
 import User from "../models/User.js";
 
-/**
- * Firebase Authentication Middleware
- * Verifies Firebase ID token and attaches user to request
- */
 export const verifyFirebaseToken = async (req, res, next) => {
   try {
     let token;
 
-    // Extract token from Authorization header
     if (
       req.headers.authorization &&
       req.headers.authorization.startsWith("Bearer")
@@ -23,22 +18,31 @@ export const verifyFirebaseToken = async (req, res, next) => {
       });
     }
 
-    // Verify Firebase ID token
     const decodedToken = await admin.auth().verifyIdToken(token);
     const firebaseUid = decodedToken.uid;
 
-    // Find or create user in MongoDB
     let user = await User.findOne({ firebaseUid });
 
     if (!user) {
-      // Create user if doesn't exist (first time login after Firebase registration)
       user = await User.create({
         firebaseUid,
         email: decodedToken.email || "",
         name: decodedToken.name || decodedToken.email?.split("@")[0] || "User",
+        lastLoginAt: new Date(), 
       });
     } else {
-      // Update email/name if changed in Firebase
+      const SESSION_DURATION = 24 * 60 * 60 * 1000;
+      
+      if (user.lastLoginAt) {
+        const sessionAge = Date.now() - new Date(user.lastLoginAt).getTime();
+        if (sessionAge > SESSION_DURATION) {
+          return res.status(401).json({ 
+            code: "SESSION_EXPIRED",
+            message: "Your session has expired. Please login again." 
+          });
+        }
+      }
+      
       if (decodedToken.email && user.email !== decodedToken.email) {
         user.email = decodedToken.email;
       }
@@ -48,7 +52,6 @@ export const verifyFirebaseToken = async (req, res, next) => {
       await user.save();
     }
 
-    // Attach user to request
     req.user = user;
     req.firebaseUid = firebaseUid;
     next();
