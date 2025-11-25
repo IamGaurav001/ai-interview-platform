@@ -429,36 +429,39 @@ const HeroDashboardPreview = () => {
 
             {/* Answer */}
             <motion.div 
-              className="bg-gradient-to-br from-indigo-600 to-violet-600 p-4 rounded-2xl rounded-br-sm shadow-lg border border-indigo-500/20 relative overflow-hidden flex-1"
+              className="bg-gradient-to-br from-indigo-600 to-violet-600 p-6 rounded-2xl rounded-br-sm shadow-lg border border-indigo-500/20 relative overflow-hidden flex-1 flex flex-col items-center justify-center text-center"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3, delay: 0.1 }}
             >
-              <div className="flex gap-3 h-full relative z-10">
-                <div className="h-6 w-6 rounded-full bg-white/20 flex-shrink-0 flex items-center justify-center text-[10px] text-white font-bold">ME</div>
-                <div className="flex flex-col h-full w-full">
-                  <div className="text-[10px] text-indigo-200 mb-1">Candidate</div>
-                  <motion.p 
-                    key={`a-${index}`}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    className="text-sm font-medium text-white leading-relaxed"
-                  >
-                    {mockData[index].answer}
-                  </motion.p>
-                  
-                  {/* Typing Dots */}
-                  <div className="flex gap-1 mt-3 opacity-60">
-                    {[0, 1, 2].map((i) => (
-                      <motion.div
-                        key={i}
-                        className="h-1.5 w-1.5 rounded-full bg-white"
-                        animate={{ opacity: [0.3, 1, 0.3] }}
-                        transition={{ duration: 1.5, repeat: Infinity, delay: i * 0.2 }}
-                      />
-                    ))}
-                  </div>
-                </div>
+              {/* Avatar - Absolute Top Left */}
+              <div className="absolute top-4 left-4 h-10 w-10 rounded-full bg-white/20 flex items-center justify-center text-xs text-white font-bold shadow-sm">
+                ME
+              </div>
+
+              {/* Label - Centered Top */}
+              <div className="text-sm text-indigo-200 mb-4 font-medium tracking-wide">Candidate</div>
+              
+              {/* Answer Text - Centered */}
+              <motion.p 
+                key={`a-${index}`}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="text-lg font-medium text-white leading-relaxed max-w-[90%]"
+              >
+                {mockData[index].answer}
+              </motion.p>
+              
+              {/* Typing Dots - Absolute Bottom Left */}
+              <div className="absolute bottom-4 left-4 flex gap-1.5 opacity-60">
+                {[0, 1, 2].map((i) => (
+                  <motion.div
+                    key={i}
+                    className="h-2 w-2 rounded-full bg-white"
+                    animate={{ opacity: [0.3, 1, 0.3] }}
+                    transition={{ duration: 1.5, repeat: Infinity, delay: i * 0.2 }}
+                  />
+                ))}
               </div>
             </motion.div>
           </div>
