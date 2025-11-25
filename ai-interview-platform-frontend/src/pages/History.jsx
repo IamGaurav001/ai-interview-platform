@@ -110,6 +110,7 @@ const History = () => {
   const [error, setError] = useState("");
   const [expandedSessions, setExpandedSessions] = useState({});
   const [filterDomain, setFilterDomain] = useState("All");
+  const [sortBy, setSortBy] = useState("date");
 
 
   useEffect(() => {
