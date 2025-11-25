@@ -222,3 +222,21 @@ button {
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background-color: rgba(148, 163, 184, 0.8);
 }
+
+/* Auto-scroll animation for mobile company logos */
+@keyframes scroll-mobile {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-scroll-mobile {
+  animation: scroll-mobile 15s linear infinite;
+}
+
+.animate-scroll-mobile:hover {
+  animation-play-state: paused;
+}

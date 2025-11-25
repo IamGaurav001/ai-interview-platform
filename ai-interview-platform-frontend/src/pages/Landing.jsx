@@ -62,7 +62,7 @@ const Landing = () => {
       </div>
 
       {/* Hero Section */}
-      <section className="relative z-10 pt-24 sm:pt-32 pb-12 sm:pb-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto text-center">
+      <section className="relative z-10 min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto text-center">
         <motion.div 
           initial="hidden"
           animate="visible"
@@ -112,10 +112,33 @@ const Landing = () => {
       </section>
 
       {/* Social Proof */}
-      <section className="py-10 border-y border-slate-100 bg-white/50 backdrop-blur-sm relative z-10">
+      <section className="py-10 border-y border-slate-100 bg-white/50 backdrop-blur-sm relative z-10 overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 text-center">
           <p className="text-sm font-medium text-slate-500 mb-6 uppercase tracking-widest">Trusted by top candidates</p>
-          <div className="flex flex-wrap justify-center gap-8 md:gap-16 opacity-40 grayscale transition-all hover:grayscale-0 hover:opacity-100 duration-500">
+          
+          {/* Mobile: Auto-scrolling */}
+          <div className="md:hidden relative">
+            <div className="flex animate-scroll-mobile">
+              <div className="flex gap-8 px-4 whitespace-nowrap">
+                <span className="text-xl font-bold text-slate-800 opacity-40">Google</span>
+                <span className="text-xl font-bold text-slate-800 opacity-40">Amazon</span>
+                <span className="text-xl font-bold text-slate-800 opacity-40">Microsoft</span>
+                <span className="text-xl font-bold text-slate-800 opacity-40">Netflix</span>
+                <span className="text-xl font-bold text-slate-800 opacity-40">Uber</span>
+              </div>
+              {/* Duplicate for seamless loop */}
+              <div className="flex gap-8 px-4 whitespace-nowrap">
+                <span className="text-xl font-bold text-slate-800 opacity-40">Google</span>
+                <span className="text-xl font-bold text-slate-800 opacity-40">Amazon</span>
+                <span className="text-xl font-bold text-slate-800 opacity-40">Microsoft</span>
+                <span className="text-xl font-bold text-slate-800 opacity-40">Netflix</span>
+                <span className="text-xl font-bold text-slate-800 opacity-40">Uber</span>
+              </div>
+            </div>
+          </div>
+          
+          {/* Desktop: Static centered */}
+          <div className="hidden md:flex flex-wrap justify-center gap-8 md:gap-16 opacity-40 grayscale transition-all hover:grayscale-0 hover:opacity-100 duration-500">
              <span className="text-xl font-bold text-slate-800">Google</span>
              <span className="text-xl font-bold text-slate-800">Amazon</span>
              <span className="text-xl font-bold text-slate-800">Microsoft</span>
@@ -303,7 +326,7 @@ const HeroDashboardPreview = () => {
   }, []);
 
   return (
-    <div className="rounded-3xl bg-slate-50 shadow-2xl ring-1 ring-slate-900/5 overflow-hidden flex flex-col w-full aspect-[16/9] md:aspect-[2.3/1] relative group">
+    <div className="rounded-3xl bg-slate-50 shadow-2xl ring-1 ring-slate-900/5 overflow-hidden flex flex-col w-full h-[300px] md:h-auto md:aspect-[2.3/1] relative group">
       
       {/* Window Header */}
       <div className="flex items-center justify-between border-b border-slate-200 bg-white px-4 py-3 sm:px-6 sm:py-4 z-20 shadow-sm">
