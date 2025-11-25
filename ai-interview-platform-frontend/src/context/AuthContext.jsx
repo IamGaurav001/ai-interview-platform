@@ -18,14 +18,12 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Helper function to get and store Firebase ID token
   const updateToken = async (firebaseUser) => {
     if (firebaseUser) {
       try {
         const token = await firebaseUser.getIdToken();
         localStorage.setItem("firebaseToken", token);
-        // Set up token refresh
-        firebaseUser.getIdToken(true); // Force refresh to get latest token
+        firebaseUser.getIdToken(true); 
       } catch (error) {
         console.error("Error getting Firebase token:", error);
         localStorage.removeItem("firebaseToken");
@@ -35,19 +33,44 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const checkSessionExpiry = () => {
+    const loginTimestamp = localStorage.getItem("loginTimestamp");
+    if (!loginTimestamp) return false; 
+    
+    const sessionAge = Date.now() - parseInt(loginTimestamp);
+    const SESSION_DURATION = 24 * 60 * 60 * 1000;
+    return sessionAge > SESSION_DURATION;
+  };
+
+  const handleSessionExpiry = async () => {
+    if (checkSessionExpiry()) {
+      console.log("Session expired - logging out");
+      await logout();
+    }
+  };
+
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
         await updateToken(firebaseUser);
-        setUser(firebaseUser);
+        
+        if (checkSessionExpiry()) {
+          console.log("Session expired on auth state change");
+          await signOut(auth);
+          localStorage.removeItem("firebaseToken");
+          localStorage.removeItem("loginTimestamp");
+          setUser(null);
+        } else {
+          setUser(firebaseUser);
+        }
       } else {
         localStorage.removeItem("firebaseToken");
+        localStorage.removeItem("loginTimestamp");
         setUser(null);
       }
       setLoading(false);
     });
 
-    // Set up token refresh every 50 minutes (tokens expire after 1 hour)
     const tokenRefreshInterval = setInterval(async () => {
       const currentUser = auth.currentUser;
       if (currentUser) {
@@ -58,11 +81,14 @@ export const AuthProvider = ({ children }) => {
           console.error("Error refreshing token:", error);
         }
       }
-    }, 50 * 60 * 1000); // 50 minutes
+    }, 50 * 60 * 1000); 
+
+    const sessionCheckInterval = setInterval(handleSessionExpiry, 60 * 1000); // 1 minute
 
     return () => {
       unsub();
       clearInterval(tokenRefreshInterval);
+      clearInterval(sessionCheckInterval);
     };
   }, []);
 
@@ -77,8 +103,10 @@ export const AuthProvider = ({ children }) => {
       await updateProfile(userCredential.user, { displayName });
     }
 
-    // Get and store token
     await updateToken(userCredential.user);
+    
+    localStorage.setItem("loginTimestamp", Date.now().toString());
+    
     setUser(userCredential.user);
 
     return userCredential.user;
@@ -91,8 +119,10 @@ export const AuthProvider = ({ children }) => {
       password
     );
     
-    // Get and store token
     await updateToken(userCredential.user);
+    
+    localStorage.setItem("loginTimestamp", Date.now().toString());
+    
     setUser(userCredential.user);
     
     return userCredential.user;
@@ -101,6 +131,7 @@ export const AuthProvider = ({ children }) => {
   const logout = async () => {
     await signOut(auth);
     localStorage.removeItem("firebaseToken");
+    localStorage.removeItem("loginTimestamp");
     setUser(null);
   };
 
@@ -111,11 +142,13 @@ export const AuthProvider = ({ children }) => {
     try {
       const result = await signInWithPopup(auth, provider);
       await updateToken(result.user);
+      
+      localStorage.setItem("loginTimestamp", Date.now().toString());
+      
       setUser(result.user);
       return result.user;
     } catch (error) {
       if (error?.code === "auth/popup-blocked") {
-        // Fallback to redirect flow
         await signInWithRedirect(auth, provider);
         return null;
       }
