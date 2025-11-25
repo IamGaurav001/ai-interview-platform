@@ -39,12 +39,8 @@ const InterviewFlow = () => {
   const [isComplete, setIsComplete] = useState(false);
   const [summary, setSummary] = useState(null);
   const [saving, setSaving] = useState(false);
-  const [questionAudioUrl, setQuestionAudioUrl] = useState(null);
-  const [feedbackAudioUrl, setFeedbackAudioUrl] = useState(null);
   const [isPlayingQuestion, setIsPlayingQuestion] = useState(false);
   const [isPlayingFeedback, setIsPlayingFeedback] = useState(false);
-  const [questionAudio, setQuestionAudio] = useState(null);
-  const [feedbackAudio, setFeedbackAudio] = useState(null);
   const [isRecording, setIsRecording] = useState(false);
   const [mediaRecorder, setMediaRecorder] = useState(null);
   const [recordedAudio, setRecordedAudio] = useState(null);
@@ -61,17 +57,9 @@ const InterviewFlow = () => {
     checkActiveSession();
   }, []);
 
-  // Cleanup audio on unmount
+  // Cleanup on unmount
   useEffect(() => {
     return () => {
-      if (questionAudio) {
-        questionAudio.pause();
-        questionAudio.src = "";
-      }
-      if (feedbackAudio) {
-        feedbackAudio.pause();
-        feedbackAudio.src = "";
-      }
       // Stop recording if active
       if (mediaRecorder && isRecording) {
         mediaRecorder.stop();
@@ -79,7 +67,7 @@ const InterviewFlow = () => {
       // Stop browser TTS
       window.speechSynthesis.cancel();
     };
-  }, [questionAudio, feedbackAudio, mediaRecorder, isRecording]);
+  }, [mediaRecorder, isRecording]);
 
   // Recording timer
   useEffect(() => {
@@ -124,13 +112,8 @@ const InterviewFlow = () => {
         setConversationHistory([
           { role: "interviewer", text: res.data.question, timestamp: new Date().toISOString() }
         ]);
-        // Set audio URL if available
-        if (res.data.audioUrl) {
-          console.log("✅ Audio URL received:", res.data.audioUrl);
-          setQuestionAudioUrl(res.data.audioUrl);
-        } else {
-          console.warn("⚠️ No audio URL in response:", res.data);
-        }
+        // Auto-play question using browser TTS
+        playBrowserTTS(res.data.question, "question");
       } else {
         setError(res.data.message || "Failed to start interview");
       }
@@ -174,18 +157,8 @@ const InterviewFlow = () => {
         // Add feedback and next question
         if (res.data.feedback) {
           setFeedback(res.data.feedback);
-        }
-
-        // Set audio URLs if available
-        if (res.data.feedbackAudioUrl) {
-          console.log("✅ Feedback audio URL received:", res.data.feedbackAudioUrl);
-          setFeedbackAudioUrl(res.data.feedbackAudioUrl);
-        }
-        if (res.data.questionAudioUrl) {
-          console.log("✅ Question audio URL received:", res.data.questionAudioUrl);
-          setQuestionAudioUrl(res.data.questionAudioUrl);
-        } else {
-          console.warn("⚠️ No question audio URL in response:", res.data);
+          // Auto-play feedback using browser TTS
+          playBrowserTTS(res.data.feedback, "feedback");
         }
 
         if (res.data.isComplete) {
@@ -217,75 +190,6 @@ const InterviewFlow = () => {
       }
     } finally {
       setLoading(false);
-    }
-  };
-
-  const playAudio = (audioUrl, type = "question", text = null) => {
-    // If audioUrl is available, use it
-    if (audioUrl) {
-      // Stop any currently playing audio
-      if (type === "question" && questionAudio) {
-        questionAudio.pause();
-        questionAudio.src = "";
-      }
-      if (type === "feedback" && feedbackAudio) {
-        feedbackAudio.pause();
-        feedbackAudio.src = "";
-      }
-
-      // Create new audio instance
-      const audio = new Audio(audioUrl);
-      
-      if (type === "question") {
-        setQuestionAudio(audio);
-        setIsPlayingQuestion(true);
-      } else {
-        setFeedbackAudio(audio);
-        setIsPlayingFeedback(true);
-      }
-
-      audio.play().catch((err) => {
-        console.error("Error playing audio:", err);
-        // Fallback to browser TTS if audio file fails
-        if (text) {
-          playBrowserTTS(text, type);
-        } else {
-          if (type === "question") {
-            setIsPlayingQuestion(false);
-          } else {
-            setIsPlayingFeedback(false);
-          }
-        }
-      });
-
-      audio.onended = () => {
-        if (type === "question") {
-          setIsPlayingQuestion(false);
-          setQuestionAudio(null);
-        } else {
-          setIsPlayingFeedback(false);
-          setFeedbackAudio(null);
-        }
-      };
-
-      audio.onerror = () => {
-        console.error("Audio playback error, falling back to browser TTS");
-        // Fallback to browser TTS
-        if (text) {
-          playBrowserTTS(text, type);
-        } else {
-          if (type === "question") {
-            setIsPlayingQuestion(false);
-            setQuestionAudio(null);
-          } else {
-            setIsPlayingFeedback(false);
-            setFeedbackAudio(null);
-          }
-        }
-      };
-    } else if (text) {
-      // No audio URL, use browser TTS as fallback
-      playBrowserTTS(text, type);
     }
   };
 
@@ -345,20 +249,7 @@ const InterviewFlow = () => {
     window.speechSynthesis.speak(utterance);
   };
 
-  const stopAudio = (type = "question") => {
-    // Stop file-based audio
-    if (type === "question" && questionAudio) {
-      questionAudio.pause();
-      questionAudio.src = "";
-      setQuestionAudio(null);
-      setIsPlayingQuestion(false);
-    }
-    if (type === "feedback" && feedbackAudio) {
-      feedbackAudio.pause();
-      feedbackAudio.src = "";
-      setFeedbackAudio(null);
-      setIsPlayingFeedback(false);
-    }
+  const stopBrowserTTS = (type = "question") => {
     // Stop browser TTS
     window.speechSynthesis.cancel();
     if (type === "question") {
@@ -451,14 +342,8 @@ const InterviewFlow = () => {
             // Add feedback and next question
             if (nextRes.data.feedback) {
               setFeedback(nextRes.data.feedback);
-            }
-
-            // Set audio URLs if available
-            if (nextRes.data.feedbackAudioUrl) {
-              setFeedbackAudioUrl(nextRes.data.feedbackAudioUrl);
-            }
-            if (nextRes.data.questionAudioUrl) {
-              setQuestionAudioUrl(nextRes.data.questionAudioUrl);
+              // Auto-play feedback using browser TTS
+              playBrowserTTS(nextRes.data.feedback, "feedback");
             }
 
             if (nextRes.data.isComplete) {
@@ -487,9 +372,6 @@ const InterviewFlow = () => {
           // Still show the transcribed text and feedback from voice evaluation
           if (res.data.feedback) {
             setFeedback(res.data.feedback.overall_feedback || res.data.feedback);
-          }
-          if (res.data.audioUrl) {
-            setFeedbackAudioUrl(res.data.audioUrl);
           }
           setError("Voice transcribed successfully, but failed to continue interview. Please try submitting again.");
         }
@@ -735,9 +617,9 @@ const InterviewFlow = () => {
                     <button
                       onClick={() => {
                         if (isPlayingQuestion) {
-                          stopAudio("question");
+                          stopBrowserTTS("question");
                         } else {
-                          playAudio(questionAudioUrl, "question", currentQuestion);
+                          playBrowserTTS(currentQuestion, "question");
                         }
                       }}
                       className={`flex items-center gap-2 px-4 py-2 rounded-lg font-semibold text-sm transition-all shadow-sm ${
@@ -793,9 +675,9 @@ const InterviewFlow = () => {
                       <button
                         onClick={() => {
                           if (isPlayingFeedback) {
-                            stopAudio("feedback");
+                            stopBrowserTTS("feedback");
                           } else {
-                            playAudio(feedbackAudioUrl, "feedback", feedback);
+                            playBrowserTTS(feedback, "feedback");
                           }
                         }}
                         className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white text-emerald-700 hover:bg-emerald-100 font-semibold text-sm transition-colors shadow-sm"
