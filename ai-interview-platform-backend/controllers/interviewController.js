@@ -4,7 +4,6 @@ import dotenv from "dotenv";
 import InterviewSession from "../models/InterviewSession.js";
 import { parseFeedbackSafely, calculateSafeScore } from "../utils/aiHelper.js";
 import { callGeminiWithRetry } from "../utils/geminiHelper.js";
-import { geminiTextToSpeech } from "../utils/geminiTTS.js";
 import { geminiSpeechToText } from "../utils/geminiSTT.js";
 import fs from "fs";
 import path from "path";
@@ -29,15 +28,10 @@ export const evaluateAnswer = async (req, res) => {
     const cached = await redisClient.get(cacheKey);
     if (cached) {
       const parsed = JSON.parse(cached);
-      const feedbackAudio = await geminiTextToSpeech(
-        parsed.feedback?.overall_feedback || "Feedback generated successfully.",
-        `feedback_${Date.now()}.mp3`
-      );
       return res.json({
         success: true,
         cached: true,
         ...parsed,
-        audioUrl: feedbackAudio,
       });
     }
 
@@ -138,18 +132,12 @@ ${feedbackText}`;
 
     await redisClient.setEx(cacheKey, 600, JSON.stringify({ feedback, score }));
 
-    const feedbackAudio = await geminiTextToSpeech(
-      feedback.overall_feedback || "Feedback generated successfully.",
-      `feedback_${Date.now()}.mp3`
-    );
-
     res.json({
       success: true,
       cached: false,
       feedback,
       score,
       // Removed sessionId - no session created for individual evaluations
-      audioUrl: feedbackAudio,
     });
   } catch (err) {
     console.error("❌ Error in evaluateAnswer:", err.message);
@@ -448,16 +436,9 @@ Generate only the first interview question. Do not include any introduction or e
 
     console.log("✅ Interview session started and stored in Redis");
 
-    // 🔊 Convert first question to voice
-    const audioUrl = await geminiTextToSpeech(
-      firstQuestion,
-      `question_${Date.now()}.mp3`
-    );
-
     res.json({
       success: true,
       question: firstQuestion,
-      audioUrl,
       sessionId: sessionKey,
       message: "Interview started successfully",
     });
@@ -735,25 +716,7 @@ QUESTION: [next question or "INTERVIEW_COMPLETE" if conditions above are met]
       });
     }
 
-    // ✅ Step 8: Generate audio for feedback and next question
-    let feedbackAudio = null;
-    let questionAudio = null;
-
-    if (feedback) {
-      feedbackAudio = await geminiTextToSpeech(
-        feedback,
-        `feedback_${Date.now()}.mp3`
-      );
-    }
-
-    if (nextQuestion && !isComplete) {
-      questionAudio = await geminiTextToSpeech(
-        nextQuestion,
-        `question_${Date.now()}.mp3`
-      );
-    }
-
-    // ✅ Step 9: Return response
+    // ✅ Step 8: Return response
     const currentCount = parseInt(session.questionCount || "0");
 
     res.json({
@@ -762,8 +725,6 @@ QUESTION: [next question or "INTERVIEW_COMPLETE" if conditions above are met]
       question: nextQuestion,
       isComplete,
       questionCount: currentCount + (isComplete ? 0 : 1),
-      feedbackAudioUrl: feedbackAudio,
-      questionAudioUrl: questionAudio,
     });
   } catch (error) {
     console.error("❌ Error in nextInterviewStep:", error.message);
@@ -1218,16 +1179,11 @@ export const evaluateVoiceAnswer = async (req, res) => {
     const cached = await redisClient.get(cacheKey);
     if (cached) {
       const parsed = JSON.parse(cached);
-      const feedbackAudio = await geminiTextToSpeech(
-        parsed.feedback?.overall_feedback || "Feedback generated successfully.",
-        `feedback_${Date.now()}.mp3`
-      );
       return res.json({
         success: true,
         cached: true,
         transcribedText,
         ...parsed,
-        audioUrl: feedbackAudio,
       });
     }
 
@@ -1327,11 +1283,6 @@ ${feedbackText}`;
 
     await redisClient.setEx(cacheKey, 600, JSON.stringify({ feedback, score }));
 
-    const feedbackAudio = await geminiTextToSpeech(
-      feedback.overall_feedback || "Feedback generated successfully.",
-      `feedback_${Date.now()}.mp3`
-    );
-
     res.json({
       success: true,
       cached: false,
@@ -1339,7 +1290,6 @@ ${feedbackText}`;
       feedback,
       score,
       // Removed sessionId - no session created for individual evaluations
-      audioUrl: feedbackAudio,
     });
   } catch (err) {
     console.error("❌ Error in evaluateVoiceAnswer:", err.message);
