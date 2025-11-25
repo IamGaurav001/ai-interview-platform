@@ -62,7 +62,7 @@ const Landing = () => {
       </div>
 
       {/* Hero Section */}
-      <section className="relative z-10 min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto text-center">
+      <section className="relative z-10 min-h-screen pt-20 sm:pt-24 pb-12 sm:pb-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto text-center">
         <motion.div 
           initial="hidden"
           animate="visible"
