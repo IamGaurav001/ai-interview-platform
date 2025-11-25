@@ -157,8 +157,17 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const updateUser = async (profileData) => {
+    if (auth.currentUser) {
+      await updateProfile(auth.currentUser, profileData);
+      setUser({ ...auth.currentUser, ...profileData });
+      return auth.currentUser;
+    }
+    return null;
+  };
+
   return (
-    <AuthContext.Provider value={{ user, loading, login, signup, logout, googleLogin }}>
+    <AuthContext.Provider value={{ user, loading, login, signup, logout, googleLogin, updateUser }}>
       {children}
     </AuthContext.Provider>
   );

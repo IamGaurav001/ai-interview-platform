@@ -17,7 +17,6 @@ import {
   ShieldCheck,
   Users
 } from "lucide-react";
-import dashboardPreview from "../assets/dashboard-preview.png";
 
 // --- Animation Variants ---
 const fadeIn = {

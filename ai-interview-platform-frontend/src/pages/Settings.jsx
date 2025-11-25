@@ -6,7 +6,7 @@ import { motion } from "framer-motion";
 import PageLayout from "../components/PageLayout";
 
 const Settings = () => {
-  const { user } = useAuth();
+  const { user, updateUser } = useAuth();
   const [formData, setFormData] = useState({
     name: "",
     nickname: "",
@@ -19,7 +19,7 @@ const Settings = () => {
   useEffect(() => {
     if (user) {
       setFormData({
-        name: user.name || "",
+        name: user.displayName || user.name || "",
         nickname: user.nickname || "",
         email: user.email || "",
       });
@@ -39,6 +39,10 @@ const Settings = () => {
     setError("");
 
     try {
+      // Update Firebase profile and local state
+      await updateUser({ displayName: formData.name });
+
+      // Sync with backend
       await updateUserProfile({
         name: formData.name,
         nickname: formData.nickname,

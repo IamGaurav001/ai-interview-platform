@@ -156,9 +156,17 @@ const Navbar = () => {
                           : "bg-white/50 border-transparent hover:bg-white hover:shadow-sm hover:border-gray-200"
                       }`}
                     >
-                      <div className="h-8 w-8 rounded-full bg-blue-600 text-white flex items-center justify-center text-sm font-bold shadow-sm">
-                        {userInitials}
-                      </div>
+                      {user.photoURL ? (
+                        <img
+                          src={user.photoURL}
+                          alt={userDisplayName}
+                          className="h-8 w-8 rounded-full object-cover border border-gray-200 shadow-sm"
+                        />
+                      ) : (
+                        <div className="h-8 w-8 rounded-full bg-blue-600 text-white flex items-center justify-center text-sm font-bold shadow-sm">
+                          {userInitials}
+                        </div>
+                      )}
                       <span className="text-sm font-medium text-gray-700 max-w-[100px] truncate">
                         {userDisplayName}
                       </span>
@@ -255,9 +263,17 @@ const Navbar = () => {
               <div className="px-4 py-6 space-y-4">
                 {user && (
                   <div className="flex items-center gap-3 px-2 pb-4 border-b border-gray-200/50">
-                    <div className="h-10 w-10 rounded-full bg-primary-100 text-primary-600 flex items-center justify-center font-bold text-lg">
-                      {userInitials}
-                    </div>
+                    {user.photoURL ? (
+                      <img
+                        src={user.photoURL}
+                        alt={userDisplayName}
+                        className="h-10 w-10 rounded-full object-cover border border-gray-200 shadow-sm"
+                      />
+                    ) : (
+                      <div className="h-10 w-10 rounded-full bg-primary-100 text-primary-600 flex items-center justify-center font-bold text-lg">
+                        {userInitials}
+                      </div>
+                    )}
                     <div>
                       <p className="font-semibold text-gray-900">
                         {userDisplayName}
