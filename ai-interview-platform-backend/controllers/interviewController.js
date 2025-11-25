@@ -11,7 +11,7 @@ import path from "path";
 dotenv.config();
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
-// Evaluate User's Answer
+
 export const evaluateAnswer = async (req, res) => {
   try {
     const { domain, question, answer } = req.body;
@@ -35,7 +35,7 @@ export const evaluateAnswer = async (req, res) => {
       });
     }
 
-    // Primary strict prompt with strict evaluation criteria
+    
     const prompt = `
       You are a strict AI Interview Evaluator. You must be critical and thorough in your assessment.
 
@@ -126,9 +126,7 @@ ${feedbackText}`;
 
     const score = calculateSafeScore(feedback);
 
-    // ✅ DO NOT create a session here - this is for individual question evaluation
-    // Sessions should only be created when the complete interview is saved via saveCompleteSession or endInterview
-    // Creating sessions here causes duplicate sessions in history
+
 
     await redisClient.setEx(cacheKey, 600, JSON.stringify({ feedback, score }));
 
@@ -137,7 +135,7 @@ ${feedbackText}`;
       cached: false,
       feedback,
       score,
-      // Removed sessionId - no session created for individual evaluations
+
     });
   } catch (err) {
     console.error("❌ Error in evaluateAnswer:", err.message);
@@ -163,7 +161,7 @@ ${feedbackText}`;
   }
 };
 
-// Get Interview History
+
 
 export const getInterviewHistory = async (req, res) => {
   try {
@@ -257,7 +255,7 @@ export const getInterviewHistory = async (req, res) => {
   }
 };
 
-// GET Weak Areas
+
 export const getWeakAreas = async (req, res) => {
   try {
     const analysis = await InterviewSession.aggregate([
@@ -327,7 +325,7 @@ export const saveCompleteSession = async (req, res) => {
 
     const averageScore = validScores > 0 ? totalScore / validScores : 0;
 
-    // Save complete session
+
     const session = await InterviewSession.create({
       userId: req.user._id,
       domain: domain || "Resume-Based",
@@ -353,12 +351,12 @@ export const saveCompleteSession = async (req, res) => {
   }
 };
 
-// Stage 2: Start Interview (Initialize Redis Session)
+
 export const startInterview = async (req, res) => {
   try {
     const userId = req.user._id.toString();
 
-    // ✅ Step 1: Try to load resume from Redis cache
+
     let resumeText = "";
     const resumeCacheKey = `resume:${userId}`;
 
@@ -383,7 +381,7 @@ export const startInterview = async (req, res) => {
       });
     }
 
-    // ✅ Step 2: Generate first question using Gemini
+
     const prompt = `You are a professional technical interviewer conducting a comprehensive interview. Your goal is to thoroughly assess the candidate's technical skills, problem-solving abilities, and experience.
 
 RESUME:
@@ -413,7 +411,7 @@ Generate only the first interview question. Do not include any introduction or e
       });
     }
 
-    // ✅ Step 3: Create interview session in Redis
+
     const sessionKey = `session:${userId}`;
     const sessionData = {
       stage: "started",
@@ -431,7 +429,7 @@ Generate only the first interview question. Do not include any introduction or e
     };
 
     await redisClient.hSet(sessionKey, sessionData);
-    // Set TTL to 2 hours (interview shouldn't last longer)
+
     await redisClient.expire(sessionKey, 7200);
 
     console.log("✅ Interview session started and stored in Redis");
@@ -452,9 +450,7 @@ Generate only the first interview question. Do not include any introduction or e
   }
 };
 
-// ------------------------------
-// 💬 Stage 3: Ongoing Conversation (Dynamic Q&A Loop)
-// ------------------------------
+
 export const nextInterviewStep = async (req, res) => {
   try {
     const userId = req.user._id.toString();
@@ -469,7 +465,7 @@ export const nextInterviewStep = async (req, res) => {
 
     const sessionKey = `session:${userId}`;
 
-    // ✅ Step 1: Load current session state from Redis
+
     const session = await redisClient.hGetAll(sessionKey);
 
     if (!session || !session.stage) {
@@ -480,7 +476,7 @@ export const nextInterviewStep = async (req, res) => {
       });
     }
 
-    // ✅ Step 2: Parse conversation history
+
     let history = [];
     try {
       history = JSON.parse(session.history || "[]");
@@ -489,15 +485,14 @@ export const nextInterviewStep = async (req, res) => {
       history = [];
     }
 
-    // ✅ Step 3: Append user's answer to conversation history
+
     history.push({
       role: "user",
       text: answer.trim(),
       timestamp: new Date().toISOString(),
     });
 
-    // ✅ Step 4: Send updated conversation to Gemini for next response
-    // Build conversation context
+
     const conversationContext = history
       .map(
         (msg) =>
@@ -578,7 +573,7 @@ QUESTION: [next question or "INTERVIEW_COMPLETE" if conditions above are met]
       });
     }
 
-    // ✅ Step 5: Parse AI response
+
     const normalizeText = (text) =>
       (text || "")
         .replace(/\r\n/g, "\n")
@@ -613,7 +608,7 @@ QUESTION: [next question or "INTERVIEW_COMPLETE" if conditions above are met]
         result.feedback = feedbackPieces.pop()?.trim() || normalized;
       }
 
-      // Clean up residual labels or duplicated sections
+
       result.feedback = normalizeText(
         result.feedback.replace(/QUESTION\s*[:\-].*/is, "")
       );
@@ -623,7 +618,7 @@ QUESTION: [next question or "INTERVIEW_COMPLETE" if conditions above are met]
           .replace(/FEEDBACK\s*[:\-].*/is, "")
       );
 
-      // Remove any lingering INTERVIEW_COMPLETE marker from question text
+
       result.question = normalizeText(
         result.question.replace(/INTERVIEW_COMPLETE/gi, "")
       );
@@ -638,7 +633,7 @@ QUESTION: [next question or "INTERVIEW_COMPLETE" if conditions above are met]
     let nextQuestion = parsedQuestion;
     let isComplete = false;
 
-    // Check if interview should complete
+
     const hasCompleteSignal =
       aiResponse.includes("INTERVIEW_COMPLETE") ||
       aiResponse.toLowerCase().includes("interview complete") ||
@@ -680,7 +675,7 @@ QUESTION: [next question or "INTERVIEW_COMPLETE" if conditions above are met]
       }
     }
 
-    // ✅ Step 6: Store micro feedback in Redis
+
     if (feedback) {
       try {
         const feedbackKey = `feedback:${userId}`;
@@ -692,7 +687,7 @@ QUESTION: [next question or "INTERVIEW_COMPLETE" if conditions above are met]
       }
     }
 
-    // ✅ Step 7: Update session in Redis
+
     if (isComplete) {
       await redisClient.hSet(sessionKey, {
         ...session,
@@ -716,7 +711,7 @@ QUESTION: [next question or "INTERVIEW_COMPLETE" if conditions above are met]
       });
     }
 
-    // ✅ Step 8: Return response
+
     const currentCount = parseInt(session.questionCount || "0");
 
     res.json({
@@ -750,13 +745,11 @@ QUESTION: [next question or "INTERVIEW_COMPLETE" if conditions above are met]
   }
 };
 
-// Stage 5: End Interview (Summary & Cleanup)
 export const endInterview = async (req, res) => {
   try {
     const userId = req.user._id.toString();
     const sessionKey = `session:${userId}`;
 
-    // Step 1: Load full conversation from Redis
     const session = await redisClient.hGetAll(sessionKey);
 
     if (!session || !session.stage) {
@@ -766,7 +759,6 @@ export const endInterview = async (req, res) => {
       });
     }
 
-    // Step 2: Parse conversation history
     let history = [];
     try {
       history = JSON.parse(session.history || "[]");
@@ -775,7 +767,6 @@ export const endInterview = async (req, res) => {
       history = [];
     }
 
-    // Step 2.5: Try to get feedbacks from Redis cache
     let cachedFeedbacks = [];
     try {
       const feedbackKey = `feedback:${userId}`;
@@ -793,10 +784,10 @@ export const endInterview = async (req, res) => {
       );
     }
 
-    // Step 3: Extract questions, answers, and feedbacks from conversation history
     const questions = [];
     const answers = [];
     const allFeedbacks = [];
+
 
     let currentQuestion = null;
     let currentAnswer = null;
@@ -807,7 +798,6 @@ export const endInterview = async (req, res) => {
       if (msg.role === "interviewer") {
         const text = msg.text.trim();
 
-        // Check if this is feedback (contains "FEEDBACK:" or is short text without question mark)
         const isFeedback =
           text.includes("FEEDBACK:") ||
           (text.length < 400 &&
@@ -816,8 +806,7 @@ export const endInterview = async (req, res) => {
             !text.toLowerCase().includes("thanks for joining"));
 
         if (!isFeedback) {
-          // This is a question
-          // If we have a previous Q&A pair, save it first
+
           if (
             currentQuestion !== null &&
             currentAnswer !== null &&
@@ -826,19 +815,16 @@ export const endInterview = async (req, res) => {
             questions.push(currentQuestion);
             answers.push(currentAnswer.trim());
           }
-          // Start new question
           currentQuestion = text;
           currentAnswer = null;
         }
       } else if (msg.role === "user") {
-        // This is an answer
         if (currentQuestion !== null) {
           currentAnswer = msg.text.trim();
         }
       }
     }
 
-    // Don't forget the last Q&A pair (only if it has a valid answer)
     if (
       currentQuestion !== null &&
       currentAnswer !== null &&
@@ -848,19 +834,16 @@ export const endInterview = async (req, res) => {
       answers.push(currentAnswer.trim());
     }
 
-    // Ensure questions and answers arrays have the same length
-    // If they don't match, we have a problem - log it and fix it
+
     if (questions.length !== answers.length) {
       console.warn(
         `⚠️ Mismatch: ${questions.length} questions but ${answers.length} answers. Adjusting...`
       );
-      // Keep only the pairs that have both question and answer
       const minLength = Math.min(questions.length, answers.length);
       questions.splice(minLength);
       answers.splice(minLength);
     }
 
-    // Final validation: ensure all answers are non-empty (required by model)
     const validPairs = [];
     for (let i = 0; i < questions.length; i++) {
       if (answers[i] && answers[i].trim().length > 0) {
@@ -868,7 +851,6 @@ export const endInterview = async (req, res) => {
       }
     }
 
-    // Rebuild arrays with only valid pairs
     questions.length = 0;
     answers.length = 0;
     validPairs.forEach((pair) => {
@@ -876,7 +858,6 @@ export const endInterview = async (req, res) => {
       answers.push(pair.answer);
     });
 
-    // ✅ Handle case where no valid questions were answered
     if (questions.length === 0) {
       const emptySummary = {
         overallScore: 0,
@@ -920,18 +901,14 @@ export const endInterview = async (req, res) => {
       });
     }
 
-    // Now map feedbacks from Redis cache to questions
-    // The cached feedbacks are in chronological order (one per answer)
-    // Ensure we have feedback for each question-answer pair
+
     for (let i = 0; i < questions.length; i++) {
       if (i < cachedFeedbacks.length && cachedFeedbacks[i]) {
-        // Use cached feedback
         allFeedbacks[i] = {
           overall_feedback: cachedFeedbacks[i].trim() || "Feedback provided.",
         };
       } else {
-        // Try to extract feedback from conversation history
-        // Look for feedback messages after the answer
+
         let feedbackText = "";
         let foundAnswer = false;
 
@@ -940,7 +917,6 @@ export const endInterview = async (req, res) => {
             foundAnswer = true;
           } else if (foundAnswer && history[j].role === "interviewer") {
             const nextMsg = history[j].text.trim();
-            // Check if this is feedback
             if (
               nextMsg.includes("FEEDBACK:") ||
               (nextMsg.length < 400 &&
@@ -950,7 +926,6 @@ export const endInterview = async (req, res) => {
               feedbackText = nextMsg.replace(/FEEDBACK:\s*/i, "").trim();
               break;
             } else if (nextMsg.includes("?")) {
-              // This is the next question, no feedback found
               break;
             }
           }
@@ -966,7 +941,6 @@ export const endInterview = async (req, res) => {
       }
     }
 
-    // Step 4: Generate final AI summary
     const conversationText = history
       .map(
         (msg) =>
@@ -1058,7 +1032,6 @@ Return ONLY valid JSON, no markdown, no code blocks.`;
       };
     }
 
-    // ✅ Step 5: Store in MongoDB
     const interviewSession = await InterviewSession.create({
       userId: req.user._id,
       domain: "Resume-Based",
@@ -1071,7 +1044,6 @@ Return ONLY valid JSON, no markdown, no code blocks.`;
       score: finalSummary.overallScore || 7,
     });
 
-    // ✅ Step 6: Redis Cleanup
     try {
       await redisClient.del(sessionKey);
       await redisClient.del(`feedback:${userId}`);
@@ -1388,6 +1360,90 @@ export const cancelInterview = async (req, res) => {
     res.status(500).json({
       success: false,
       error: "Failed to cancel interview",
+      details: error.message,
+    });
+  }
+};
+
+// Reset Interview (1-time use)
+export const resetInterview = async (req, res) => {
+  try {
+    const userId = req.user._id.toString();
+    const sessionKey = `session:${userId}`;
+
+    // 1. Get active session
+    const session = await redisClient.hGetAll(sessionKey);
+    if (!session || !session.stage) {
+      return res.status(404).json({
+        success: false,
+        error: "No active interview session found to reset.",
+      });
+    }
+
+    // 2. Check reset count (per session)
+    const resetCount = parseInt(session.resetCount || "0");
+    if (resetCount >= 1) {
+      return res.status(403).json({
+        success: false,
+        error: "Reset limit reached. You can only reset this interview once.",
+      });
+    }
+
+    // 3. Get first question to restart
+    let firstQuestion = "";
+    let firstHistoryItem = null;
+    try {
+      const history = JSON.parse(session.history || "[]");
+      if (history.length > 0 && history[0].role === "interviewer") {
+        firstQuestion = history[0].text;
+        firstHistoryItem = history[0];
+      }
+    } catch (e) {
+      console.warn("Failed to parse history for reset");
+    }
+
+    if (!firstQuestion) {
+      // Fallback: use currentQuestion if history is broken
+      firstQuestion = session.currentQuestion;
+      firstHistoryItem = {
+        role: "interviewer",
+        text: firstQuestion,
+        timestamp: new Date().toISOString(),
+      };
+    }
+
+    // 4. Reset session state
+    const newHistory = [firstHistoryItem];
+    
+    await redisClient.hSet(sessionKey, {
+      ...session,
+      questionCount: "1",
+      currentQuestion: firstQuestion,
+      history: JSON.stringify(newHistory),
+      resetCount: (resetCount + 1).toString(),
+      stage: "started"
+    });
+
+    // Clear feedback cache
+    const feedbackKey = `feedback:${userId}`;
+    await redisClient.del(feedbackKey);
+
+    console.log(`✅ Interview session reset for user ${userId} (Count: ${resetCount + 1})`);
+
+    res.json({
+      success: true,
+      message: "Interview reset to the beginning.",
+      question: firstQuestion,
+      questionCount: 1,
+      history: newHistory,
+      resetCount: resetCount + 1
+    });
+
+  } catch (error) {
+    console.error("❌ Error resetting interview:", error.message);
+    res.status(500).json({
+      success: false,
+      error: "Failed to reset interview",
       details: error.message,
     });
   }

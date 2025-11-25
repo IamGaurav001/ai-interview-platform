@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { startInterview, nextInterviewStep, endInterview, getActiveSession, evaluateVoiceAnswer, cancelInterview } from "../api/interviewAPI";
+import { startInterview, nextInterviewStep, endInterview, getActiveSession, evaluateVoiceAnswer, cancelInterview, resetInterview } from "../api/interviewAPI";
 import {
   MessageSquare,
   Send,
@@ -19,7 +19,8 @@ import {
   Bot,
   User,
   LogOut,
-  ChevronDown
+  ChevronDown,
+  RefreshCw
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import AudioVisualizer from "../components/AudioVisualizer";
@@ -47,29 +48,31 @@ const InterviewFlow = () => {
   const [transcribedText, setTranscribedText] = useState("");
   const [recordingTime, setRecordingTime] = useState(0);
   
-  // Modal state
+
   const [showEndModal, setShowEndModal] = useState(false);
   const [showExitModal, setShowExitModal] = useState(false);
+  const [showResetModal, setShowResetModal] = useState(false);
+  const [showLimitModal, setShowLimitModal] = useState(false);
   const [showTips, setShowTips] = useState(false);
 
-  // Check for active session on mount
+
   useEffect(() => {
     checkActiveSession();
   }, []);
 
-  // Cleanup on unmount
+
   useEffect(() => {
     return () => {
-      // Stop recording if active
+
       if (mediaRecorder && isRecording) {
         mediaRecorder.stop();
       }
-      // Stop browser TTS
+
       window.speechSynthesis.cancel();
     };
   }, [mediaRecorder, isRecording]);
 
-  // Recording timer
+
   useEffect(() => {
     let interval = null;
     if (isRecording) {
@@ -92,7 +95,7 @@ const InterviewFlow = () => {
         setQuestionCount(res.data.questionCount);
         setConversationHistory(res.data.history || []);
       } else {
-        // No active session, start new interview
+
         startNewInterview();
       }
     } catch (err) {
@@ -112,8 +115,7 @@ const InterviewFlow = () => {
         setConversationHistory([
           { role: "interviewer", text: res.data.question, timestamp: new Date().toISOString() }
         ]);
-        // Auto-play question using browser TTS
-        playBrowserTTS(res.data.question, "question");
+
       } else {
         setError(res.data.message || "Failed to start interview");
       }
@@ -146,7 +148,7 @@ const InterviewFlow = () => {
       const res = await nextInterviewStep(currentAnswer.trim());
       
       if (res.data.success) {
-        // Add user answer to history
+
         const updatedHistory = [
           ...conversationHistory,
           { role: "user", text: currentAnswer.trim(), timestamp: new Date().toISOString() }
@@ -154,21 +156,20 @@ const InterviewFlow = () => {
 
         setConversationHistory(updatedHistory);
 
-        // Add feedback and next question
+
         if (res.data.feedback) {
           setFeedback(res.data.feedback);
-          // Auto-play feedback using browser TTS
-          playBrowserTTS(res.data.feedback, "feedback");
+
         }
 
         if (res.data.isComplete) {
-          // Interview is complete
+
           const finalCount = res.data.questionCount ?? questionCount;
           setQuestionCount(finalCount);
           setIsComplete(true);
           handleEndInterview(true);
         } else if (res.data.question) {
-          // Add interviewer's next question to history
+
           const finalHistory = [
             ...updatedHistory,
             { role: "interviewer", text: res.data.question, timestamp: new Date().toISOString() }
@@ -194,13 +195,13 @@ const InterviewFlow = () => {
   };
 
   const playBrowserTTS = (text, type = "question") => {
-    // Use browser's built-in speech synthesis (no backend required)
+
     if (!("speechSynthesis" in window)) {
       console.warn("Browser TTS not supported");
       return;
     }
 
-    // Stop any current speech
+
     window.speechSynthesis.cancel();
 
     const utterance = new SpeechSynthesisUtterance(text);
@@ -209,7 +210,7 @@ const InterviewFlow = () => {
     utterance.pitch = 1.0;
     utterance.volume = 1.0;
 
-    // Try to use a natural voice
+
     const voices = window.speechSynthesis.getVoices();
     const preferredVoice = voices.find(
       (voice) =>
@@ -250,7 +251,7 @@ const InterviewFlow = () => {
   };
 
   const stopBrowserTTS = (type = "question") => {
-    // Stop browser TTS
+
     window.speechSynthesis.cancel();
     if (type === "question") {
       setIsPlayingQuestion(false);
@@ -277,7 +278,7 @@ const InterviewFlow = () => {
       recorder.onstop = () => {
         const blob = new Blob(chunks, { type: "audio/webm" });
         setRecordedAudio(blob);
-        // Stop all tracks
+
         stream.getTracks().forEach((track) => track.stop());
       };
 
@@ -322,16 +323,15 @@ const InterviewFlow = () => {
         setTranscribedText(transcribed);
         setCurrentAnswer(transcribed);
 
-        // Clear recording
+
         setRecordedAudio(null);
 
-        // Now continue the interview flow using nextInterviewStep
-        // This will get feedback and next question
+
         try {
           const nextRes = await nextInterviewStep(transcribed.trim());
           
           if (nextRes.data.success) {
-            // Add user answer to history
+
             const updatedHistory = [
               ...conversationHistory,
               { role: "user", text: transcribed.trim(), timestamp: new Date().toISOString() }
@@ -339,21 +339,20 @@ const InterviewFlow = () => {
 
             setConversationHistory(updatedHistory);
 
-            // Add feedback and next question
+
             if (nextRes.data.feedback) {
               setFeedback(nextRes.data.feedback);
-              // Auto-play feedback using browser TTS
-              playBrowserTTS(nextRes.data.feedback, "feedback");
+
             }
 
             if (nextRes.data.isComplete) {
-              // Interview is complete
+
               const finalCount = nextRes.data.questionCount ?? questionCount;
               setQuestionCount(finalCount);
               setIsComplete(true);
               handleEndInterview(true);
             } else if (nextRes.data.question) {
-              // Add interviewer's next question to history
+
               const finalHistory = [
                 ...updatedHistory,
                 { role: "interviewer", text: nextRes.data.question, timestamp: new Date().toISOString() }
@@ -362,14 +361,14 @@ const InterviewFlow = () => {
               setCurrentQuestion(nextRes.data.question);
               setQuestionCount(nextRes.data.questionCount || questionCount + 1);
               setCurrentAnswer("");
-              setTranscribedText(""); // Clear transcribed text for next question
+              setTranscribedText("");
             }
           } else {
             setError(nextRes.data.message || "Failed to process answer");
           }
         } catch (nextErr) {
           console.error("Next step error after voice answer:", nextErr);
-          // Still show the transcribed text and feedback from voice evaluation
+
           if (res.data.feedback) {
             setFeedback(res.data.feedback.overall_feedback || res.data.feedback);
           }
@@ -391,13 +390,13 @@ const InterviewFlow = () => {
   };
 
   const handleEndInterview = async (skipConfirm = false) => {
-    // Show modal for confirmation unless auto-complete
+
     if (!skipConfirm) {
       setShowEndModal(true);
       return;
     }
 
-    // Proceed with ending interview
+
     setSaving(true);
     setIsComplete(true);
     setError("");
@@ -423,14 +422,49 @@ const InterviewFlow = () => {
     handleEndInterview(true);
   };
 
+  const handleResetInterview = async () => {
+    try {
+      setLoading(true);
+      const res = await resetInterview();
+      if (res.data && res.data.success) {
+
+        setCurrentQuestion(res.data.question);
+        setQuestionCount(res.data.questionCount);
+        setConversationHistory(res.data.history || []);
+        setCurrentAnswer("");
+        setFeedback("");
+        setTranscribedText("");
+        setRecordedAudio(null);
+        setIsComplete(false);
+        setSummary(null);
+        
+
+        
+        setError(""); 
+      } else {
+        setError(res.data.error || "Failed to reset interview");
+      }
+    } catch (err) {
+      console.error("Reset error:", err);
+      if (err.response?.status === 403 && err.response?.data?.error?.includes("Reset limit reached")) {
+        setShowLimitModal(true);
+      } else {
+        setError(err.response?.data?.error || "Failed to reset interview");
+      }
+    } finally {
+      setLoading(false);
+      setShowResetModal(false);
+    }
+  };
+
   const handleExitInterview = async () => {
     try {
-      // Call the cancel API to clear the session in Redis
+
       await cancelInterview();
       console.log("✅ Interview session cancelled");
     } catch (err) {
       console.error("❌ Error cancelling interview:", err);
-      // Navigate anyway even if the API call fails
+
     } finally {
       navigate("/dashboard");
     }
@@ -544,7 +578,7 @@ const InterviewFlow = () => {
   return (
     <PageLayout showNavbar={false}>
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
-      {/* Sticky Header with Progress */}
+
       <div className="sticky top-0 z-20 bg-white border-b border-slate-200 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
@@ -555,6 +589,13 @@ const InterviewFlow = () => {
               </span>
             </div>
             <div className="flex items-center gap-2 sm:gap-3">
+              <button
+                onClick={() => setShowResetModal(true)}
+                className="text-xs sm:text-sm font-semibold text-amber-600 hover:text-amber-800 hover:bg-amber-50 px-2 sm:px-4 py-1.5 sm:py-2 rounded-lg transition-colors flex items-center gap-1 sm:gap-2"
+              >
+                <RefreshCw className="h-3 w-3 sm:h-4 sm:w-4" />
+                <span className="hidden sm:inline">Reset</span>
+              </button>
               <button
                 onClick={() => setShowExitModal(true)}
                 className="text-xs sm:text-sm font-semibold text-slate-500 hover:text-slate-700 hover:bg-slate-100 px-2 sm:px-4 py-1.5 sm:py-2 rounded-lg transition-colors flex items-center gap-1 sm:gap-2"
@@ -581,11 +622,11 @@ const InterviewFlow = () => {
         </div>
       </div>
 
-      {/* Split Screen Layout */}
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 lg:h-[calc(100vh-180px)] h-auto min-h-[calc(100vh-180px)]">
           
-          {/* LEFT PANEL - INTERVIEWER */}
+
           <AnimatePresence mode="wait">
             <motion.div
               key={questionCount}
@@ -594,7 +635,7 @@ const InterviewFlow = () => {
               exit={{ opacity: 0, x: -20 }}
               className="bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden flex flex-col"
             >
-              {/* Interviewer Header */}
+
               <div className="bg-gradient-to-r from-indigo-500 to-indigo-600 p-6 text-white">
                 <div className="flex items-center gap-4">
                   <div className="flex-shrink-0">
@@ -607,7 +648,7 @@ const InterviewFlow = () => {
                 </div>
               </div>
 
-              {/* Question Content */}
+
               <div className="flex-1 lg:overflow-y-auto p-4 sm:p-6 space-y-4 sm:space-y-6">
                 <div>
                   <div className="flex items-center justify-between mb-4">
@@ -646,13 +687,13 @@ const InterviewFlow = () => {
                     {currentQuestion}
                   </p>
 
-                  {/* Audio Visualizer */}
+
                   <div className="h-12 flex items-center justify-center bg-slate-50 rounded-xl">
                     <AudioVisualizer isPlaying={isPlayingQuestion} isRecording={false} mode="speaking" />
                   </div>
                 </div>
 
-                {/* Feedback Section */}
+
                 {feedback && (
                   <motion.div 
                     initial={{ opacity: 0, y: 10 }}
@@ -701,7 +742,7 @@ const InterviewFlow = () => {
                   </motion.div>
                 )}
 
-                {/* Tips */}
+
                 <div className="bg-slate-50 rounded-xl border border-slate-200 overflow-hidden">
                   <button 
                     onClick={() => setShowTips(!showTips)}
@@ -742,9 +783,9 @@ const InterviewFlow = () => {
             </motion.div>
           </AnimatePresence>
 
-          {/* RIGHT PANEL - CANDIDATE */}
+
           <div className="bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden flex flex-col">
-            {/* Candidate Header */}
+
             <div className="bg-gradient-to-r from-slate-700 to-slate-800 p-6 text-white">
               <div className="flex items-center gap-4">
                 <div className="flex-shrink-0">
@@ -928,6 +969,30 @@ const InterviewFlow = () => {
         type="warning"
       />
     </div>
+      {showResetModal && (
+        <ConfirmModal
+          isOpen={showResetModal}
+          onClose={() => setShowResetModal(false)}
+          onConfirm={handleResetInterview}
+          title="Reset Interview?"
+          message="Are you sure you want to reset? This is a ONE-TIME option. You will lose all current progress and start fresh. You cannot undo this."
+          confirmText="Yes, Reset Interview"
+          cancelText="Cancel"
+          isDestructive={true}
+        />
+      )}
+      {showLimitModal && (
+        <ConfirmModal
+          isOpen={showLimitModal}
+          onClose={() => setShowLimitModal(false)}
+          onConfirm={() => setShowLimitModal(false)}
+          title="Reset Limit Reached"
+          message="You have already used your one-time reset for this interview. You cannot reset again."
+          confirmText="Okay"
+          cancelText="Cancel"
+          isDestructive={false}
+        />
+      )}
     </PageLayout>
   );
 };

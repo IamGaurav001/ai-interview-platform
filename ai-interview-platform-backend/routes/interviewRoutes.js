@@ -15,15 +15,16 @@ import {
   getActiveSession,
   evaluateVoiceAnswer,
   cancelInterview,
+  resetInterview,
 } from "../controllers/interviewController.js";
 import { getWeakAreas } from "../controllers/interviewController.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Configure multer for audio uploads
+
 const uploadDir = path.join(__dirname, "../uploads/audio");
-// Ensure directory exists
+
 fs.mkdirSync(uploadDir, { recursive: true });
 
 const storage = multer.diskStorage({
@@ -39,10 +40,10 @@ const storage = multer.diskStorage({
 const upload = multer({
   storage: storage,
   limits: {
-    fileSize: 10 * 1024 * 1024, // 10MB limit
+
   },
   fileFilter: (req, file, cb) => {
-    // Accept audio files
+
     const allowedMimes = [
       "audio/webm",
       "audio/wav",
@@ -61,20 +62,21 @@ const upload = multer({
 
 const router = express.Router();
 
-// Legacy endpoints (kept for backward compatibility)
+
 router.post("/evaluate", verifyFirebaseToken, rateLimiter(10, 60), evaluateAnswer);
 router.post("/save-session", verifyFirebaseToken, saveCompleteSession);
 router.get("/history", verifyFirebaseToken, getInterviewHistory);
 router.get("/weak-areas", verifyFirebaseToken, getWeakAreas);
 
-// ✅ New Redis-based interview flow endpoints (with rate limiting)
+
 router.post("/start", verifyFirebaseToken, rateLimiter(5, 60), startInterview);
 router.post("/next", verifyFirebaseToken, rateLimiter(20, 60), nextInterviewStep);
 router.post("/end", verifyFirebaseToken, rateLimiter(5, 60), endInterview);
 router.post("/cancel", verifyFirebaseToken, rateLimiter(5, 60), cancelInterview);
+router.post("/reset", verifyFirebaseToken, rateLimiter(5, 60), resetInterview);
 router.get("/active-session", verifyFirebaseToken, getActiveSession);
 
-// ✅ Voice answer evaluation endpoint
+
 router.post(
   "/voice-answer",
   verifyFirebaseToken,

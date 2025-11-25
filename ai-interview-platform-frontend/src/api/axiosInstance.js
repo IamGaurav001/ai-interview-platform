@@ -5,6 +5,12 @@ const baseURL = import.meta.env.VITE_API_BASE_URL
   ? `${import.meta.env.VITE_API_BASE_URL}/api`
   : "/api";
 
+console.log("🚀 API Base URL:", baseURL);
+
+if (import.meta.env.PROD && !import.meta.env.VITE_API_BASE_URL) {
+  console.warn("⚠️  VITE_API_BASE_URL is not set! API calls may fail in production.");
+}
+
 const axiosInstance = axios.create({
   baseURL,
   timeout: 30000, 
@@ -51,7 +57,7 @@ axiosInstance.interceptors.response.use(
     if (!error.response) {
       console.error("Network Error:", error.message);
       return Promise.reject({
-        message: "Network error. Please check if the backend server is running.",
+        message: `Cannot connect to server at ${error.config?.baseURL || 'unknown URL'}. Please make sure the backend is running.`,
         networkError: true,
       });
     }

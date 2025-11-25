@@ -19,7 +19,7 @@ import Loader from "../components/Loader";
 import PageLayout from "../components/PageLayout";
 import { motion, AnimatePresence } from "framer-motion";
 
-// --- Utility Functions ---
+
 
 const getConfidenceBadge = (score) => {
   const numScore = parseFloat(score);
@@ -87,7 +87,7 @@ const isSummaryObject = (obj) => {
 const getQuestionFeedback = (session, qIdx) => {
   const feedbackRoot = session.feedback || {};
 
-  // Priority 1: `feedbackRoot.all` array
+
   if (Array.isArray(feedbackRoot.all)) {
     const feedbackItem = feedbackRoot.all[qIdx];
     if (feedbackItem && isFeedbackObject(feedbackItem)) {
@@ -102,7 +102,7 @@ const getQuestionFeedback = (session, qIdx) => {
   return null;
 };
 
-// --- Main Component ---
+
 
 const History = () => {
   const [history, setHistory] = useState(null);
@@ -110,7 +110,7 @@ const History = () => {
   const [error, setError] = useState("");
   const [expandedSessions, setExpandedSessions] = useState({});
   const [filterDomain, setFilterDomain] = useState("All");
-  const [sortBy, setSortBy] = useState("date"); // 'date' or 'score'
+
 
   useEffect(() => {
     fetchHistory();
@@ -129,7 +129,7 @@ const History = () => {
     }
   };
 
-  // Process sessions
+
   const processedSessions = useMemo(() => {
     if (!history || !history.groupedHistory) return [];
 
@@ -140,37 +140,37 @@ const History = () => {
       });
     });
 
-    // Filter
+
     if (filterDomain !== "All") {
       flat = flat.filter(s => s.domain === filterDomain);
     }
 
-    // Sort
+
     return flat.sort((a, b) => {
       if (sortBy === "score") {
         return parseFloat(b.score || 0) - parseFloat(a.score || 0);
       }
-      // Default by date
+
       const dateA = new Date(a.createdAt || a.date || 0);
       const dateB = new Date(b.createdAt || b.date || 0);
       return dateB.getTime() - dateA.getTime();
     });
   }, [history, filterDomain, sortBy]);
 
-  // Get unique domains for filter
+
   const availableDomains = useMemo(() => {
     if (!history || !history.groupedHistory) return ["All"];
     return ["All", ...Object.keys(history.groupedHistory)];
   }, [history]);
 
-  // Calculate stats
+
   const stats = useMemo(() => {
     if (!processedSessions.length) return { avg: 0, total: 0, best: null };
     
     const totalScore = processedSessions.reduce((sum, s) => sum + parseFloat(s.score || 0), 0);
     const avg = (totalScore / processedSessions.length).toFixed(1);
     
-    // Find best session in current view
+
     const best = processedSessions.reduce((max, s) => 
       parseFloat(s.score) > parseFloat(max.score || 0) ? s : max
     , processedSessions[0]);
@@ -242,18 +242,18 @@ const History = () => {
 
   return (
     <PageLayout>
-      <div className="max-w-7xl mx-auto py-8">
-        {/* Header */}
+      <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+
         <motion.div 
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           className="mb-10"
         >
-          <h1 className="text-4xl font-bold text-slate-900 mb-3">Interview History</h1>
+          <h1 className="text-3xl md:text-4xl font-bold text-slate-900 mb-3">Interview History</h1>
           <p className="text-lg text-slate-600">Track your progress and review AI feedback</p>
         </motion.div>
 
-        {/* Summary Cards */}
+
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
           <SummaryCard 
             title="Total Interviews" 
@@ -279,7 +279,7 @@ const History = () => {
           />
         </div>
 
-        {/* Filters */}
+
         <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-8 bg-white p-4 rounded-xl shadow-sm border border-slate-200">
           <div className="flex items-center gap-3 w-full sm:w-auto overflow-x-auto pb-2 sm:pb-0">
             <Filter className="h-5 w-5 text-slate-400 flex-shrink-0" />
@@ -298,7 +298,7 @@ const History = () => {
           </div>
         </div>
 
-        {/* Session List */}
+
         <div className="space-y-6">
           <AnimatePresence mode="popLayout">
             {processedSessions.map((session, index) => (
@@ -376,34 +376,34 @@ const SessionCard = ({ session, index, isExpanded, onToggle }) => {
       transition={{ delay: index * 0.05 }}
       className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden hover:shadow-md transition-shadow"
     >
-      {/* Header */}
+
       <div 
         onClick={onToggle}
-        className="p-6 cursor-pointer bg-white hover:bg-slate-50 transition-colors"
+        className="p-4 md:p-6 cursor-pointer bg-white hover:bg-slate-50 transition-colors"
       >
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div className="flex items-start gap-4">
-            <div className={`h-16 w-16 rounded-2xl flex flex-col items-center justify-center flex-shrink-0 border ${
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex items-start gap-3 md:gap-4 flex-1 min-w-0">
+            <div className={`h-12 w-12 md:h-16 md:w-16 rounded-2xl flex flex-col items-center justify-center flex-shrink-0 border ${
               sessionScore >= 8 ? "bg-green-50 border-green-100 text-green-700" :
               sessionScore >= 5 ? "bg-yellow-50 border-yellow-100 text-yellow-700" :
               "bg-red-50 border-red-100 text-red-700"
             }`}>
-              <span className="text-2xl font-bold">{sessionScore.toFixed(1)}</span>
-              <span className="text-[10px] font-bold uppercase opacity-80">Score</span>
+              <span className="text-lg md:text-2xl font-bold">{sessionScore.toFixed(1)}</span>
+              <span className="text-[8px] md:text-[10px] font-bold uppercase opacity-80">Score</span>
             </div>
             
-            <div>
-              <div className="flex items-center gap-3 mb-1">
-                <h3 className="text-xl font-bold text-slate-900">{session.domain || "Resume"} Interview</h3>
+            <div className="flex-1 min-w-0">
+              <div className="flex flex-wrap items-center gap-2 md:gap-3 mb-1">
+                <h3 className="text-lg md:text-xl font-bold text-slate-900 truncate">{session.domain || "Resume"} Interview</h3>
                 {getConfidenceBadge(sessionScore)}
               </div>
-              <div className="flex flex-wrap items-center gap-4 text-sm text-slate-500 font-medium">
+              <div className="flex flex-wrap items-center gap-3 md:gap-4 text-xs md:text-sm text-slate-500 font-medium">
                 <span className="flex items-center gap-1.5">
-                  <Calendar className="h-4 w-4" />
+                  <Calendar className="h-3.5 w-3.5 md:h-4 md:w-4" />
                   {formatSessionDate(session)}
                 </span>
                 <span className="flex items-center gap-1.5">
-                  <Clock className="h-4 w-4" />
+                  <Clock className="h-3.5 w-3.5 md:h-4 md:w-4" />
                   {questionCount} Questions
                 </span>
               </div>
@@ -433,7 +433,7 @@ const SessionCard = ({ session, index, isExpanded, onToggle }) => {
         </div>
       </div>
 
-      {/* Expanded Content */}
+
       <AnimatePresence>
         {isExpanded && (
           <motion.div
@@ -442,53 +442,39 @@ const SessionCard = ({ session, index, isExpanded, onToggle }) => {
             exit={{ height: 0, opacity: 0 }}
             className="border-t border-slate-100 bg-slate-50/50"
           >
-            <div className="p-6 space-y-8">
-              {/* Summary Section */}
+            <div className="p-4 md:p-6 space-y-6 md:space-y-8">
+
               {summaryFeedback.summary && (
-                <div className="bg-indigo-50/50 rounded-xl p-6 border border-indigo-100">
+                <div className="bg-indigo-50/50 rounded-xl p-4 md:p-6 border border-indigo-100">
                   <h4 className="text-sm font-bold text-indigo-900 uppercase tracking-wide mb-3 flex items-center gap-2">
                     <Star className="h-4 w-4" /> Executive Summary
                   </h4>
                   <p className="text-indigo-900 leading-relaxed">{summaryFeedback.summary}</p>
                   
                   {(summaryFeedback.strengths || summaryFeedback.weaknesses) && (
-                    <div className="grid md:grid-cols-2 gap-6 mt-6 pt-6 border-t border-indigo-100/50">
+                    <div className="mt-6 pt-6 border-t border-indigo-100/50 space-y-4">
                       {summaryFeedback.strengths?.length > 0 && (
-                        <div>
-                          <h5 className="text-xs font-bold text-green-700 uppercase mb-3 flex items-center gap-2">
-                            <CheckCircle2 className="h-3 w-3" /> Key Strengths
-                          </h5>
-                          <ul className="space-y-2">
-                            {summaryFeedback.strengths.map((s, i) => (
-                              <li key={i} className="text-sm text-slate-700 flex items-start gap-2">
-                                <span className="h-1.5 w-1.5 rounded-full bg-green-500 mt-1.5 flex-shrink-0" />
-                                {s}
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
+                        <FeedbackSection
+                          title="Key Strengths"
+                          icon={CheckCircle2}
+                          items={summaryFeedback.strengths}
+                          color="green"
+                        />
                       )}
                       {summaryFeedback.weaknesses?.length > 0 && (
-                        <div>
-                          <h5 className="text-xs font-bold text-indigo-700 uppercase mb-3 flex items-center gap-2">
-                            <TrendingUp className="h-3 w-3" /> Growth Areas
-                          </h5>
-                          <ul className="space-y-2">
-                            {summaryFeedback.weaknesses.map((w, i) => (
-                              <li key={i} className="text-sm text-slate-700 flex items-start gap-2">
-                                <span className="h-1.5 w-1.5 rounded-full bg-indigo-500 mt-1.5 flex-shrink-0" />
-                                {w}
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
+                        <FeedbackSection
+                          title="Growth Areas"
+                          icon={TrendingUp}
+                          items={summaryFeedback.weaknesses}
+                          color="indigo"
+                        />
                       )}
                     </div>
                   )}
                 </div>
               )}
 
-              {/* Questions Accordion */}
+
               {session.questions && session.questions.length > 0 && (
                 <div>
                   <h4 className="text-lg font-bold text-slate-900 mb-4">Detailed Q&A Analysis</h4>
@@ -546,7 +532,7 @@ const QuestionItem = ({ question, answer, feedback, index }) => {
             exit={{ height: 0, opacity: 0 }}
             className="border-t border-slate-100"
           >
-            <div className="p-4 pl-16 space-y-4 bg-slate-50/30">
+            <div className="p-4 md:pl-16 space-y-4 bg-slate-50/30">
               <div>
                 <h5 className="text-xs font-bold text-slate-500 uppercase mb-2">Your Answer</h5>
                 <div className="bg-white p-3 rounded-lg border border-slate-200 text-slate-700 text-sm leading-relaxed">
@@ -574,6 +560,48 @@ const QuestionItem = ({ question, answer, feedback, index }) => {
                 </div>
               </div>
             </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+};
+
+const FeedbackSection = ({ title, icon: Icon, items, color }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  
+  const colors = {
+    green: "text-green-700 bg-green-500",
+    indigo: "text-indigo-700 bg-indigo-500"
+  };
+
+  return (
+    <div className="rounded-lg border border-slate-200 bg-white/50 overflow-hidden">
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full flex items-center justify-between p-3 hover:bg-white transition-colors"
+      >
+        <h5 className={`text-xs font-bold uppercase flex items-center gap-2 ${color === 'green' ? 'text-green-700' : 'text-indigo-700'}`}>
+          <Icon className="h-3.5 w-3.5" /> {title}
+        </h5>
+        <ChevronDown className={`h-4 w-4 text-slate-400 transition-transform ${isOpen ? "rotate-180" : ""}`} />
+      </button>
+      
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+          >
+            <ul className="p-3 pt-0 space-y-2">
+              {items.map((item, i) => (
+                <li key={i} className="text-sm text-slate-700 flex items-start gap-2">
+                  <span className={`h-1.5 w-1.5 rounded-full mt-1.5 flex-shrink-0 ${color === 'green' ? 'bg-green-500' : 'bg-indigo-500'}`} />
+                  {item}
+                </li>
+              ))}
+            </ul>
           </motion.div>
         )}
       </AnimatePresence>

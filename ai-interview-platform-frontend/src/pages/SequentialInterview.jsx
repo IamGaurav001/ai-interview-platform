@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+
+
 import { useNavigate, useLocation } from "react-router-dom";
 import { evaluateAnswer, saveCompleteSession, evaluateVoiceAnswer, cancelInterview } from "../api/interviewAPI";
 import {
@@ -25,7 +26,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import AudioVisualizer from "../components/AudioVisualizer";
 import SpeakingAvatar from "../components/SpeakingAvatar";
 import PageLayout from "../components/PageLayout";
-import ConfirmModal from "../components/ConfirmModal";
+
 
 const SequentialInterview = () => {
   const navigate = useNavigate();
@@ -35,21 +36,21 @@ const SequentialInterview = () => {
   const [questions] = useState(() => {
     if (!initialQuestions) return [];
     
-    // If it's already an array, use it directly
+
     if (Array.isArray(initialQuestions)) {
       return initialQuestions.filter((q) => q && String(q).trim().length > 10);
     }
     
-    // Otherwise, parse questions from text (numbered list format)
+
     if (typeof initialQuestions === 'string') {
       const lines = initialQuestions.split("\n").filter((line) => line.trim());
       return lines
         .map((line) => {
-          // Remove numbering (1., 2., etc.) and clean up
+
           const cleaned = line.replace(/^\d+[\.\)]\s*/, "").trim();
           return cleaned;
         })
-        .filter((q) => q.length > 10); // Filter out very short lines
+
     }
     
     return [];
@@ -74,7 +75,7 @@ const SequentialInterview = () => {
   const [transcribedText, setTranscribedText] = useState("");
   const [recordingTime, setRecordingTime] = useState(0);
 
-  // Update current answer when question index changes
+
   useEffect(() => {
     if (answers[currentQuestionIndex]) {
       setCurrentAnswer(answers[currentQuestionIndex]);
@@ -89,7 +90,7 @@ const SequentialInterview = () => {
     }
   }, [initialQuestions, questions.length, navigate]);
 
-  // Cleanup audio on unmount
+
   useEffect(() => {
     return () => {
       Object.values(audioInstances).forEach((audio) => {
@@ -98,14 +99,14 @@ const SequentialInterview = () => {
           audio.src = "";
         }
       });
-      // Stop recording if active
+
       if (mediaRecorder && isRecording) {
         mediaRecorder.stop();
       }
     };
   }, [audioInstances, mediaRecorder, isRecording]);
 
-  // Recording timer
+
   useEffect(() => {
     let interval = null;
     if (isRecording) {
@@ -139,7 +140,7 @@ const SequentialInterview = () => {
         const blob = new Blob(chunks, { type: "audio/webm" });
         const audioUrl = URL.createObjectURL(blob);
         setRecordedAudio(blob);
-        // Stop all tracks
+
         stream.getTracks().forEach((track) => track.stop());
       };
 
@@ -187,7 +188,7 @@ const SequentialInterview = () => {
         const newAnswers = [...answers, transcribed || "Voice answer"];
         const newFeedbacks = [...feedbacks, res.data.feedback];
 
-        // Store audio URLs if available
+
         if (res.data.audioUrl) {
           setFeedbackAudioUrls((prev) => ({
             ...prev,
@@ -200,11 +201,11 @@ const SequentialInterview = () => {
         setCurrentAnswer(transcribed);
         setRecordedAudio(null);
 
-        // Move to next question or show summary
+
         if (currentQuestionIndex < questions.length - 1) {
           setCurrentQuestionIndex(currentQuestionIndex + 1);
         } else {
-          // All questions answered - show summary
+
           handleShowSummary(newAnswers, newFeedbacks);
         }
       } else {
@@ -239,7 +240,7 @@ const SequentialInterview = () => {
         const newAnswers = [...answers, currentAnswer];
         const newFeedbacks = [...feedbacks, res.data.feedback];
 
-        // Store audio URLs if available
+
         if (res.data.audioUrl) {
           setFeedbackAudioUrls((prev) => ({
             ...prev,
@@ -251,11 +252,11 @@ const SequentialInterview = () => {
         setFeedbacks(newFeedbacks);
         setCurrentAnswer("");
 
-        // Move to next question or show summary
+
         if (currentQuestionIndex < questions.length - 1) {
           setCurrentQuestionIndex(currentQuestionIndex + 1);
         } else {
-          // All questions answered - show summary
+
           handleShowSummary(newAnswers, newFeedbacks);
         }
       } else {
@@ -276,7 +277,7 @@ const SequentialInterview = () => {
   const handleShowSummary = async (finalAnswers, finalFeedbacks) => {
     setSaving(true);
     try {
-      // Save complete session
+
       await saveCompleteSession({
         domain,
         questions,
@@ -286,21 +287,23 @@ const SequentialInterview = () => {
       setShowSummary(true);
     } catch (err) {
       console.error("Save session error:", err);
-      // Still show summary even if save fails
+
       setShowSummary(true);
     } finally {
       setSaving(false);
     }
   };
 
+
+
   const handleExitInterview = async () => {
     try {
-      // Call the cancel API to clear the session in Redis
+
       await cancelInterview();
       console.log("✅ Interview session cancelled");
     } catch (err) {
       console.error("❌ Error cancelling interview:", err);
-      // Navigate anyway even if the API call fails
+
     } finally {
       navigate("/dashboard");
     }
@@ -319,13 +322,13 @@ const SequentialInterview = () => {
 
     const audioKey = `${type}_${index}`;
 
-    // Stop any currently playing audio
+
     if (audioInstances[audioKey]) {
       audioInstances[audioKey].pause();
       audioInstances[audioKey].src = "";
     }
 
-    // Create new audio instance
+
     const audio = new Audio(audioUrl);
 
     setAudioInstances((prev) => ({
@@ -454,7 +457,7 @@ const SequentialInterview = () => {
             <p className="text-base sm:text-lg text-slate-600">Here's your performance summary</p>
           </div>
 
-          {/* Overall Score Card */}
+
           <div className="bg-white rounded-2xl shadow-xl p-6 sm:p-8 border border-slate-200 mb-8 text-center">
             <h2 className="text-xl sm:text-2xl font-bold text-slate-900 mb-4">Overall Score</h2>
             <div className="text-5xl sm:text-7xl font-bold text-indigo-600 mb-2 tracking-tight">{overallScore}/10</div>
@@ -463,7 +466,7 @@ const SequentialInterview = () => {
             </p>
           </div>
 
-          {/* Question-by-Question Summary */}
+
           <div className="space-y-6 mb-12">
             {questions.map((question, idx) => (
               <motion.div 
@@ -526,7 +529,7 @@ const SequentialInterview = () => {
             ))}
           </div>
 
-          {/* Action Buttons */}
+
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <button
               onClick={() => navigate("/history")}
@@ -556,7 +559,7 @@ const SequentialInterview = () => {
   return (
     <PageLayout>
       <div className="max-w-4xl mx-auto py-4 sm:py-8 px-4 sm:px-6">
-        {/* Progress Bar */}
+
         <motion.div 
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -566,6 +569,7 @@ const SequentialInterview = () => {
             <span className="text-xs sm:text-sm font-semibold text-indigo-600 uppercase tracking-wider">
               Question {currentQuestionIndex + 1} <span className="text-slate-400">/</span> {questions.length}
             </span>
+
             <button
               onClick={() => setShowExitModal(true)}
               className="text-xs sm:text-sm font-semibold text-slate-500 hover:text-slate-700 hover:bg-slate-100 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg transition-colors flex items-center gap-1 sm:gap-2"
@@ -587,7 +591,7 @@ const SequentialInterview = () => {
           </div>
         </motion.div>
 
-        {/* Current Question */}
+
         <AnimatePresence mode="wait">
           <motion.div
             key={currentQuestionIndex}
@@ -643,7 +647,7 @@ const SequentialInterview = () => {
               )}
             </div>
 
-            {/* Audio Visualizer for Question */}
+
             <div className="h-8 mb-6 flex items-center justify-center">
               <AudioVisualizer 
                 isPlaying={playingAudio[`question_${currentQuestionIndex}`]} 
@@ -652,9 +656,9 @@ const SequentialInterview = () => {
               />
             </div>
 
-            {/* Answer Input */}
+
             <div className="space-y-4">
-              {/* Error Display - Moved to top for visibility */}
+
               {error && (
                 <motion.div 
                   initial={{ opacity: 0, y: -10 }}
@@ -693,12 +697,12 @@ const SequentialInterview = () => {
                 </div>
               </div>
 
-              {/* Audio Visualizer for Recording */}
+
               <div className="h-8 flex items-center justify-center">
                 <AudioVisualizer isPlaying={false} isRecording={isRecording} mode="listening" />
               </div>
 
-              {/* Transcribed text display */}
+
               <AnimatePresence>
                 {transcribedText && (
                   <motion.div 
@@ -714,7 +718,7 @@ const SequentialInterview = () => {
                 )}
               </AnimatePresence>
 
-              {/* Recorded audio preview */}
+
               {recordedAudio && !transcribedText && (
                 <motion.div 
                   initial={{ opacity: 0, scale: 0.95 }}
@@ -755,7 +759,7 @@ const SequentialInterview = () => {
 
 
 
-            {/* Previous Answer Feedback */}
+
             {hasAnswerForCurrent && hasFeedbackForCurrent && (
               <motion.div 
                 initial={{ opacity: 0, height: 0 }}
@@ -881,6 +885,18 @@ const SequentialInterview = () => {
         cancelText="Continue Interview"
         type="warning"
       />
+      {showResetModal && (
+        <ConfirmModal
+          isOpen={showResetModal}
+          onClose={() => setShowResetModal(false)}
+          onConfirm={handleResetInterview}
+          title="Reset Interview?"
+          message="Are you sure you want to reset? This is a ONE-TIME option. You will lose all current progress and start fresh. You cannot undo this."
+          confirmText="Yes, Reset Interview"
+          cancelText="Cancel"
+          isDestructive={true}
+        />
+      )}
     </PageLayout>
   );
 };

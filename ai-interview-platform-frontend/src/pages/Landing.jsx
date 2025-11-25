@@ -103,8 +103,8 @@ const Landing = () => {
 
 
           {/* Hero Visual / Dashboard Preview */}
-          <div className="mt-20 relative mx-auto max-w-5xl">
-            <div className="relative rounded-2xl bg-slate-900/5 p-2 ring-1 ring-inset ring-slate-900/10 lg:rounded-3xl lg:p-4">
+          <div className="mt-20 relative mx-auto max-w-7xl">
+            <div className="relative rounded-2xl bg-slate-900/5 p-1 ring-1 ring-inset ring-slate-900/10 lg:rounded-3xl lg:p-2">
               <HeroDashboardPreview />
             </div>
           </div>
@@ -273,7 +273,7 @@ const Landing = () => {
               <ul className="space-y-4 text-sm text-slate-500">
                 <li><Link to="/features" className="hover:text-indigo-600 transition-colors">Features</Link></li>
                 <li><Link to="/pricing" className="hover:text-indigo-600 transition-colors">Pricing</Link></li>
-                <li><Link to="/demo" className="hover:text-indigo-600 transition-colors">Live Demo</Link></li>
+                <li><Link to="/features" className="hover:text-indigo-600 transition-colors">Live Demo</Link></li>
               </ul>
             </div>
             <div>
@@ -326,7 +326,7 @@ const HeroDashboardPreview = () => {
   }, []);
 
   return (
-    <div className="rounded-3xl bg-slate-50 shadow-2xl ring-1 ring-slate-900/5 overflow-hidden flex flex-col w-full h-[300px] md:h-auto md:aspect-[2.3/1] relative group">
+    <div className="rounded-3xl bg-slate-50 shadow-2xl ring-1 ring-slate-900/5 overflow-hidden flex flex-col w-full h-[300px] md:h-auto md:aspect-[16/9] relative group">
       
       {/* Window Header */}
       <div className="flex items-center justify-between border-b border-slate-200 bg-white px-4 py-3 sm:px-6 sm:py-4 z-20 shadow-sm">
@@ -347,13 +347,13 @@ const HeroDashboardPreview = () => {
       </div>
 
       {/* Dashboard Content - Scrollable Area */}
-      <div className="flex-1 p-4 sm:p-6 overflow-y-auto custom-scrollbar bg-slate-50/50 relative">
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-6 pb-6">
+      <div className="flex-1 p-2 overflow-y-auto custom-scrollbar bg-slate-50/50 relative">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-2 pb-2 h-full">
           
           {/* LEFT COLUMN (3 cols) - AI & Stats */}
-          <div className="md:col-span-3 flex flex-col gap-4">
+          <div className="md:col-span-3 flex flex-col gap-2 h-full">
             {/* AI Avatar Card */}
-            <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm flex flex-col items-center justify-center text-center relative overflow-hidden group hover:shadow-md transition-all">
+            <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm flex flex-col items-center justify-center text-center relative overflow-hidden group hover:shadow-md transition-all flex-1">
               <div className="relative mb-4">
                 <motion.div 
                   className="h-16 w-16 rounded-2xl bg-gradient-to-tr from-indigo-500 to-violet-500 flex items-center justify-center shadow-lg z-10 relative"
@@ -403,10 +403,10 @@ const HeroDashboardPreview = () => {
           </div>
 
           {/* CENTER COLUMN (5 cols) - Chat */}
-          <div className="md:col-span-5 flex flex-col gap-4">
+          <div className="md:col-span-5 flex flex-col gap-2 h-full">
             {/* Question */}
             <motion.div 
-              className="bg-white p-5 rounded-2xl rounded-tl-sm border border-slate-200 shadow-sm hover:shadow-md transition-all"
+              className="bg-white p-4 rounded-2xl rounded-tl-sm border border-slate-200 shadow-sm hover:shadow-md transition-all"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3 }}
@@ -429,7 +429,7 @@ const HeroDashboardPreview = () => {
 
             {/* Answer */}
             <motion.div 
-              className="bg-gradient-to-br from-indigo-600 to-violet-600 p-5 rounded-2xl rounded-br-sm shadow-lg border border-indigo-500/20 relative overflow-hidden"
+              className="bg-gradient-to-br from-indigo-600 to-violet-600 p-4 rounded-2xl rounded-br-sm shadow-lg border border-indigo-500/20 relative overflow-hidden flex-1"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3, delay: 0.1 }}
@@ -464,8 +464,8 @@ const HeroDashboardPreview = () => {
           </div>
 
           {/* RIGHT COLUMN (4 cols) - Metrics */}
-          <div className="md:col-span-4 flex flex-col gap-4">
-            <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm h-full flex flex-col hover:shadow-md transition-all">
+          <div className="md:col-span-4 flex flex-col gap-2 h-full">
+            <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm h-full flex flex-col hover:shadow-md transition-all">
               <div className="flex items-center justify-between mb-6">
                 <span className="text-xs font-bold text-slate-400 tracking-wider uppercase">Live Analysis</span>
                 <span className="flex h-2 w-2 rounded-full bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.3)] animate-pulse" />

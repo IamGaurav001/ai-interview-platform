@@ -20,7 +20,7 @@ const Navbar = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // State for UI interactions
+
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
@@ -28,12 +28,12 @@ const Navbar = () => {
 
   const dropdownRef = useRef(null);
 
-  // Helper to get display name/initials
+
   const userDisplayName =
     (user?.displayName && user.displayName.trim()) || user?.email || "User";
   const userInitials = userDisplayName.slice(0, 2).toUpperCase();
 
-  // Handle window resize
+
   useEffect(() => {
     const handleResize = () => {
       setWindowWidth(window.innerWidth);
@@ -42,7 +42,7 @@ const Navbar = () => {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // Handle scroll effect
+
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 10);
@@ -98,7 +98,7 @@ const Navbar = () => {
       >
         <div className="px-4 sm:px-6 lg:px-8 py-3">
           <div className="flex justify-between items-center">
-            {/* Logo Section */}
+
             <Link
               to={user ? "/dashboard" : "/"}
               className="flex items-center gap-2 group relative z-10"
@@ -110,7 +110,7 @@ const Navbar = () => {
               />
             </Link>
 
-            {/* Desktop Navigation */}
+
             {user && (
               <div className="hidden md:flex items-center justify-center absolute left-1/2 -translate-x-1/2">
                 <div className="flex items-center gap-1 bg-gray-100/50 p-1.5 rounded-full border border-gray-200/50 backdrop-blur-sm">
@@ -143,7 +143,7 @@ const Navbar = () => {
               </div>
             )}
 
-            {/* Right Side Actions */}
+
             <div className="flex items-center gap-4 relative z-10">
               {user ? (
                 <div className="flex items-center gap-4">
@@ -169,7 +169,7 @@ const Navbar = () => {
                       />
                     </button>
 
-                    {/* Dropdown Menu */}
+
                     <AnimatePresence>
                       {profileDropdownOpen && (
                         <motion.div
@@ -208,7 +208,7 @@ const Navbar = () => {
                     </AnimatePresence>
                   </div>
 
-                  {/* Mobile Menu Toggle */}
+
                   {windowWidth < 768 && (
                     <button
                       onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -242,7 +242,7 @@ const Navbar = () => {
           </div>
         </div>
 
-        {/* Mobile Menu Overlay */}
+
         <AnimatePresence>
           {mobileMenuOpen && windowWidth < 768 && (
             <motion.div
@@ -276,7 +276,7 @@ const Navbar = () => {
                           <Link
                             key={link.path}
                             to={link.path}
-                            className={`flex items-center gap-3 px-4 py-3 rounded-xl text-base font-medium transition-colors ${
+                            className={`flex flex-row items-center gap-3 px-4 py-3 rounded-xl text-base font-medium transition-colors ${
                               isActive(link.path)
                                 ? "bg-primary-50 text-primary-700"
                                 : "text-gray-600 hover:bg-gray-50/80 hover:text-gray-900"
@@ -288,10 +288,10 @@ const Navbar = () => {
                         );
                       })}
                       
-                      {/* Settings Link */}
+
                       <Link
                         to="/settings"
-                        className={`flex items-center gap-3 px-4 py-3 rounded-xl text-base font-medium transition-colors ${
+                        className={`flex flex-row items-center gap-3 px-4 py-3 rounded-xl text-base font-medium transition-colors ${
                           isActive("/settings")
                             ? "bg-primary-50 text-primary-700"
                             : "text-gray-600 hover:bg-gray-50/80 hover:text-gray-900"
@@ -303,7 +303,7 @@ const Navbar = () => {
                       
                       <button
                         onClick={handleLogout}
-                        className="w-full flex items-center gap-3 px-4 py-3 mt-4 rounded-xl text-base font-medium text-red-600 hover:bg-red-50/80 transition-colors"
+                        className="w-full flex flex-row items-center gap-3 px-4 py-3 mt-4 rounded-xl text-base font-medium text-red-600 hover:bg-red-50/80 transition-colors"
                       >
                         <LogOut className="h-5 w-5" />
                         Logout
