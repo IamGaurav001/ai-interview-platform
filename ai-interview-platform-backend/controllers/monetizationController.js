@@ -1,0 +1,107 @@
+import Razorpay from "razorpay";
+import crypto from "crypto";
+import User from "../models/User.js";
+import dotenv from "dotenv";
+
+dotenv.config();
+
+const razorpay = new Razorpay({
+  key_id: process.env.RAZORPAY_KEY_ID || "rzp_test_dummy12345",
+  key_secret: process.env.RAZORPAY_KEY_SECRET || "dummy_secret_67890",
+});
+
+export const createOrder = async (req, res) => {
+  try {
+    const { planId } = req.body;
+    let amount, credits;
+
+    // Define plans
+    switch (planId) {
+      case "3_interviews":
+        amount = 4900; // ₹49
+        credits = 3;
+        break;
+      case "1_interview":
+      default:
+        amount = 1900; // ₹19
+        credits = 1;
+        break;
+    }
+
+    const options = {
+      amount,
+      currency: "INR",
+      receipt: `receipt_${Date.now()}`,
+      notes: {
+        credits: credits, // Store credits in notes for secure verification
+        planId: planId || "1_interview",
+      },
+    };
+
+    const order = await razorpay.orders.create(options);
+
+    res.json({
+      success: true,
+      order,
+    });
+  } catch (error) {
+    console.error("Create order error:", error);
+    res.status(500).json({ success: false, message: "Failed to create order" });
+  }
+};
+
+export const verifyPayment = async (req, res) => {
+  try {
+    const { razorpay_order_id, razorpay_payment_id, razorpay_signature } =
+      req.body;
+
+    const body = razorpay_order_id + "|" + razorpay_payment_id;
+
+    const expectedSignature = crypto
+      .createHmac(
+        "sha256",
+        process.env.RAZORPAY_KEY_SECRET || "dummy_secret_67890"
+      )
+      .update(body.toString())
+      .digest("hex");
+
+    const isAuthentic = expectedSignature === razorpay_signature;
+
+    if (isAuthentic) {
+      // Fetch order to get the secure credits value from notes
+      // This prevents frontend manipulation
+      const order = await razorpay.orders.fetch(razorpay_order_id);
+      const creditsToAdd = parseInt(order.notes.credits) || 1;
+
+      // Payment successful, update user credits
+      const user = await User.findById(req.user._id);
+
+      if (!user.usage) {
+        user.usage = {
+          freeInterviewsLeft: 0,
+          lastMonthlyReset: new Date(),
+          purchasedCredits: 0,
+        };
+      }
+
+      user.usage.purchasedCredits =
+        (user.usage.purchasedCredits || 0) + creditsToAdd;
+      await user.save();
+
+      res.json({
+        success: true,
+        message: `Payment verified and ${creditsToAdd} credit(s) added`,
+      });
+    } else {
+      res.status(400).json({
+        success: false,
+        message: "Invalid signature",
+      });
+    }
+  } catch (error) {
+    console.error("Verify payment error:", error);
+    res
+      .status(500)
+      .json({ success: false, message: "Payment verification failed" });
+  }
+};
