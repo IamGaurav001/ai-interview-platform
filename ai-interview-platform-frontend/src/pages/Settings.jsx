@@ -1,192 +1,256 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
-import { updateUserProfile } from "../api/authAPI";
-import { User, Mail, Save, Loader2, CheckCircle2, AlertCircle } from "lucide-react";
-import { motion } from "framer-motion";
-import PageLayout from "../components/PageLayout";
+import { 
+  User, 
+  Settings as SettingsIcon, 
+  Bell, 
+  Shield, 
+  LogOut, 
+  Camera,
+  ChevronRight,
+  Mail,
+  Lock,
+  Trash2,
+  Save
+} from "lucide-react";
 
 const Settings = () => {
-  const { user, updateUser } = useAuth();
-  const [formData, setFormData] = useState({
-    name: "",
-    nickname: "",
-    email: "",
-  });
+  const { user, updateUser, logout, resetPassword } = useAuth();
+  const [activeTab, setActiveTab] = useState("profile");
   const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState("");
-  const [error, setError] = useState("");
+  const [message, setMessage] = useState({ type: "", text: "" });
+
+  // Form states
+  const [displayName, setDisplayName] = useState("");
+  const [notifications, setNotifications] = useState({
+    email: true,
+    push: false,
+    marketing: false
+  });
 
   useEffect(() => {
     if (user) {
-      setFormData({
-        name: user.displayName || user.name || "",
-        nickname: user.nickname || "",
-        email: user.email || "",
-      });
+      setDisplayName(user.displayName || "");
     }
   }, [user]);
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-    setSuccess("");
-    setError("");
-  };
-
-  const handleSubmit = async (e) => {
+  const handleUpdateProfile = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setSuccess("");
-    setError("");
+    setMessage({ type: "", text: "" });
 
     try {
-      // Update Firebase profile and local state
-      await updateUser({ displayName: formData.name });
-
-      // Sync with backend
-      await updateUserProfile({
-        name: formData.name,
-        nickname: formData.nickname,
-      });
-      setSuccess("Profile updated successfully!");
-      // Optionally reload user context if needed, but for now we assume local state is enough or page reload
-      // In a real app, we might want to update the global auth context user object here.
-      // Since useAuth probably listens to Firebase auth state changes, updating the backend might not immediately reflect in `user` object if it comes from Firebase token.
-      // However, our `user` object in context usually comes from the backend sync or is a mix.
-      // If `useAuth` only uses Firebase user, we might not see the nickname update immediately unless we re-sync.
-      // For now, let's just show success message.
-    } catch (err) {
-      console.error("Update profile error:", err);
-      setError("Failed to update profile. Please try again.");
+      await updateUser({ displayName });
+      setMessage({ type: "success", text: "Profile updated successfully" });
+    } catch (error) {
+      setMessage({ type: "error", text: "Failed to update profile" });
     } finally {
       setLoading(false);
     }
   };
 
+  const handlePasswordReset = async () => {
+    if (!user?.email) return;
+    setLoading(true);
+    try {
+      await resetPassword(user.email);
+      setMessage({ type: "success", text: "Password reset email sent" });
+    } catch (error) {
+      setMessage({ type: "error", text: "Failed to send reset email" });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const menuItems = [
+    { id: "profile", label: "Profile", icon: User, description: "Manage your personal information" },
+    { id: "notifications", label: "Notifications", icon: Bell, description: "Configure how you receive alerts" },
+    { id: "security", label: "Security", icon: Shield, description: "Protect your account" },
+  ];
+
   return (
-    <PageLayout>
-      <div className="max-w-4xl mx-auto py-10">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden"
-      >
-        <div className="px-6 py-8 border-b border-gray-100 bg-gray-50/50">
-          <h1 className="text-2xl font-bold text-gray-900">Account Settings</h1>
-          <p className="mt-1 text-sm text-gray-500">
-            Manage your profile information and preferences
-          </p>
+    <div className="pb-12">
+      {/* Header Background */}
+      <div className="bg-white border-b border-slate-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <h1 className="text-3xl font-bold text-slate-900">Settings</h1>
+          <p className="mt-2 text-slate-600">Manage your account preferences and settings</p>
         </div>
-
-        <div className="p-6 sm:p-8">
-          <form onSubmit={handleSubmit} className="space-y-6 max-w-2xl">
-            {success && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: "auto" }}
-                className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-xl flex items-center gap-2"
-              >
-                <CheckCircle2 className="h-5 w-5 text-green-500" />
-                {success}
-              </motion.div>
-            )}
-
-            {error && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: "auto" }}
-                className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl flex items-center gap-2"
-              >
-                <AlertCircle className="h-5 w-5 text-red-500" />
-                {error}
-              </motion.div>
-            )}
-
-            <div className="grid gap-6">
-              <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1.5">
-                  Email Address
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Mail className="h-5 w-5 text-gray-400" />
-                  </div>
-                  <input
-                    type="email"
-                    value={formData.email}
-                    disabled
-                    className="block w-full pl-10 pr-3 py-2.5 border border-gray-200 rounded-xl bg-gray-50 text-gray-500 cursor-not-allowed focus:outline-none"
-                  />
-                </div>
-                <p className="mt-1.5 text-xs text-gray-500">
-                  Email address cannot be changed.
-                </p>
-              </div>
-
-              <div>
-                <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1.5">
-                  Full Name
-                </label>
-                <div className="relative group">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <User className="h-5 w-5 text-gray-400 group-focus-within:text-indigo-600 transition-colors" />
-                  </div>
-                  <input
-                    id="name"
-                    name="name"
-                    type="text"
-                    value={formData.name}
-                    onChange={handleChange}
-                    className="block w-full pl-10 pr-3 py-2.5 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label htmlFor="nickname" className="block text-sm font-medium text-gray-700 mb-1.5">
-                  Nickname
-                </label>
-                <div className="relative group">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <User className="h-5 w-5 text-gray-400 group-focus-within:text-indigo-600 transition-colors" />
-                  </div>
-                  <input
-                    id="nickname"
-                    name="nickname"
-                    type="text"
-                    value={formData.nickname}
-                    onChange={handleChange}
-                    placeholder="How should we call you?"
-                    className="block w-full pl-10 pr-3 py-2.5 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div className="pt-4">
-              <button
-                type="submit"
-                disabled={loading}
-                className="flex items-center justify-center gap-2 px-6 py-2.5 border border-transparent rounded-xl shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-600 disabled:opacity-70 disabled:cursor-not-allowed transition-all active:scale-[0.98]"
-              >
-                {loading ? (
-                  <>
-                    <Loader2 className="animate-spin h-4 w-4" />
-                    Saving...
-                  </>
-                ) : (
-                  <>
-                    <Save className="h-4 w-4" />
-                    Save Changes
-                  </>
-                )}
-              </button>
-            </div>
-          </form>
-        </div>
-      </motion.div>
       </div>
-    </PageLayout>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="flex flex-col lg:flex-row gap-8">
+          {/* Sidebar Navigation */}
+          <div className="w-full lg:w-64 flex-shrink-0">
+            <nav className="space-y-1 lg:sticky lg:top-32">
+              {menuItems.map((item) => {
+                const Icon = item.icon;
+                const isActive = activeTab === item.id;
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => setActiveTab(item.id)}
+                    className={`w-full flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-all duration-200 ${
+                      isActive
+                        ? "bg-indigo-50 text-indigo-700 shadow-sm ring-1 ring-indigo-200"
+                        : "text-slate-600 hover:bg-white hover:text-slate-900 hover:shadow-sm"
+                    }`}
+                  >
+                    <Icon className={`mr-3 h-5 w-5 ${isActive ? "text-indigo-600" : "text-slate-400"}`} />
+                    {item.label}
+                    {isActive && <ChevronRight className="ml-auto h-4 w-4 text-primary-400" />}
+                  </button>
+                );
+              })}
+              
+              <div className="pt-8 mt-8 border-t border-slate-200">
+                <button
+                  onClick={logout}
+                  className="w-full flex items-center px-4 py-3 text-sm font-medium text-red-600 rounded-lg hover:bg-red-50 transition-colors"
+                >
+                  <LogOut className="mr-3 h-5 w-5" />
+                  Sign Out
+                </button>
+              </div>
+            </nav>
+          </div>
+
+          {/* Main Content Area */}
+          <div className="flex-1">
+            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden min-h-[600px]">
+              
+              {/* Message Alert */}
+              {message.text && (
+                <div className={`p-4 ${message.type === "success" ? "bg-green-50 text-green-700" : "bg-red-50 text-red-700"}`}>
+                  {message.text}
+                </div>
+              )}
+
+              {/* Profile Section */}
+              {activeTab === "profile" && (
+                <div className="p-6 lg:p-8 space-y-8">
+                  <div>
+                    <h2 className="text-xl font-semibold text-black">Profile Information</h2>
+                    <p className="mt-1 text-sm text-slate-500">Update your photo and personal details.</p>
+                  </div>
+
+                  <form onSubmit={handleUpdateProfile} className="space-y-6 max-w-xl">
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-2">Display Name</label>
+                      <div className="relative">
+                        <User className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
+                        <input
+                          type="text"
+                          value={displayName}
+                          onChange={(e) => setDisplayName(e.target.value)}
+                          className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all"
+                          placeholder="Enter your name"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-2">Email Address</label>
+                      <div className="relative">
+                        <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
+                        <input
+                          type="email"
+                          value={user?.email || ""}
+                          disabled
+                          className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-500 cursor-not-allowed"
+                        />
+                      </div>
+                      <p className="mt-1.5 text-xs text-slate-500">Email address cannot be changed.</p>
+                    </div>
+
+                    <div className="pt-4">
+                      <button
+                        type="submit"
+                        disabled={loading}
+                        className="flex items-center px-6 py-2.5 bg-primary-600 text-white rounded-lg hover:bg-primary-700 focus:ring-4 focus:ring-primary-100 transition-all disabled:opacity-50"
+                      >
+                        <Save className="mr-2 h-4 w-4" />
+                        {loading ? "Saving..." : "Save Changes"}
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              )}
+
+              {/* Notifications Section */}
+              {activeTab === "notifications" && (
+                <div className="p-6 lg:p-8 space-y-8">
+                  <div>
+                    <h2 className="text-xl font-semibold text-slate-900">Notifications</h2>
+                    <p className="mt-1 text-sm text-slate-500">Manage how you receive updates and alerts.</p>
+                  </div>
+
+                  <div className="space-y-6 max-w-2xl">
+                    {[
+                      { id: "email", label: "Email Notifications", desc: "Receive updates about your interview progress via email" },
+                    ].map((item) => (
+                      <div key={item.id} className="flex items-start justify-between p-4 rounded-lg border border-slate-200 hover:border-primary-200 transition-colors">
+                        <div>
+                          <h3 className="text-base font-medium text-slate-900">{item.label}</h3>
+                          <p className="mt-1 text-sm text-slate-500">{item.desc}</p>
+                        </div>
+                        <button
+                          onClick={() => setNotifications(prev => ({ ...prev, [item.id]: !prev[item.id] }))}
+                          className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary-600 focus:ring-offset-2 ${
+                            notifications[item.id] ? 'bg-primary-600' : 'bg-slate-200'
+                          }`}
+                        >
+                          <span
+                            className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                              notifications[item.id] ? 'translate-x-5' : 'translate-x-0'
+                            }`}
+                          />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Security Section */}
+              {activeTab === "security" && (
+                <div className="p-6 lg:p-8 space-y-8">
+                  <div>
+                    <h2 className="text-xl font-semibold text-slate-900">Security</h2>
+                    <p className="mt-1 text-sm text-slate-500">Manage your password and account security.</p>
+                  </div>
+
+                  <div className="space-y-6 max-w-xl">
+                    <div className="p-6 rounded-xl bg-slate-50 border border-slate-200">
+                      <div className="flex items-start gap-4">
+                        <div className="p-2 bg-white rounded-lg shadow-sm">
+                          <Lock className="h-6 w-6 text-slate-600" />
+                        </div>
+                        <div className="flex-1">
+                          <h3 className="text-base font-medium text-slate-900">Password</h3>
+                          <p className="mt-1 text-sm text-slate-500">
+                            Change your password regularly to keep your account secure.
+                          </p>
+                          <button
+                            onClick={handlePasswordReset}
+                            disabled={loading}
+                            className="mt-4 px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 focus:ring-2 focus:ring-slate-200 transition-all"
+                          >
+                            Send Password Reset Email
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 };
 

@@ -6,9 +6,7 @@ export const syncUser = async (req, res) => {
 
     user.lastLoginAt = new Date();
 
-    if (req.body.nickname && user.nickname !== req.body.nickname) {
-      user.nickname = req.body.nickname;
-    }
+
 
     await user.save();
 
@@ -17,7 +15,7 @@ export const syncUser = async (req, res) => {
       user: {
         _id: user._id,
         name: user.name,
-        nickname: user.nickname,
+
         email: user.email,
         firebaseUid: user.firebaseUid,
         resumeUrl: user.resumeUrl,
@@ -25,6 +23,7 @@ export const syncUser = async (req, res) => {
         resumeUrl: user.resumeUrl,
         skills: user.skills,
         lastLoginAt: user.lastLoginAt,
+        usage: user.usage,
       },
       message: "User synced successfully",
     });

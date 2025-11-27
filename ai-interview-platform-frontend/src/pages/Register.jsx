@@ -11,7 +11,6 @@ const Register = () => {
   const { signup, googleLogin, user, loading: authLoading } = useAuth();
   const [formData, setFormData] = useState({
     name: "",
-    nickname: "",
     email: "",
     password: "",
     confirmPassword: ""
@@ -22,10 +21,12 @@ const Register = () => {
 
   // Redirect if user is already authenticated (prevents accessing register page when logged in)
   useEffect(() => {
-    if (user && !authLoading) {
+    // Only redirect if we are NOT currently submitting the form (loading is false)
+    // This prevents the race condition where Firebase auth finishes before our backend sync
+    if (user && !authLoading && !loading) {
       navigate("/dashboard", { replace: true });
     }
-  }, [user, authLoading, navigate]);
+  }, [user, authLoading, navigate, loading]);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -49,9 +50,9 @@ const Register = () => {
     setLoading(true);
     try {
       await signup(formData.email, formData.password, formData.name.trim());
-      // Sync user to MongoDB backend with nickname
+      // Sync user to MongoDB backend
       try {
-        await syncUser(formData.nickname);
+        await syncUser();
       } catch (syncError) {
         console.error("User sync error (non-critical):", syncError);
         // Continue even if sync fails - middleware will handle it on first API call
@@ -150,7 +151,7 @@ const Register = () => {
             )}
 
             <form className="space-y-3" onSubmit={handleSubmit}>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 gap-3">
                 <div>
                   <label htmlFor="name" className="block text-xs font-medium text-slate-700 mb-1">
                     Full Name
@@ -172,25 +173,6 @@ const Register = () => {
                   </div>
                 </div>
 
-                <div>
-                  <label htmlFor="nickname" className="block text-xs font-medium text-slate-700 mb-1">
-                    Nickname
-                  </label>
-                  <div className="relative group">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <User className="h-4 w-4 text-slate-400 group-focus-within:text-indigo-600 transition-colors" />
-                    </div>
-                    <input
-                      id="nickname"
-                      name="nickname"
-                      type="text"
-                      value={formData.nickname}
-                      onChange={handleChange}
-                      className="block w-full pl-9 pr-3 py-2.5 border border-slate-200 rounded-xl text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all bg-white/50 focus:bg-white"
-                      placeholder="CoolDev"
-                    />
-                  </div>
-                </div>
               </div>
 
               <div>

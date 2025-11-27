@@ -9,7 +9,8 @@ import {
   GoogleAuthProvider,
   signInWithPopup,
   signInWithRedirect,
-  getRedirectResult
+  getRedirectResult,
+  sendPasswordResetEmail
 } from "firebase/auth";
 
 export const AuthContext = createContext(null);
@@ -166,8 +167,12 @@ export const AuthProvider = ({ children }) => {
     return null;
   };
 
+  const resetPassword = (email) => {
+    return sendPasswordResetEmail(auth, email);
+  };
+
   return (
-    <AuthContext.Provider value={{ user, loading, login, signup, logout, googleLogin, updateUser }}>
+    <AuthContext.Provider value={{ user, loading, login, signup, logout, googleLogin, updateUser, resetPassword }}>
       {children}
     </AuthContext.Provider>
   );
