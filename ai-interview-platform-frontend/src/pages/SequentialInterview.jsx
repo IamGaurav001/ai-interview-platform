@@ -27,6 +27,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import AudioVisualizer from "../components/AudioVisualizer";
 import SpeakingAvatar from "../components/SpeakingAvatar";
 import PageLayout from "../components/PageLayout";
+import InterviewTour from "../components/InterviewTour";
 import logo from "../assets/prephire-icon-circle.png";
 import { useToast } from "../context/ToastContext";
 
@@ -79,6 +80,21 @@ const SequentialInterview = () => {
   const [recordingTime, setRecordingTime] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
+  const [startTour, setStartTour] = useState(false);
+
+  useEffect(() => {
+    const hasSeenTour = localStorage.getItem('hasSeenSequentialTour');
+    console.log('SequentialInterview: hasSeenTour:', hasSeenTour, 'initialLoading:', initialLoading);
+    if (!hasSeenTour && !initialLoading) {
+      console.log('SequentialInterview: Setting startTour to true');
+      setStartTour(true);
+    }
+  }, [initialLoading]);
+
+  const handleTourFinish = () => {
+    localStorage.setItem('hasSeenSequentialTour', 'true');
+    setStartTour(false);
+  };
 
 
   useEffect(() => {
@@ -650,7 +666,18 @@ const SequentialInterview = () => {
             </div>
 
             <button
+              onClick={() => {
+                console.log('Manual Tour button clicked');
+                setStartTour(true);
+              }}
+              className="group flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium text-slate-500 hover:text-indigo-600 hover:bg-slate-100 transition-all duration-200"
+            >
+              <Sparkles className="h-4 w-4 transition-transform group-hover:scale-110" />
+              Tour
+            </button>
+            <button
               onClick={() => setShowExitModal(true)}
+              data-tour="exit-session"
               className="group flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-all duration-200"
             >
               <LogOut className="h-4 w-4 transition-transform group-hover:-translate-x-1" />
@@ -739,7 +766,7 @@ const SequentialInterview = () => {
                     <span className="text-xs font-medium text-indigo-600 bg-indigo-50 px-2 py-1 rounded-md">AI Interviewer</span>
                   </div>
                 </div>
-                <p className="text-xl sm:text-2xl text-slate-800 leading-relaxed font-medium tracking-tight">
+                <p className="text-xl sm:text-2xl text-slate-800 leading-relaxed font-medium tracking-tight" data-tour="question-area">
                   {currentQuestion}
                 </p>
               </div>
@@ -764,6 +791,7 @@ const SequentialInterview = () => {
                       ? "Stop audio"
                       : "Play question audio"
                   }
+                  data-tour="audio-control"
                 >
                   {playingAudio[`question_${currentQuestionIndex}`] ? (
                     <Pause className="h-6 w-6" />
@@ -801,6 +829,7 @@ const SequentialInterview = () => {
                         ? "bg-indigo-600 text-white border border-indigo-700 hover:bg-indigo-700 animate-pulse ring-2 ring-indigo-100"
                         : "bg-white text-slate-700 border border-slate-300 hover:bg-slate-50 hover:border-slate-400 hover:shadow-md"
                     } disabled:opacity-50 disabled:cursor-not-allowed`}
+                    data-tour="voice-input"
                   >
                     {isRecording ? (
                       <>
@@ -870,6 +899,7 @@ const SequentialInterview = () => {
                   placeholder="Type your detailed answer here... Be specific and provide examples."
                   className="w-full p-4 sm:p-5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none min-h-[200px] text-slate-700 leading-relaxed transition-shadow shadow-sm focus:shadow-md"
                   disabled={loading}
+                  data-tour="answer-input"
                 />
                 <div className="absolute bottom-4 right-4 text-xs font-medium text-slate-400 bg-white px-2 py-1 rounded-md border border-slate-100 shadow-sm">
                   {currentAnswer.length} chars
@@ -971,6 +1001,7 @@ const SequentialInterview = () => {
               <button
                 onClick={handleSubmitAnswer}
                 disabled={loading || isSubmitting}
+                data-tour="submit-answer"
                 className="flex items-center gap-2 px-8 py-3 bg-indigo-600 text-white rounded-xl font-semibold hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5"
               >
                 {loading || isSubmitting ? (
@@ -1017,6 +1048,7 @@ const SequentialInterview = () => {
           isDestructive={true}
         />
       )}
+      <InterviewTour start={startTour} onFinish={handleTourFinish} type="sequential" />
     </PageLayout>
   );
 };

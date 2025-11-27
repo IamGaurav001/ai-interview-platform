@@ -30,6 +30,7 @@ import AudioVisualizer from "../components/AudioVisualizer";
 import ConfirmModal from "../components/ConfirmModal";
 import SpeakingAvatar from "../components/SpeakingAvatar";
 import PageLayout from "../components/PageLayout";
+import InterviewTour from "../components/InterviewTour";
 import logo from "../assets/prephire-icon-circle.png";
 import { useToast } from "../context/ToastContext";
 
@@ -59,6 +60,21 @@ const InterviewFlow = () => {
   const [showResetModal, setShowResetModal] = useState(false);
   const [showLimitModal, setShowLimitModal] = useState(false);
   const [showTips, setShowTips] = useState(false);
+  const [startTour, setStartTour] = useState(false);
+
+  useEffect(() => {
+    const hasSeenTour = localStorage.getItem('hasSeenFlowTour');
+    console.log('InterviewFlow: hasSeenTour:', hasSeenTour, 'loading:', loading);
+    if (!hasSeenTour && !loading) {
+      console.log('InterviewFlow: Setting startTour to true');
+      setStartTour(true);
+    }
+  }, [loading]);
+
+  const handleTourFinish = () => {
+    localStorage.setItem('hasSeenFlowTour', 'true');
+    setStartTour(false);
+  };
 
 
   useEffect(() => {
@@ -677,8 +693,16 @@ const InterviewFlow = () => {
             </div>
             <div className="flex items-center gap-2 sm:gap-3">
               <button
+                onClick={() => setStartTour(true)}
+                className="text-xs sm:text-sm font-semibold text-slate-600 hover:text-indigo-600 hover:bg-slate-50 px-3 py-2 rounded-xl transition-colors flex items-center gap-2"
+              >
+                <Sparkles className="h-4 w-4" />
+                <span className="hidden sm:inline">Tour</span>
+              </button>
+              <button
                 onClick={() => setShowResetModal(true)}
                 className="text-xs sm:text-sm font-semibold text-slate-600 hover:text-indigo-600 hover:bg-slate-50 px-3 py-2 rounded-xl transition-colors flex items-center gap-2"
+                data-tour="reset-interview"
               >
                 <RefreshCw className="h-4 w-4" />
                 <span className="hidden sm:inline">Reset</span>
@@ -686,12 +710,14 @@ const InterviewFlow = () => {
               <button
                 onClick={() => setShowExitModal(true)}
                 className="text-xs sm:text-sm font-semibold text-slate-500 hover:text-slate-700 hover:bg-slate-50 px-3 py-2 rounded-xl transition-colors flex items-center gap-2"
+                data-tour="exit-interview"
               >
                 <LogOut className="h-4 w-4" />
                 <span className="hidden sm:inline">Exit</span>
               </button>
               <button
                 onClick={() => handleEndInterview()}
+                data-tour="end-interview"
                 className="text-xs sm:text-sm font-bold text-white bg-slate-900 hover:bg-slate-800 px-4 py-2 rounded-xl transition-all shadow-md hover:shadow-lg whitespace-nowrap flex items-center gap-2"
               >
                 <StopCircle className="h-4 w-4" />
@@ -763,6 +789,7 @@ const InterviewFlow = () => {
                           ? "bg-indigo-100 text-indigo-700" 
                           : "bg-slate-100 text-slate-700 hover:bg-slate-200"
                       }`}
+                      data-tour="tts-control"
                     >
                       {isPlayingQuestion ? (
                         <>
@@ -778,7 +805,7 @@ const InterviewFlow = () => {
                     </button>
                   </div>
                   
-                  <p className="text-lg sm:text-2xl text-slate-900 leading-relaxed font-medium mb-4">
+                  <p className="text-lg sm:text-2xl text-slate-900 leading-relaxed font-medium mb-4" data-tour="question-display">
                     {currentQuestion}
                   </p>
 
@@ -919,6 +946,7 @@ const InterviewFlow = () => {
                       ? "bg-indigo-600 text-white ring-4 ring-indigo-100 animate-pulse"
                       : "bg-white text-indigo-600 border border-indigo-100 hover:bg-indigo-50"
                   } disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none`}
+                  data-tour="mic-button"
                 >
                   {isRecording ? (
                     <>
@@ -994,6 +1022,7 @@ const InterviewFlow = () => {
                   placeholder="Type your detailed answer here... Be specific and provide examples from your experience."
                   className="relative w-full p-5 sm:p-6 bg-white/50 backdrop-blur-sm border border-slate-200 rounded-xl focus:ring-0 focus:border-transparent resize-none min-h-[200px] sm:min-h-[300px] text-slate-800 leading-relaxed transition-all shadow-inner text-lg placeholder:text-slate-400"
                   disabled={loading || isComplete || isRecording}
+                  data-tour="answer-area"
                 />
                 <div className="absolute bottom-4 right-4 text-xs font-bold text-indigo-600 bg-indigo-50/80 backdrop-blur-md px-3 py-1.5 rounded-lg border border-indigo-100 shadow-sm flex items-center gap-2">
                   <span className={currentAnswer.length < 10 ? "text-red-500" : "text-green-600"}>
@@ -1091,6 +1120,7 @@ const InterviewFlow = () => {
           isDestructive={false}
         />
       )}
+      <InterviewTour start={startTour} onFinish={handleTourFinish} type="flow" />
     </PageLayout>
   );
 };

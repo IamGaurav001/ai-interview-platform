@@ -1030,32 +1030,34 @@ export const endInterview = async (req, res) => {
       )
       .join("\n\n");
 
-    const summaryPrompt = `You are an AI Interview Evaluator. Analyze this comprehensive interview conversation and provide a detailed, thorough evaluation.
-
-This was a full technical interview covering multiple aspects: technical depth, problem-solving, system design, coding practices, experience, and behavioral skills.
-
-RESUME:
-${session.resumeText || "Not available"}
-
-INTERVIEW CONVERSATION (${questions.length} questions asked):
-${conversationText}
-
-Provide a detailed JSON response with:
-{
-  "overallScore": number (0-10),
-  "strengths": ["strength1", "strength2", "strength3", ...] - at least 3-5 strengths,
-  "weaknesses": ["weakness1", "weakness2", ...] - areas for improvement,
-  "summary": "3-4 paragraph comprehensive assessment covering: technical skills evaluation, problem-solving approach, communication, and overall fit",
-  "recommendations": ["recommendation1", "recommendation2", "recommendation3", ...] - specific actionable recommendations,
-  "technicalDepth": number (0-10) - how deep their technical knowledge is,
-  "problemSolving": number (0-10) - their problem-solving ability,
-  "communication": number (0-10) - clarity and communication skills,
-  "experienceRelevance": number (0-10) - how relevant their experience is
-}
-
-Be thorough and detailed in your evaluation. This was a comprehensive interview, so provide comprehensive feedback.
-
-Return ONLY valid JSON, no markdown, no code blocks.`;
+    const summaryPrompt = `You are an AI Interview Evaluator. Analyze this interview conversation and provide a detailed, thorough evaluation based **STRICTLY** on the candidate's actual answers.
+    
+    **CRITICAL EVALUATION RULE:**
+    - **DO NOT** give credit for skills listed in the RESUME unless they were explicitly demonstrated in the INTERVIEW CONVERSATION.
+    - If the candidate provided short, vague, or incomplete answers, the score MUST reflect this (e.g., 0-3/10).
+    - If the interview was short or the candidate did not answer enough questions, state clearly that there is "Insufficient data to assess" for those areas.
+    - **DO NOT HALLUCINATE** performance. If it didn't happen in the chat, it didn't happen.
+    
+    RESUME (Use ONLY for context of what *should* have been covered):
+    ${session.resumeText || "Not available"}
+    
+    INTERVIEW CONVERSATION (${questions.length} questions asked):
+    ${conversationText}
+    
+    Provide a detailed JSON response with:
+    {
+      "overallScore": number (0-10) - strictly based on demonstrated performance,
+      "strengths": ["strength1", "strength2", ...] - only what was actually shown,
+      "weaknesses": ["weakness1", "weakness2", ...] - areas where they failed to answer or gave poor answers,
+      "summary": "3-4 paragraph assessment. Be brutally honest. If they only said 'hello', say 'The candidate failed to engage'. Do not write a generic positive summary.",
+      "recommendations": ["recommendation1", "recommendation2", ...] - specific to their performance gaps,
+      "technicalDepth": number (0-10) - 0 if not demonstrated,
+      "problemSolving": number (0-10) - 0 if not demonstrated,
+      "communication": number (0-10) - based on clarity of actual responses,
+      "experienceRelevance": number (0-10) - how well they articulated their experience (not just what's on paper)
+    }
+    
+    Return ONLY valid JSON, no markdown, no code blocks.`;
 
     let summaryText;
     let finalSummary;

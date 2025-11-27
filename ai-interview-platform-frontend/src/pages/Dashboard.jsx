@@ -266,6 +266,12 @@ const Dashboard = () => {
 
   const totalCredits = (userUsage.freeInterviewsLeft || 0) + (userUsage.purchasedCredits || 0);
 
+  // Calculate days left for refill
+  const lastReset = new Date(userUsage.lastMonthlyReset || Date.now());
+  const now = new Date();
+  const daysSinceReset = (now - lastReset) / (1000 * 60 * 60 * 24);
+  const daysLeftToRefill = Math.max(0, Math.ceil(30 - daysSinceReset));
+
   return (
     <PageLayout>
       <OnboardingTour start={showTour} onFinish={handleTourFinish} />
@@ -583,27 +589,36 @@ const Dashboard = () => {
           <div className="lg:col-span-1 space-y-6">
             
             {/* 1. Stats Stack */}
+            
             <motion.div variants={itemVariants} className="space-y-4" data-tour="stats-cards">
+              <StatCard
+                title="Credits Left"
+                value={totalCredits === 0 ? `${daysLeftToRefill} Days` : totalCredits}
+                subtitle={totalCredits === 0 ? "Refill in" : null}
+                icon={CreditCard}
+                color="orange"
+                action={
+                  totalCredits === 0 ? (
+                    <button
+                      onClick={() => setShowPricingModal(true)}
+                      className="text-xs font-semibold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded-lg transition-colors w-full flex items-center justify-center gap-1"
+                    >
+                      Buy Credits <ArrowRight className="h-3 w-3" />
+                    </button>
+                  ) : null
+                }
+              />
               <StatCard
                 title="Total Interviews"
                 value={stats.totalInterviews}
                 icon={Briefcase}
                 color="blue"
-                trend="+2 this week"
               />
               <StatCard
                 title="Average Score"
                 value={stats.averageScore > 0 ? `${stats.averageScore}/10` : "N/A"}
                 icon={TrendingUp}
                 color="green"
-                trend="Top 15%"
-              />
-              <StatCard
-                title="Credits Left"
-                value={totalCredits}
-                icon={CreditCard}
-                color="orange"
-                trend={userUsage.freeInterviewsLeft > 0 ? `${userUsage.freeInterviewsLeft} free` : "Purchase more"}
               />
 
             </motion.div>
@@ -652,7 +667,7 @@ const Dashboard = () => {
 
 /* --- Helper Components --- */
 
-const StatCard = ({ title, value, icon: Icon, color, trend }) => {
+const StatCard = ({ title, value, subtitle, icon: Icon, color, trend, action }) => {
   const colors = {
     blue: "bg-indigo-50 text-indigo-600 border-indigo-100",
     green: "bg-emerald-50 text-emerald-600 border-emerald-100",
@@ -693,8 +708,14 @@ const StatCard = ({ title, value, icon: Icon, color, trend }) => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
         >
+          {subtitle && <span className="text-sm font-normal text-slate-500 block mb-1">{subtitle}</span>}
           {value}
         </motion.h3>
+        {action && (
+          <div className="mt-3">
+            {action}
+          </div>
+        )}
       </div>
     </motion.div>
   );

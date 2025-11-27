@@ -187,7 +187,7 @@ const PricingModal = ({ isOpen, onClose, onSuccess, userEmail, userName }) => {
                   </li>
                   <li className="flex items-center gap-2">
                     <CheckCircle2 className="h-3 w-3 text-emerald-500" />
-                    Valid for all interview types
+                    Full AI Evaluation & Feedback
                   </li>
                 </ul>
               </div>
