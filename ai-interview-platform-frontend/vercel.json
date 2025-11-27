@@ -1,6 +1,14 @@
 {
   "rewrites": [
     {
+      "source": "/api/:match*",
+      "destination": "https://prephire-wi5a.onrender.com/api/:match*"
+    },
+    {
+      "source": "/audio/:match*",
+      "destination": "https://prephire-wi5a.onrender.com/audio/:match*"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }
