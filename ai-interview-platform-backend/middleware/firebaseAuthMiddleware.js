@@ -20,16 +20,47 @@ export const verifyFirebaseToken = async (req, res, next) => {
 
     const decodedToken = await admin.auth().verifyIdToken(token);
     const firebaseUid = decodedToken.uid;
+    const email = decodedToken.email;
 
     let user = await User.findOne({ firebaseUid });
 
+    // If not found by UID, try finding by email (to prevent duplicates)
+    if (!user && email) {
+      user = await User.findOne({ email });
+      if (user) {
+        console.log(`🔗 Linking existing user ${email} to new Firebase UID`);
+        user.firebaseUid = firebaseUid;
+      }
+    }
+
     if (!user) {
-      user = await User.create({
-        firebaseUid,
-        email: decodedToken.email || "",
-        name: decodedToken.name || decodedToken.email?.split("@")[0] || "User",
-        lastLoginAt: new Date(), 
-      });
+      try {
+        user = await User.create({
+          firebaseUid,
+          email: email || "",
+          name: decodedToken.name || email?.split("@")[0] || "User",
+          lastLoginAt: new Date(),
+        });
+      } catch (createError) {
+        // Handle race condition: Duplicate key error (E11000)
+        if (createError.code === 11000) {
+          console.warn("⚠️ Race condition or duplicate detected, attempting recovery...");
+          user = await User.findOne({ $or: [{ firebaseUid }, { email }] });
+          
+          if (user) {
+             // If found, ensure UID is linked
+             if (user.firebaseUid !== firebaseUid) {
+                 user.firebaseUid = firebaseUid;
+                 await user.save();
+             }
+          } else {
+             // Still failed? Throw original error
+             throw createError;
+          }
+        } else {
+          throw createError;
+        }
+      }
     } else {
       const SESSION_DURATION = 24 * 60 * 60 * 1000;
       
@@ -43,13 +74,24 @@ export const verifyFirebaseToken = async (req, res, next) => {
         }
       }
       
-      if (decodedToken.email && user.email !== decodedToken.email) {
-        user.email = decodedToken.email;
+      let isModified = false;
+      if (email && user.email !== email) {
+        user.email = email;
+        isModified = true;
       }
       if (decodedToken.name && user.name !== decodedToken.name) {
         user.name = decodedToken.name;
+        isModified = true;
       }
-      await user.save();
+      // Ensure UID is consistent (in case we found by email)
+      if (user.firebaseUid !== firebaseUid) {
+        user.firebaseUid = firebaseUid;
+        isModified = true;
+      }
+
+      if (isModified) {
+        await user.save();
+      }
     }
 
     req.user = user;
