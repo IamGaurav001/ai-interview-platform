@@ -45,7 +45,11 @@ const Navbar = () => {
 
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 10);
+      if (window.scrollY > 10) {
+        setIsScrolled(true);
+      } else {
+        setIsScrolled(false);
+      }
     };
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
@@ -121,6 +125,7 @@ const Navbar = () => {
                       <Link
                         key={link.path}
                         to={link.path}
+                        data-tour={`nav-${link.label.toLowerCase()}`}
                         className={`relative flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-colors duration-200 ${
                           active ? "text-primary-700" : "text-gray-600 hover:text-gray-900"
                         }`}
@@ -147,7 +152,7 @@ const Navbar = () => {
             <div className="flex items-center gap-4 relative z-10">
               {user ? (
                 <div className="flex items-center gap-4">
-                  <div className="relative hidden md:block" ref={dropdownRef}>
+                  <div className="relative hidden md:block" ref={dropdownRef} data-tour="nav-profile">
                     <button
                       onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
                       className={`flex items-center gap-3 pl-1 pr-2 py-1 rounded-full transition-all duration-200 border ${

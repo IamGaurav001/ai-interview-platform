@@ -9,6 +9,8 @@ import resumeRoutes from "./routes/resumeRoutes.js";
 import { errorHandler } from "./middleware/errorMiddleware.js";
 import mongoose from "mongoose";
 import redisClient from "./config/redis.js";
+import monetizationRoutes from "./routes/monetizationRoutes.js";
+
 
 dotenv.config();
 const app = express();
@@ -40,10 +42,12 @@ app.get("/health", async (req, res) => {
   }
 });
 
+
 app.use("/api/auth", authRoutes);
 app.use("/api/user", userRoutes);
 app.use("/api/interview", interviewRoutes);
 app.use("/api/resume", resumeRoutes);
+app.use("/api/monetization", monetizationRoutes);
 
 app.get("/", (req, res) => {
   res.send("IntervueAI Backend is running ✅");

@@ -1,24 +1,23 @@
-import React, { useEffect, useState, useMemo } from "react";
-import { Link } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { getHistory, getWeakAreas } from "../api/interviewAPI";
+import { getHistory } from "../api/interviewAPI";
+import { getUserProfile, updateUserProfile } from "../api/userAPI";
+import PricingModal from "../components/PricingModal";
+import OnboardingTour from "../components/OnboardingTour";
 import {
   Briefcase,
   TrendingUp,
   FileText,
   ArrowRight,
-  AlertCircle,
-  CheckCircle2,
-  Clock,
   Mic,
   AlertTriangle,
   RefreshCw,
   Sparkles,
-  Target,
-  Zap,
   Activity,
   MessageCircle,
-  Brain
+  Brain,
+  CreditCard
 } from "lucide-react";
 import {
   AreaChart,
@@ -35,10 +34,14 @@ import { motion, AnimatePresence } from "framer-motion";
 
 const Dashboard = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [stats, setStats] = useState({
     totalInterviews: 0,
     averageScore: 0,
-    weakAreas: [],
+  });
+  const [userUsage, setUserUsage] = useState({
+    freeInterviewsLeft: 0,
+    purchasedCredits: 0,
   });
   const [chartData, setChartData] = useState({
     trend: []
@@ -47,6 +50,8 @@ const Dashboard = () => {
   const [error, setError] = useState("");
   const [currentQAIndex, setCurrentQAIndex] = useState(0);
   const [recentQAs, setRecentQAs] = useState([]);
+  const [showPricingModal, setShowPricingModal] = useState(false);
+  const [showTour, setShowTour] = useState(false);
 
   // Auto-rotate Q&A preview every 5 seconds
   useEffect(() => {
@@ -65,42 +70,53 @@ const Dashboard = () => {
   const fetchDashboardData = async () => {
     try {
       setLoading(true);
-      const [historyRes, weakAreasRes] = await Promise.all([
+      const [historyRes, profileRes] = await Promise.all([
         getHistory(),
-        getWeakAreas(),
+        getUserProfile(),
       ]);
 
       const history = historyRes.data;
-      const apiWeakAreas = weakAreasRes.data.analysis || [];
+      const userProfile = profileRes.data.user;
+
+      if (userProfile && userProfile.usage) {
+        setUserUsage(userProfile.usage);
+      }
+
+      if (userProfile && userProfile.hasCompletedOnboarding === false) {
+        setShowTour(true);
+      }
 
       // Calculate stats
       const totalInterviews = history.total || 0;
-      const allScores =
-        history.summary?.map((s) => parseFloat(s.averageScore)) || [];
-      const avgScore =
-        allScores.length > 0
-          ? (allScores.reduce((a, b) => a + b, 0) / allScores.length).toFixed(1)
-          : 0;
+      
+      // Calculate true average from all sessions
+      let totalScoreSum = 0;
+      let totalSessionCount = 0;
 
-      // Process Chart Data
+      if (history.groupedHistory) {
+        Object.values(history.groupedHistory).forEach(sessions => {
+          sessions.forEach(session => {
+            const score = parseFloat(session.score || 0);
+            if (!isNaN(score)) {
+              totalScoreSum += score;
+              totalSessionCount++;
+            }
+          });
+        });
+      }
+
+      const avgScore = totalSessionCount > 0 
+        ? (totalScoreSum / totalSessionCount).toFixed(1) 
+        : 0;
+
       processChartData(history);
 
-      // Extract specific weaknesses from interview feedback
-      const specificWeaknesses = extractWeaknessesFromHistory(history);
-      
-      // Combine API weak areas with extracted weaknesses, prioritize specific ones
-      let combinedWeaknesses = specificWeaknesses.length > 0 
-        ? specificWeaknesses 
-        : apiWeakAreas;
-
-      // Extract recent Q&A pairs for preview
       const qaList = extractRecentQAs(history);
       setRecentQAs(qaList);
 
       setStats({
         totalInterviews,
         averageScore: avgScore,
-        weakAreas: combinedWeaknesses.slice(0, 5), // Top 5 weaknesses
       });
     } catch (err) {
       console.error("Dashboard error:", err);
@@ -120,108 +136,26 @@ const Dashboard = () => {
     }
   };
 
-  const extractWeaknessesFromHistory = (historyData) => {
-    console.log('📊 Extracting weaknesses from history:', historyData);
-    
-    if (!historyData || !historyData.groupedHistory) {
-      console.log('❌ No grouped history found');
-      return [];
+  const handleStartInterview = () => {
+    const totalCredits = (userUsage.freeInterviewsLeft || 0) + (userUsage.purchasedCredits || 0);
+    if (totalCredits > 0) {
+      navigate("/upload-resume");
+    } else {
+      setShowPricingModal(true);
     }
+  };
 
-    const weaknessMap = new Map();
-    let totalFeedbackItems = 0;
+  const handlePaymentSuccess = () => {
+    fetchDashboardData();
+  };
 
-    // Iterate through all sessions and extract weaknesses from feedback
-    Object.keys(historyData.groupedHistory).forEach(domain => {
-      console.log(`🔍 Processing domain: ${domain}`);
-      
-      historyData.groupedHistory[domain].forEach((session, idx) => {
-        console.log(`  📝 Session ${idx + 1}:`, session);
-        
-        if (session.feedback && Array.isArray(session.feedback)) {
-          console.log(`    ✅ Found ${session.feedback.length} feedback items`);
-          totalFeedbackItems += session.feedback.length;
-          
-          session.feedback.forEach((fb, fbIdx) => {
-            console.log(`      📋 Feedback ${fbIdx + 1}:`, fb);
-            
-            // Extract areas with low scores (below 7 for more sensitivity)
-            const areas = [];
-            
-            if (fb.correctness !== undefined && fb.correctness < 7) {
-              areas.push({ name: 'Technical Accuracy', score: fb.correctness });
-              console.log(`        ⚠️ Low correctness: ${fb.correctness}`);
-            }
-            if (fb.clarity !== undefined && fb.clarity < 7) {
-              areas.push({ name: 'Communication Clarity', score: fb.clarity });
-              console.log(`        ⚠️ Low clarity: ${fb.clarity}`);
-            }
-            if (fb.confidence !== undefined && fb.confidence < 7) {
-              areas.push({ name: 'Confidence & Delivery', score: fb.confidence });
-              console.log(`        ⚠️ Low confidence: ${fb.confidence}`);
-            }
-
-            // Also check for specific weakness mentions in feedback text
-            if (fb.overall_feedback) {
-              const feedback = fb.overall_feedback.toLowerCase();
-              console.log(`        💬 Feedback text: ${feedback.substring(0, 100)}...`);
-              
-              if (feedback.includes('structure') || feedback.includes('organization')) {
-                areas.push({ name: 'Answer Structure', score: fb.clarity || 5 });
-              }
-              if (feedback.includes('example') || feedback.includes('specific')) {
-                areas.push({ name: 'Providing Examples', score: fb.correctness || 5 });
-              }
-              if (feedback.includes('depth') || feedback.includes('detail')) {
-                areas.push({ name: 'Answer Depth', score: fb.correctness || 5 });
-              }
-              if (feedback.includes('concise') || feedback.includes('rambling')) {
-                areas.push({ name: 'Conciseness', score: fb.clarity || 5 });
-              }
-              if (feedback.includes('technical') && feedback.includes('knowledge')) {
-                areas.push({ name: 'Technical Knowledge', score: fb.correctness || 5 });
-              }
-            }
-
-            console.log(`        🎯 Extracted ${areas.length} weakness areas`);
-
-            // Add to weakness map
-            areas.forEach(area => {
-              if (weaknessMap.has(area.name)) {
-                const existing = weaknessMap.get(area.name);
-                existing.totalScore += area.score;
-                existing.count += 1;
-              } else {
-                weaknessMap.set(area.name, {
-                  _id: area.name,
-                  totalScore: area.score,
-                  count: 1,
-                  attempts: 1
-                });
-              }
-            });
-          });
-        } else {
-          console.log(`    ❌ No feedback array found`);
-        }
-      });
-    });
-
-    console.log(`📈 Total feedback items processed: ${totalFeedbackItems}`);
-    console.log(`📊 Weakness map size: ${weaknessMap.size}`);
-
-    // Convert to array and calculate average scores
-    const weaknesses = Array.from(weaknessMap.values()).map(w => ({
-      _id: w._id,
-      avgScore: parseFloat((w.totalScore / w.count).toFixed(1)),
-      attempts: w.count
-    }));
-
-    // Sort by lowest score first
-    weaknesses.sort((a, b) => a.avgScore - b.avgScore);
-
-    console.log('✅ Final weaknesses:', weaknesses);
-    return weaknesses;
+  const handleTourFinish = async () => {
+    try {
+      await updateUserProfile({ hasCompletedOnboarding: true });
+      setShowTour(false);
+    } catch (error) {
+      console.error("Failed to update onboarding status:", error);
+    }
   };
 
   const extractRecentQAs = (historyData) => {
@@ -234,8 +168,18 @@ const Dashboard = () => {
     // Iterate through all sessions and extract Q&A pairs
     Object.keys(historyData.groupedHistory).forEach(domain => {
       historyData.groupedHistory[domain].forEach(session => {
-        if (session.feedback && Array.isArray(session.feedback)) {
-          session.feedback.forEach(fb => {
+        // Handle feedback structure
+        let feedbackArray = [];
+        if (session.feedback) {
+          if (Array.isArray(session.feedback)) {
+            feedbackArray = session.feedback;
+          } else if (session.feedback.all && Array.isArray(session.feedback.all)) {
+            feedbackArray = session.feedback.all;
+          }
+        }
+
+        if (feedbackArray.length > 0) {
+          feedbackArray.forEach(fb => {
             if (fb.question && fb.user_answer) {
               qaList.push({
                 question: fb.question,
@@ -273,7 +217,8 @@ const Dashboard = () => {
     // Sort by date ascending
     allSessions.sort((a, b) => a.date - b.date);
 
-    const trend = allSessions.slice(-10).map(s => ({
+    const trend = allSessions.slice(-10).map((s, i) => ({
+      id: `session-${i}`,
       date: s.date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
       score: s.score,
       fullDate: s.date.toLocaleDateString()
@@ -319,8 +264,11 @@ const Dashboard = () => {
     },
   };
 
+  const totalCredits = (userUsage.freeInterviewsLeft || 0) + (userUsage.purchasedCredits || 0);
+
   return (
     <PageLayout>
+      <OnboardingTour start={showTour} onFinish={handleTourFinish} />
       <div className="pb-12">
       <motion.div
         className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12"
@@ -355,9 +303,10 @@ const Dashboard = () => {
           <div className="lg:col-span-3 space-y-10">
             
             <motion.div variants={itemVariants}>
-              <Link
-                to="/upload-resume"
-                className="group relative block overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-600 to-blue-700 p-8 sm:p-10 shadow-xl transition-all duration-300 hover:shadow-2xl hover:scale-[1.01]"
+              <div
+                data-tour="start-interview"
+                onClick={handleStartInterview}
+                className="group relative block overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-600 to-blue-700 p-8 sm:p-10 shadow-xl transition-all duration-300 hover:shadow-2xl hover:scale-[1.01] cursor-pointer"
               >
                 <div className="absolute top-0 right-0 -mt-10 -mr-10 h-64 w-64 rounded-full bg-white opacity-10 blur-3xl transition-all duration-500 group-hover:scale-125"></div>
                 <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
@@ -382,12 +331,12 @@ const Dashboard = () => {
                     <Mic className="h-10 w-10 text-white" />
                   </div>
                 </div>
-              </Link>
+              </div>
             </motion.div>
 
             {/* 2. Recent Interview Preview - Animated Q&A */}
             {recentQAs.length > 0 && (
-              <motion.div variants={itemVariants}>
+              <motion.div variants={itemVariants} data-tour="recent-interviews">
                 <div className="bg-gradient-to-br from-slate-50 to-indigo-50 p-5 rounded-2xl shadow-lg border border-indigo-100 relative overflow-hidden">
                   {/* Animated background elements */}
                   <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-200 rounded-full blur-3xl opacity-20 animate-pulse"></div>
@@ -561,11 +510,15 @@ const Dashboard = () => {
                         </defs>
                         <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
                         <XAxis 
-                          dataKey="date" 
+                          dataKey="id" 
                           axisLine={false} 
                           tickLine={false} 
                           tick={{ fill: '#64748b', fontSize: 12 }} 
                           dy={10}
+                          tickFormatter={(value) => {
+                            const item = chartData.trend.find(i => i.id === value);
+                            return item ? item.date : '';
+                          }}
                         />
                         <YAxis 
                           domain={[0, 10]} 
@@ -574,8 +527,21 @@ const Dashboard = () => {
                           tick={{ fill: '#64748b', fontSize: 12 }} 
                         />
                         <Tooltip 
-                          contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                          contentStyle={{ 
+                            backgroundColor: '#fff',
+                            borderRadius: '12px', 
+                            border: 'none', 
+                            boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
+                            padding: '12px'
+                          }}
+                          itemStyle={{ color: '#4f46e5', fontWeight: 600 }}
+                          labelStyle={{ color: '#64748b', marginBottom: '4px' }}
                           cursor={{ stroke: '#ea580c', strokeWidth: 1, strokeDasharray: '4 4' }}
+                          formatter={(value) => [`${value}/10`, 'Score']}
+                          labelFormatter={(value) => {
+                            const item = chartData.trend.find(i => i.id === value);
+                            return item ? item.fullDate : value;
+                          }}
                         />
                         <Area 
                           type="monotone" 
@@ -599,13 +565,13 @@ const Dashboard = () => {
                       <p className="text-sm text-slate-600 max-w-sm">
                         Complete your first interview to start tracking your performance over time.
                       </p>
-                      <Link 
-                        to="/upload-resume"
+                      <button 
+                        onClick={handleStartInterview}
                         className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700 transition-colors"
                       >
                         Start First Interview
                         <ArrowRight className="h-4 w-4" />
-                      </Link>
+                      </button>
                     </div>
                   </div>
                 )}
@@ -617,7 +583,7 @@ const Dashboard = () => {
           <div className="lg:col-span-1 space-y-6">
             
             {/* 1. Stats Stack */}
-            <motion.div variants={itemVariants} className="space-y-4">
+            <motion.div variants={itemVariants} className="space-y-4" data-tour="stats-cards">
               <StatCard
                 title="Total Interviews"
                 value={stats.totalInterviews}
@@ -632,6 +598,13 @@ const Dashboard = () => {
                 color="green"
                 trend="Top 15%"
               />
+              <StatCard
+                title="Credits Left"
+                value={totalCredits}
+                icon={CreditCard}
+                color="orange"
+                trend={userUsage.freeInterviewsLeft > 0 ? `${userUsage.freeInterviewsLeft} free` : "Purchase more"}
+              />
 
             </motion.div>
 
@@ -640,6 +613,7 @@ const Dashboard = () => {
             <motion.div
               variants={itemVariants}
               className="bg-blue-800 rounded-2xl shadow-lg p-6 text-white"
+              data-tour="pro-tips"
             >
               <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
                 <Sparkles className="h-5 w-5 text-yellow-400" />
@@ -664,6 +638,14 @@ const Dashboard = () => {
         </div>
       </motion.div>
       </div>
+      
+      <PricingModal 
+        isOpen={showPricingModal} 
+        onClose={() => setShowPricingModal(false)}
+        onSuccess={handlePaymentSuccess}
+        userEmail={user?.email}
+        userName={user?.displayName || "User"}
+      />
     </PageLayout>
   );
 };
@@ -718,27 +700,7 @@ const StatCard = ({ title, value, icon: Icon, color, trend }) => {
   );
 };
 
-const ActionCard = ({ to, icon: Icon, title, description, iconColor, bgColor, borderColor }) => (
-  <Link
-    to={to}
-    className={`group bg-white rounded-2xl shadow-sm border border-slate-200 p-5 hover:shadow-md hover:border-orange-200 transition-all duration-300 flex items-center gap-4`}
-  >
-    <div
-      className={`h-12 w-12 ${bgColor} rounded-xl flex items-center justify-center flex-shrink-0 transition-all group-hover:scale-110 border ${borderColor}`}
-    >
-      <Icon className={`h-6 w-6 ${iconColor}`} />
-    </div>
-    <div className="flex-1 min-w-0">
-      <h3 className="text-base font-bold text-slate-900 mb-0.5 group-hover:text-orange-600 transition-colors">
-        {title}
-      </h3>
-      <p className="text-sm text-slate-500 truncate">{description}</p>
-    </div>
-    <div className="h-8 w-8 rounded-full bg-slate-50 flex items-center justify-center group-hover:bg-orange-50 transition-colors">
-      <ArrowRight className="h-4 w-4 text-slate-400 group-hover:text-orange-600 transition-colors" />
-    </div>
-  </Link>
-);
+
 
 const Tip = ({ icon: Icon, text }) => (
   <div className="flex items-start gap-3 p-3 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 transition-colors">

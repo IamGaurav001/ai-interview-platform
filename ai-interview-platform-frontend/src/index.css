@@ -195,7 +195,6 @@ button {
 
 /* Fix for any hidden elements */
 [class*="bg-primary"] {
-  display: block;
   visibility: visible;
   opacity: 1;
 }
