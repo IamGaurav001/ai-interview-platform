@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { startInterview, nextInterviewStep, endInterview, getActiveSession, evaluateVoiceAnswer, cancelInterview, resetInterview } from "../api/interviewAPI";
 import {
@@ -20,21 +20,26 @@ import {
   User,
   LogOut,
   ChevronDown,
-  RefreshCw
+  RefreshCw,
+  Sparkles,
+  Clock,
+  MicOff
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import AudioVisualizer from "../components/AudioVisualizer";
 import ConfirmModal from "../components/ConfirmModal";
 import SpeakingAvatar from "../components/SpeakingAvatar";
 import PageLayout from "../components/PageLayout";
+import logo from "../assets/prephire-icon-circle.png";
+import { useToast } from "../context/ToastContext";
 
 const InterviewFlow = () => {
   const navigate = useNavigate();
   const [currentQuestion, setCurrentQuestion] = useState("");
   const [currentAnswer, setCurrentAnswer] = useState("");
   const [feedback, setFeedback] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(true); // Start with loading true to prevent empty flash
+  const { error: toastError, success: toastSuccess } = useToast();
   const [questionCount, setQuestionCount] = useState(0);
   const [conversationHistory, setConversationHistory] = useState([]);
   const [isComplete, setIsComplete] = useState(false);
@@ -89,13 +94,14 @@ const InterviewFlow = () => {
 
   const checkActiveSession = async () => {
     try {
+      // Keep loading true while checking
       const res = await getActiveSession();
       if (res.data.hasActiveSession) {
         setCurrentQuestion(res.data.currentQuestion);
         setQuestionCount(res.data.questionCount);
         setConversationHistory(res.data.history || []);
+        setLoading(false); // Only stop loading if we found a session
       } else {
-
         startNewInterview();
       }
     } catch (err) {
@@ -104,9 +110,13 @@ const InterviewFlow = () => {
     }
   };
 
+  const isStartingRef = useRef(false);
+
   const startNewInterview = async () => {
-    setLoading(true);
-    setError("");
+    if (isStartingRef.current) return;
+    isStartingRef.current = true;
+    
+    // loading is already true from initialization or checkActiveSession
     try {
       const res = await startInterview();
       if (res.data.success) {
@@ -117,31 +127,59 @@ const InterviewFlow = () => {
         ]);
 
       } else {
-        setError(res.data.message || "Failed to start interview");
+        toastError(res.data.message || "Failed to start interview");
       }
     } catch (err) {
       console.error("Start interview error:", err);
       if (err.response?.status === 400) {
-        setError("Please upload your resume first before starting an interview.");
+        toastError("Please upload your resume first before starting an interview.");
         setTimeout(() => navigate("/upload-resume"), 2000);
       } else if (err.response?.status === 429 || err.response?.status === 503) {
-        setError(err.response?.data?.message || "AI service is busy. Please wait a moment and try again.");
+        toastError(err.response?.data?.message || "AI service is busy. Please wait a moment and try again.");
+      } else if (err.response?.status === 403 && err.response?.data?.code === "NO_CREDITS") {
+        // Handle race condition: Check if session was created by another request
+        // Poll for up to 5 seconds to allow AI generation to complete
+        console.log("⚠️ 403 No Credits. Polling for active session...");
+        let attempts = 0;
+        let recovered = false;
+        
+        while (attempts < 5) {
+            try {
+                await new Promise(r => setTimeout(r, 1000)); // Wait 1s
+                const sessionRes = await getActiveSession();
+                if (sessionRes.data.hasActiveSession) {
+                    console.log("✅ Recovered from race condition: Session exists");
+                    setCurrentQuestion(sessionRes.data.currentQuestion);
+                    setQuestionCount(sessionRes.data.questionCount);
+                    setConversationHistory(sessionRes.data.history || []);
+                    recovered = true;
+                    break;
+                }
+            } catch (sessionErr) {
+                console.error("Failed to recover session:", sessionErr);
+            }
+            attempts++;
+        }
+        
+        if (!recovered) {
+            toastError(err.response?.data?.message || "No interview credits left. Please purchase more.");
+        }
       } else {
-        setError(err.response?.data?.message || err.message || "Failed to start interview");
+        toastError(err.response?.data?.message || err.message || "Failed to start interview");
       }
     } finally {
       setLoading(false);
+      isStartingRef.current = false;
     }
   };
 
   const handleSubmitAnswer = async () => {
     if (!currentAnswer.trim() || currentAnswer.trim().length < 10) {
-      setError("Please provide a detailed answer (at least 10 characters)");
+      toastError("Please provide a detailed answer (at least 10 characters)");
       return;
     }
 
     setLoading(true);
-    setError("");
     setFeedback("");
 
     try {
@@ -178,16 +216,18 @@ const InterviewFlow = () => {
           setCurrentQuestion(res.data.question);
           setQuestionCount(res.data.questionCount || questionCount + 1);
           setCurrentAnswer("");
+          setRecordedAudio(null);
+          setTranscribedText("");
         }
       } else {
-        setError(res.data.message || "Failed to process answer");
+        toastError(res.data.message || "Failed to process answer");
       }
     } catch (err) {
       console.error("Next step error:", err);
       if (err.response?.status === 429 || err.response?.status === 503) {
-        setError(err.response?.data?.message || "AI service is busy. Please wait a moment and try again.");
+        toastError(err.response?.data?.message || "AI service is busy. Please wait a moment and try again.");
       } else {
-        setError(err.response?.data?.message || err.message || "Failed to process answer");
+        toastError(err.response?.data?.message || err.message || "Failed to process answer");
       }
     } finally {
       setLoading(false);
@@ -289,7 +329,7 @@ const InterviewFlow = () => {
       setTranscribedText("");
     } catch (err) {
       console.error("Error starting recording:", err);
-      setError("Failed to access microphone. Please check permissions.");
+      toastError("Failed to access microphone. Please check permissions.");
     }
   };
 
@@ -302,12 +342,11 @@ const InterviewFlow = () => {
 
   const handleSubmitVoiceAnswer = async () => {
     if (!recordedAudio) {
-      setError("Please record an answer first");
+      toastError("Please record an answer first");
       return;
     }
 
     setLoading(true);
-    setError("");
     setTranscribedText("");
 
     try {
@@ -364,7 +403,7 @@ const InterviewFlow = () => {
               setTranscribedText("");
             }
           } else {
-            setError(nextRes.data.message || "Failed to process answer");
+            toastError(nextRes.data.message || "Failed to process answer");
           }
         } catch (nextErr) {
           console.error("Next step error after voice answer:", nextErr);
@@ -372,17 +411,17 @@ const InterviewFlow = () => {
           if (res.data.feedback) {
             setFeedback(res.data.feedback.overall_feedback || res.data.feedback);
           }
-          setError("Voice transcribed successfully, but failed to continue interview. Please try submitting again.");
+          toastError("Voice transcribed successfully, but failed to continue interview. Please try submitting again.");
         }
       } else {
-        setError(res.data?.error || "Invalid response from server");
+        toastError(res.data?.error || "Invalid response from server");
       }
     } catch (err) {
       console.error("Evaluate voice error:", err);
       if (err.networkError) {
-        setError("Cannot connect to server. Please make sure the backend is running.");
+        toastError("Cannot connect to server. Please make sure the backend is running.");
       } else {
-        setError(err.response?.data?.error || err.message || "Failed to evaluate voice answer");
+        toastError(err.response?.data?.error || err.message || "Failed to evaluate voice answer");
       }
     } finally {
       setLoading(false);
@@ -399,19 +438,19 @@ const InterviewFlow = () => {
 
     setSaving(true);
     setIsComplete(true);
-    setError("");
+
     
     try {
       const res = await endInterview();
       if (res.data.success) {
         setSummary(res.data.summary);
       } else {
-        setError("Failed to complete interview");
+        toastError("Failed to complete interview");
         setIsComplete(false);
       }
     } catch (err) {
       console.error("End interview error:", err);
-      setError(err.response?.data?.message || "Failed to complete interview");
+      toastError(err.response?.data?.message || "Failed to complete interview");
       setIsComplete(false);
     } finally {
       setSaving(false);
@@ -440,16 +479,16 @@ const InterviewFlow = () => {
         
 
         
-        setError(""); 
+        toastSuccess("Interview reset successfully");
       } else {
-        setError(res.data.error || "Failed to reset interview");
+        toastError(res.data.error || "Failed to reset interview");
       }
     } catch (err) {
       console.error("Reset error:", err);
       if (err.response?.status === 403 && err.response?.data?.error?.includes("Reset limit reached")) {
         setShowLimitModal(true);
       } else {
-        setError(err.response?.data?.error || "Failed to reset interview");
+        toastError(err.response?.data?.error || "Failed to reset interview");
       }
     } finally {
       setLoading(false);
@@ -459,25 +498,73 @@ const InterviewFlow = () => {
 
   const handleExitInterview = async () => {
     try {
-
       await cancelInterview();
       console.log("✅ Interview session cancelled");
     } catch (err) {
       console.error("❌ Error cancelling interview:", err);
-
+      toastError("Failed to cancel interview");
     } finally {
       navigate("/dashboard");
     }
   };
 
+  if (saving) {
+    return (
+      <PageLayout showNavbar={false}>
+        <div className="min-h-screen flex flex-col items-center justify-center">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="flex flex-col items-center max-w-md mx-auto p-8 text-center"
+          >
+            <div className="relative mb-8">
+              <div className="absolute inset-0 bg-indigo-200 rounded-full animate-ping opacity-40"></div>
+              <div className="relative bg-white/80 backdrop-blur-xl p-6 rounded-full shadow-2xl border border-white/20">
+                <img src={logo} alt="Prephire" className="h-16 w-16 object-contain animate-pulse" />
+              </div>
+            </div>
+            <h2 className="text-3xl font-bold text-slate-900 mb-3 tracking-tight">Finalizing Interview</h2>
+            <p className="text-slate-500 text-lg font-medium">
+              Generating your comprehensive performance report...
+            </p>
+            
+            <div className="mt-8 flex gap-2">
+              <div className="w-2.5 h-2.5 bg-indigo-500 rounded-full animate-bounce" style={{ animationDelay: '0s' }}></div>
+              <div className="w-2.5 h-2.5 bg-indigo-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+              <div className="w-2.5 h-2.5 bg-indigo-500 rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></div>
+            </div>
+          </motion.div>
+        </div>
+      </PageLayout>
+    );
+  }
+
   if (loading && !currentQuestion) {
     return (
-      <PageLayout>
-        <div className="min-h-[60vh] flex items-center justify-center">
-          <div className="text-center">
-            <Loader2 className="h-12 w-12 animate-spin text-indigo-600 mx-auto mb-4" />
-            <p className="text-slate-600 font-medium">Starting your interview...</p>
-          </div>
+      <PageLayout showNavbar={false}>
+        <div className="min-h-screen flex flex-col items-center justify-center">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="flex flex-col items-center max-w-md mx-auto p-8 text-center"
+          >
+            <div className="relative mb-8">
+              <div className="absolute inset-0 bg-indigo-200 rounded-full animate-ping opacity-40"></div>
+              <div className="relative bg-white/80 backdrop-blur-xl p-6 rounded-full shadow-2xl border border-white/20">
+                <Loader2 className="h-12 w-12 text-indigo-600 animate-spin" />
+              </div>
+            </div>
+            <h2 className="text-3xl font-bold text-slate-900 mb-3 tracking-tight">Starting Interview</h2>
+            <p className="text-slate-500 text-lg font-medium">
+              Our AI is preparing your personalized session...
+            </p>
+            
+            <div className="mt-8 flex gap-2">
+              <div className="w-2.5 h-2.5 bg-indigo-500 rounded-full animate-bounce" style={{ animationDelay: '0s' }}></div>
+              <div className="w-2.5 h-2.5 bg-indigo-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+              <div className="w-2.5 h-2.5 bg-indigo-500 rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></div>
+            </div>
+          </motion.div>
         </div>
       </PageLayout>
     );
@@ -579,44 +666,45 @@ const InterviewFlow = () => {
     <PageLayout showNavbar={false}>
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
 
-      <div className="sticky top-0 z-20 bg-white border-b border-slate-200 shadow-sm">
+      <div className="sticky top-0 z-20 bg-white/80 backdrop-blur-md border-b border-slate-200/60 shadow-sm supports-[backdrop-filter]:bg-white/60">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 sm:gap-4">
-              <h1 className="hidden sm:block text-lg font-bold text-slate-900">AI Interview Session</h1>
-              <span className="text-xs sm:text-sm font-semibold text-indigo-600 bg-indigo-50 px-2 sm:px-3 py-1 rounded-full whitespace-nowrap">
-                Q {questionCount} / ~25
+              <h1 className="hidden sm:block text-lg font-bold text-slate-900 tracking-tight">AI Interview Session</h1>
+              <span className="text-xs sm:text-sm font-bold text-indigo-600 bg-indigo-50 px-3 py-1.5 rounded-full whitespace-nowrap border border-indigo-100">
+                Q {questionCount} <span className="text-indigo-300 mx-1">/</span> ~25
               </span>
             </div>
             <div className="flex items-center gap-2 sm:gap-3">
               <button
                 onClick={() => setShowResetModal(true)}
-                className="text-xs sm:text-sm font-semibold text-amber-600 hover:text-amber-800 hover:bg-amber-50 px-2 sm:px-4 py-1.5 sm:py-2 rounded-lg transition-colors flex items-center gap-1 sm:gap-2"
+                className="text-xs sm:text-sm font-semibold text-slate-600 hover:text-indigo-600 hover:bg-slate-50 px-3 py-2 rounded-xl transition-colors flex items-center gap-2"
               >
-                <RefreshCw className="h-3 w-3 sm:h-4 sm:w-4" />
+                <RefreshCw className="h-4 w-4" />
                 <span className="hidden sm:inline">Reset</span>
               </button>
               <button
                 onClick={() => setShowExitModal(true)}
-                className="text-xs sm:text-sm font-semibold text-slate-500 hover:text-slate-700 hover:bg-slate-100 px-2 sm:px-4 py-1.5 sm:py-2 rounded-lg transition-colors flex items-center gap-1 sm:gap-2"
+                className="text-xs sm:text-sm font-semibold text-slate-500 hover:text-slate-700 hover:bg-slate-50 px-3 py-2 rounded-xl transition-colors flex items-center gap-2"
               >
-                <LogOut className="h-3 w-3 sm:h-4 sm:w-4" />
+                <LogOut className="h-4 w-4" />
                 <span className="hidden sm:inline">Exit</span>
               </button>
               <button
                 onClick={() => handleEndInterview()}
-                className="text-xs sm:text-sm font-semibold text-red-600 hover:text-red-700 hover:bg-red-50 px-2 sm:px-4 py-1.5 sm:py-2 rounded-lg transition-colors whitespace-nowrap"
+                className="text-xs sm:text-sm font-bold text-white bg-slate-900 hover:bg-slate-800 px-4 py-2 rounded-xl transition-all shadow-md hover:shadow-lg whitespace-nowrap flex items-center gap-2"
               >
+                <StopCircle className="h-4 w-4" />
                 End <span className="hidden sm:inline">Interview</span>
               </button>
             </div>
           </div>
-          <div className="mt-3 w-full bg-slate-100 rounded-full h-2 overflow-hidden">
+          <div className="mt-4 w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
             <motion.div
-              className="bg-indigo-600 h-full rounded-full"
+              className="bg-gradient-to-r from-indigo-500 to-indigo-600 h-full rounded-full shadow-[0_0_10px_rgba(99,102,241,0.5)]"
               initial={{ width: 0 }}
               animate={{ width: `${Math.min((questionCount / 25) * 100, 100)}%` }}
-              transition={{ duration: 0.5 }}
+              transition={{ duration: 0.8, ease: "easeOut" }}
             />
           </div>
         </div>
@@ -636,14 +724,21 @@ const InterviewFlow = () => {
               className="bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden flex flex-col"
             >
 
-              <div className="bg-gradient-to-r from-indigo-500 to-indigo-600 p-6 text-white">
-                <div className="flex items-center gap-4">
-                  <div className="flex-shrink-0">
+              <div className="bg-gradient-to-br from-indigo-600 to-indigo-800 p-6 text-white relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
+                <div className="relative z-10 flex items-center gap-5">
+                  <div className="flex-shrink-0 relative">
                     <SpeakingAvatar isSpeaking={isPlayingQuestion || isPlayingFeedback} size="large" />
+                    {(isPlayingQuestion || isPlayingFeedback) && (
+                      <div className="absolute -bottom-1 -right-1 bg-green-500 border-2 border-indigo-700 w-4 h-4 rounded-full animate-pulse"></div>
+                    )}
                   </div>
                   <div>
-                    <h2 className="text-2xl font-bold">AI Interviewer</h2>
-                    <p className="text-indigo-100 text-sm">Evaluating your responses</p>
+                    <h2 className="text-2xl font-bold tracking-tight">AI Interviewer</h2>
+                    <p className="text-indigo-100 text-sm font-medium flex items-center gap-2">
+                      <Sparkles className="h-3 w-3" />
+                      Evaluating your responses in real-time
+                    </p>
                   </div>
                 </div>
               </div>
@@ -806,29 +901,24 @@ const InterviewFlow = () => {
             {/* Answer Input Area */}
             <div className="flex-1 lg:overflow-y-auto p-4 sm:p-6 space-y-4">
               
-              {/* Error Display - Moved to top for visibility */}
-              {error && (
-                <motion.div 
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="bg-red-50 border-2 border-red-200 text-red-700 px-5 py-4 rounded-xl flex items-center gap-3 mb-4 shadow-sm"
-                >
-                  <AlertCircle className="h-5 w-5 flex-shrink-0" />
-                  <span className="font-medium">{error}</span>
-                </motion.div>
-              )}
+              {/* Error Display - Removed inline error */}
               
               {/* Recording Controls */}
-              <div className="flex items-center justify-between">
-                <label className="text-sm font-bold text-slate-700 uppercase tracking-wide">Input Mode</label>
+              <div className="flex items-center justify-between bg-slate-50/50 backdrop-blur-sm p-3 rounded-xl border border-slate-200/60 mb-4">
+                <div className="flex items-center gap-3 px-2">
+                  <div className={`h-2 w-2 rounded-full ${isRecording ? "bg-red-500 animate-pulse" : "bg-slate-300"}`} />
+                  <label className="text-sm font-bold text-slate-700 uppercase tracking-wide">
+                    {isRecording ? "Recording..." : "Input Mode"}
+                  </label>
+                </div>
                 <button
                   onClick={isRecording ? stopRecording : startRecording}
                   disabled={loading || isComplete}
-                  className={`flex items-center gap-2 px-5 py-2.5 rounded-lg font-bold transition-all shadow-md ${
+                  className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5 ${
                     isRecording
-                      ? "bg-red-500 text-white animate-pulse ring-4 ring-red-100"
-                      : "bg-indigo-600 text-white hover:bg-indigo-700"
-                  } disabled:opacity-50 disabled:cursor-not-allowed`}
+                      ? "bg-indigo-600 text-white ring-4 ring-indigo-100 animate-pulse"
+                      : "bg-white text-indigo-600 border border-indigo-100 hover:bg-indigo-50"
+                  } disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none`}
                 >
                   {isRecording ? (
                     <>
@@ -896,16 +986,20 @@ const InterviewFlow = () => {
               )}
 
               {/* Text Input */}
-              <div className="relative">
+              <div className="relative group">
+                <div className="absolute -inset-0.5 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-xl opacity-20 group-hover:opacity-40 transition duration-500 blur"></div>
                 <textarea
                   value={currentAnswer}
                   onChange={(e) => setCurrentAnswer(e.target.value)}
                   placeholder="Type your detailed answer here... Be specific and provide examples from your experience."
-                  className="w-full p-4 sm:p-5 border-2 border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 resize-none min-h-[200px] sm:min-h-[300px] text-slate-800 leading-relaxed transition-all shadow-sm focus:shadow-md"
+                  className="relative w-full p-5 sm:p-6 bg-white/50 backdrop-blur-sm border border-slate-200 rounded-xl focus:ring-0 focus:border-transparent resize-none min-h-[200px] sm:min-h-[300px] text-slate-800 leading-relaxed transition-all shadow-inner text-lg placeholder:text-slate-400"
                   disabled={loading || isComplete || isRecording}
                 />
-                <div className="absolute bottom-4 right-4 text-xs font-bold text-slate-400 bg-white px-3 py-1.5 rounded-lg border border-slate-200 shadow-sm">
-                  {currentAnswer.length} characters
+                <div className="absolute bottom-4 right-4 text-xs font-bold text-indigo-600 bg-indigo-50/80 backdrop-blur-md px-3 py-1.5 rounded-lg border border-indigo-100 shadow-sm flex items-center gap-2">
+                  <span className={currentAnswer.length < 10 ? "text-red-500" : "text-green-600"}>
+                    {currentAnswer.length} chars
+                  </span>
+                  {currentAnswer.length >= 10 && <CheckCircle2 className="h-3 w-3 text-green-600" />}
                 </div>
               </div>
 
@@ -963,7 +1057,11 @@ const InterviewFlow = () => {
         onClose={() => setShowExitModal(false)}
         onConfirm={handleExitInterview}
         title="Exit Interview?"
-        message="Are you sure you want to exit? Your progress in this session will not be saved."
+        message={
+          questionCount > 5 
+            ? "⚠️ WARNING: You have already answered 5 questions. If you exit now, you will LOSE your interview credit. Are you sure?" 
+            : "Are you sure you want to exit? Since you haven't answered any questions yet, your credit will be REFUNDED."
+        }
         confirmText="Exit without Saving"
         cancelText="Continue Interview"
         type="warning"

@@ -1,6 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+
+import { getUserProfile } from "../api/userAPI";
+import PricingModal from "../components/PricingModal";
 import axiosInstance from "../api/axiosInstance";
 import {
   FileText,
@@ -28,7 +31,43 @@ const ResumeUpload = () => {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
+
   const [isDragging, setIsDragging] = useState(false);
+  const [showPricingModal, setShowPricingModal] = useState(false);
+  const [checkingCredits, setCheckingCredits] = useState(true);
+
+  useEffect(() => {
+    checkCredits();
+  }, []);
+
+  const checkCredits = async () => {
+    try {
+      const res = await getUserProfile();
+      const usage = res.data.user?.usage;
+      
+      if (usage) {
+        const totalCredits = (usage.freeInterviewsLeft || 0) + (usage.purchasedCredits || 0);
+        if (totalCredits <= 0) {
+          setShowPricingModal(true);
+        }
+      }
+    } catch (error) {
+      console.error("Error checking credits:", error);
+    } finally {
+      setCheckingCredits(false);
+    }
+  };
+
+  const handlePaymentSuccess = () => {
+    checkCredits();
+    setShowPricingModal(false);
+  };
+
+  const handleModalClose = () => {
+    setShowPricingModal(false);
+    // If they close without paying and have no credits, redirect to dashboard
+    navigate("/dashboard");
+  };
 
   const handleFileChange = (e) => {
     const selectedFile = e.target?.files?.[0];
@@ -486,6 +525,15 @@ const ResumeUpload = () => {
           />
         </motion.div>
       </motion.div>
+
+
+      <PricingModal 
+        isOpen={showPricingModal} 
+        onClose={handleModalClose}
+        onSuccess={handlePaymentSuccess}
+        userEmail={user?.email}
+        userName={user?.displayName || "User"}
+      />
     </PageLayout>
   );
 };

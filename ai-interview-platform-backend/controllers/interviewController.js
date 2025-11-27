@@ -2,6 +2,7 @@ import redisClient from "../config/redis.js";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import dotenv from "dotenv";
 import InterviewSession from "../models/InterviewSession.js";
+import User from "../models/User.js";
 import { parseFeedbackSafely, calculateSafeScore } from "../utils/aiHelper.js";
 import { callGeminiWithRetry } from "../utils/geminiHelper.js";
 import { geminiSpeechToText } from "../utils/geminiSTT.js";
@@ -325,6 +326,25 @@ export const saveCompleteSession = async (req, res) => {
 
     const averageScore = validScores > 0 ? totalScore / validScores : 0;
 
+    // --- IDEMPOTENCY CHECK START ---
+    // Check if a session was saved for this user in the last 30 seconds with the same number of questions
+    const thirtySecondsAgo = new Date(Date.now() - 30 * 1000);
+    const existingSession = await InterviewSession.findOne({
+      userId: req.user._id,
+      createdAt: { $gte: thirtySecondsAgo },
+      $expr: { $eq: [{ $size: "$questions" }, questions.length] }
+    });
+
+    if (existingSession) {
+      console.log("🔄 Duplicate session save prevented (Idempotency check)");
+      return res.json({
+        success: true,
+        sessionId: existingSession._id,
+        score: existingSession.score,
+        message: "Interview session saved successfully (returned existing)",
+      });
+    }
+    // --- IDEMPOTENCY CHECK END ---
 
     const session = await InterviewSession.create({
       userId: req.user._id,
@@ -355,6 +375,60 @@ export const saveCompleteSession = async (req, res) => {
 export const startInterview = async (req, res) => {
   try {
     const userId = req.user._id.toString();
+    
+    // Check for existing active session to prevent double deduction (idempotency)
+    const sessionKey = `session:${userId}`;
+    const existingSession = await redisClient.hGetAll(sessionKey);
+    
+    if (existingSession && existingSession.stage && existingSession.currentQuestion) {
+        console.log("🔄 Existing session found, returning it instead of starting new (Idempotent check)");
+        return res.json({
+            success: true,
+            question: existingSession.currentQuestion,
+            message: "Resumed existing session"
+        });
+    }
+
+    const user = req.user;
+
+    // --- ELIGIBILITY CHECK START ---
+    if (!user) {
+        return res.status(404).json({ message: "User not found" });
+    }
+
+    // Initialize usage if not present
+    if (!user.usage) {
+        user.usage = {
+            freeInterviewsLeft: 2,
+            lastMonthlyReset: new Date(),
+            purchasedCredits: 0,
+        };
+    }
+
+    // Check for monthly reset
+    const now = new Date();
+    const lastReset = new Date(user.usage.lastMonthlyReset);
+    const daysSinceReset = (now - lastReset) / (1000 * 60 * 60 * 24);
+
+    if (daysSinceReset >= 30) {
+        user.usage.freeInterviewsLeft = 2;
+        user.usage.lastMonthlyReset = now;
+    }
+
+    // Check eligibility
+    if (user.usage.freeInterviewsLeft > 0) {
+        user.usage.freeInterviewsLeft -= 1;
+        await user.save();
+    } else if (user.usage.purchasedCredits > 0) {
+        user.usage.purchasedCredits -= 1;
+        await user.save();
+    } else {
+        return res.status(403).json({
+            message: "No interview credits left. Please purchase more.",
+            code: "NO_CREDITS",
+        });
+    }
+    // --- ELIGIBILITY CHECK END ---
 
 
     let resumeText = "";
@@ -383,7 +457,7 @@ export const startInterview = async (req, res) => {
 
 
     const prompt = `You are a professional technical interviewer conducting a comprehensive interview. Your goal is to thoroughly assess the candidate's technical skills, problem-solving abilities, and experience.
-
+    
 RESUME:
 ${resumeText}
 
@@ -401,6 +475,14 @@ Generate only the first interview question. Do not include any introduction or e
       firstQuestion = firstQuestion.trim();
     } catch (error) {
       console.error("❌ Error generating first question:", error.message);
+      // Refund credit if AI fails
+      if (user.usage.freeInterviewsLeft < 3) { // Simple heuristic, better to track what was deducted
+          user.usage.freeInterviewsLeft += 1;
+      } else {
+          user.usage.purchasedCredits += 1;
+      }
+      await user.save();
+
       return res.status(503).json({
         success: false,
         error: "AI service temporarily unavailable",
@@ -412,7 +494,7 @@ Generate only the first interview question. Do not include any introduction or e
     }
 
 
-    const sessionKey = `session:${userId}`;
+    // sessionKey already declared above
     const sessionData = {
       stage: "started",
       currentQuestion: firstQuestion,
@@ -941,12 +1023,10 @@ export const endInterview = async (req, res) => {
       }
     }
 
-    const conversationText = history
+    const conversationText = questions
       .map(
-        (msg) =>
-          `${msg.role === "interviewer" ? "Interviewer" : "Candidate"}: ${
-            msg.text
-          }`
+        (q, index) =>
+          `Interviewer: ${q}\nCandidate: ${answers[index]}`
       )
       .join("\n\n");
 
@@ -1342,7 +1422,29 @@ export const cancelInterview = async (req, res) => {
     const sessionKey = `session:${userId}`;
     const feedbackKey = `feedback:${userId}`;
 
-    // Delete Redis session and feedback without saving to MongoDB
+    const session = await redisClient.hGetAll(sessionKey);
+    if (session && session.history) {
+        try {
+            const history = JSON.parse(session.history);
+            if (history.length <= 5) {
+                const user = await User.findById(userId);
+                if (user) {
+                    if (!user.usage) user.usage = {};
+                    
+                    if ((user.usage.freeInterviewsLeft || 0) < 3) {
+                        user.usage.freeInterviewsLeft = (user.usage.freeInterviewsLeft || 0) + 1;
+                    } else {
+                        user.usage.purchasedCredits = (user.usage.purchasedCredits || 0) + 1;
+                    }
+                    await user.save();
+                    console.log(`✅ Credit refunded for user ${userId} (Early cancellation)`);
+                }
+            }
+        } catch (e) {
+            console.warn("Failed to parse history for refund check", e);
+        }
+    }
+
     try {
       await redisClient.del(sessionKey);
       await redisClient.del(feedbackKey);
@@ -1365,7 +1467,6 @@ export const cancelInterview = async (req, res) => {
   }
 };
 
-// Reset Interview (1-time use)
 export const resetInterview = async (req, res) => {
   try {
     const userId = req.user._id.toString();

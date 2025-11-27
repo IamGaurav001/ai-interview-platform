@@ -2,14 +2,14 @@ import React from "react";
 import { motion } from "framer-motion";
 import { Bot, User } from "lucide-react";
 
-const SpeakingAvatar = ({ isSpeaking, size = "large", Icon = Bot, color = "orange" }) => {
+const SpeakingAvatar = ({ isSpeaking, size = "large", Icon = Bot, color = "indigo" }) => {
   const containerSize = size === "large" ? "h-24 w-24" : "h-16 w-16";
   const iconSize = size === "large" ? "h-12 w-12" : "h-8 w-8";
   
   // Dynamic color classes based on prop
-  const bgClass = color === "blue" ? "bg-blue-400" : "bg-orange-400";
-  const gradientClass = color === "blue" ? "from-blue-500 to-blue-600" : "from-orange-500 to-orange-600";
-  const shadowClass = color === "blue" ? "rgba(59, 130, 246, 0.5)" : "rgba(249, 115, 22, 0.5)";
+  const bgClass = color === "blue" ? "bg-blue-400" : "bg-indigo-400";
+  const gradientClass = color === "blue" ? "from-blue-500 to-blue-600" : "from-indigo-500 to-indigo-600";
+  const shadowClass = color === "blue" ? "rgba(59, 130, 246, 0.5)" : "rgba(99, 102, 241, 0.5)";
 
   return (
     <div className="relative flex items-center justify-center">

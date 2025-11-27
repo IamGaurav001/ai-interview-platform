@@ -18,6 +18,8 @@ import {
   resetInterview,
 } from "../controllers/interviewController.js";
 import { getWeakAreas } from "../controllers/interviewController.js";
+import { checkInterviewEligibility } from "../middleware/checkEligibility.js";
+
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -67,6 +69,7 @@ router.post("/evaluate", verifyFirebaseToken, rateLimiter(10, 60), evaluateAnswe
 router.post("/save-session", verifyFirebaseToken, saveCompleteSession);
 router.get("/history", verifyFirebaseToken, getInterviewHistory);
 router.get("/weak-areas", verifyFirebaseToken, getWeakAreas);
+
 
 
 router.post("/start", verifyFirebaseToken, rateLimiter(5, 60), startInterview);
