@@ -23,14 +23,15 @@ const Settings = () => {
   // Form states
   const [displayName, setDisplayName] = useState("");
   const [notifications, setNotifications] = useState({
-    email: true,
-    push: false,
-    marketing: false
+    email: true
   });
 
   useEffect(() => {
     if (user) {
-      setDisplayName(user.displayName || "");
+      setDisplayName(user.displayName || user.name || "");
+      if (user.notifications) {
+        setNotifications(user.notifications);
+      }
     }
   }, [user]);
 
@@ -92,11 +93,11 @@ const Settings = () => {
                     onClick={() => setActiveTab(item.id)}
                     className={`w-full flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-all duration-200 ${
                       isActive
-                        ? "bg-indigo-50 text-indigo-700 shadow-sm ring-1 ring-indigo-200"
+                        ? "bg-blue-50 text-blue-700 shadow-sm ring-1 ring-blue-200"
                         : "text-slate-600 hover:bg-white hover:text-slate-900 hover:shadow-sm"
                     }`}
                   >
-                    <Icon className={`mr-3 h-5 w-5 ${isActive ? "text-indigo-600" : "text-slate-400"}`} />
+                    <Icon className={`mr-3 h-5 w-5 ${isActive ? "text-blue-600" : "text-slate-400"}`} />
                     {item.label}
                     {isActive && <ChevronRight className="ml-auto h-4 w-4 text-primary-400" />}
                   </button>
@@ -195,7 +196,21 @@ const Settings = () => {
                           <p className="mt-1 text-sm text-slate-500">{item.desc}</p>
                         </div>
                         <button
-                          onClick={() => setNotifications(prev => ({ ...prev, [item.id]: !prev[item.id] }))}
+                          onClick={async () => {
+                            const newValue = !notifications[item.id];
+                            const newNotifications = { ...notifications, [item.id]: newValue };
+                            setNotifications(newNotifications);
+                            
+                            try {
+                              await updateUser({ notifications: newNotifications });
+                              setMessage({ type: "success", text: "Preferences saved" });
+                              setTimeout(() => setMessage({ type: "", text: "" }), 3000);
+                            } catch (err) {
+                              console.error("Failed to update notifications", err);
+                              setNotifications(prev => ({ ...prev, [item.id]: !newValue })); // Revert on error
+                              setMessage({ type: "error", text: "Failed to save preferences" });
+                            }
+                          }}
                           className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary-600 focus:ring-offset-2 ${
                             notifications[item.id] ? 'bg-primary-600' : 'bg-slate-200'
                           }`}
