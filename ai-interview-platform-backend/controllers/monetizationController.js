@@ -6,8 +6,8 @@ import dotenv from "dotenv";
 dotenv.config();
 
 const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID || "rzp_test_dummy12345",
-  key_secret: process.env.RAZORPAY_KEY_SECRET || "dummy_secret_67890",
+  key_id: process.env.RAZORPAY_KEY_ID,
+  key_secret: process.env.RAZORPAY_KEY_SECRET,
 });
 
 export const createOrder = async (req, res) => {
@@ -59,7 +59,7 @@ export const verifyPayment = async (req, res) => {
     const expectedSignature = crypto
       .createHmac(
         "sha256",
-        process.env.RAZORPAY_KEY_SECRET || "dummy_secret_67890"
+        process.env.RAZORPAY_KEY_SECRET
       )
       .update(body.toString())
       .digest("hex");

@@ -21,6 +21,7 @@ export const getProfile = async (req, res) => {
         resumeUrl: user.resumeUrl,
         skills: user.skills,
         usage: user.usage,
+        notifications: user.notifications,
         hasCompletedOnboarding: user.hasCompletedOnboarding,
       },
     });
@@ -46,6 +47,9 @@ export const updateProfile = async (req, res) => {
     if (req.body.hasCompletedOnboarding !== undefined) {
       user.hasCompletedOnboarding = req.body.hasCompletedOnboarding;
     }
+    if (req.body.notifications) {
+      user.notifications = { ...user.notifications, ...req.body.notifications };
+    }
 
 
     await user.save();
@@ -60,6 +64,7 @@ export const updateProfile = async (req, res) => {
         firebaseUid: user.firebaseUid,
         resumeUrl: user.resumeUrl,
         skills: user.skills,
+        notifications: user.notifications,
         hasCompletedOnboarding: user.hasCompletedOnboarding,
       },
       message: "Profile updated successfully",

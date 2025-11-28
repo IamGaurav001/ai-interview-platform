@@ -14,6 +14,11 @@ const userSchema = new mongoose.Schema(
       lastMonthlyReset: { type: Date, default: Date.now },
       purchasedCredits: { type: Number, default: 0 },
     },
+    notifications: {
+      email: { type: Boolean, default: true },
+      push: { type: Boolean, default: false },
+      marketing: { type: Boolean, default: false },
+    },
     hasCompletedOnboarding: { type: Boolean, default: false },
   },
   { timestamps: true }

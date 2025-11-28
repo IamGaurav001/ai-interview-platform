@@ -56,8 +56,8 @@ export const evaluateAnswer = async (req, res) => {
         "overall_feedback": "2–3 concise sentences of constructive feedback. Be specific about what's missing or wrong."
       }
 
-      Question: ${question}
-      Answer: ${answer}
+      Question: <question>${question}</question>
+      Answer: <answer>${answer}</answer>
 
       Evaluate strictly. If the answer just repeats the question or provides no real content, correctness should be 0-2/10.`;
 
@@ -458,8 +458,9 @@ export const startInterview = async (req, res) => {
 
     const prompt = `You are a professional technical interviewer conducting a comprehensive interview. Your goal is to thoroughly assess the candidate's technical skills, problem-solving abilities, and experience.
     
-RESUME:
+<resume>
 ${resumeText}
+</resume>
 
 Start the interview naturally. Begin with an introductory question that helps you understand their background better. This should be a warm, conversational opening question that sets a professional yet friendly tone.
 
@@ -596,11 +597,14 @@ export const nextInterviewStep = async (req, res) => {
 6. **Behavioral & Communication**: Understand their teamwork, leadership, and communication skills
 7. **Edge Cases & Optimization**: Explore their thinking on edge cases, performance, and optimization
 
-RESUME:
+<resume>
 ${session.resumeText || "Resume not available"}
+</resume>
 
 CONVERSATION SO FAR (${questionCount} questions asked):
+<conversation_history>
 ${conversationContext}
+</conversation_history>
 
 **CRITICAL INSTRUCTIONS:**
 - This is a COMPREHENSIVE interview with a maximum of 25 questions
