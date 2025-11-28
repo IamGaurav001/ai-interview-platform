@@ -15,15 +15,14 @@ export const createOrder = async (req, res) => {
     const { planId } = req.body;
     let amount, credits;
 
-    // Define plans
     switch (planId) {
       case "3_interviews":
-        amount = 4900; // ₹49
+        amount = 4900;
         credits = 3;
         break;
       case "1_interview":
       default:
-        amount = 1900; // ₹19
+        amount = 1900; 
         credits = 1;
         break;
     }
@@ -33,7 +32,7 @@ export const createOrder = async (req, res) => {
       currency: "INR",
       receipt: `receipt_${Date.now()}`,
       notes: {
-        credits: credits, // Store credits in notes for secure verification
+        credits: credits, 
         planId: planId || "1_interview",
       },
     };
@@ -68,12 +67,9 @@ export const verifyPayment = async (req, res) => {
     const isAuthentic = expectedSignature === razorpay_signature;
 
     if (isAuthentic) {
-      // Fetch order to get the secure credits value from notes
-      // This prevents frontend manipulation
       const order = await razorpay.orders.fetch(razorpay_order_id);
       const creditsToAdd = parseInt(order.notes.credits) || 1;
 
-      // Payment successful, update user credits
       const user = await User.findById(req.user._id);
 
       if (!user.usage) {
