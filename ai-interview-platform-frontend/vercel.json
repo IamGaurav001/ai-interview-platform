@@ -2,11 +2,11 @@
   "rewrites": [
     {
       "source": "/api/:match*",
-      "destination": "https://prephire-wi5a.onrender.com/api/:match*"
+      "destination": "http://13.60.25.27/api/:match*"
     },
     {
       "source": "/audio/:match*",
-      "destination": "https://prephire-wi5a.onrender.com/audio/:match*"
+      "destination": "http://13.60.25.27/audio/:match*"
     },
     {
       "source": "/(.*)",
