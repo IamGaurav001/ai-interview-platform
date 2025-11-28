@@ -56,6 +56,7 @@ app.use(errorHandler);
 const PORT = process.env.PORT || 5000;
 
 // Start server immediately (don't wait for Redis)
+console.log("CI/CD working test");
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
   
