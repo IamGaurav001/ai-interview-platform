@@ -39,7 +39,7 @@ const About = () => {
             <div className="absolute bottom-0 right-0 blur-3xl opacity-20 w-[50rem] h-[30rem] bg-blue-500 rounded-full mix-blend-screen" />
           </div>
           
-          <div className="mx-auto max-w-7xl px-6 lg:px-8 text-center relative z-10">ß
+          <div className="mx-auto max-w-7xl px-6 lg:px-8 text-center relative z-10">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
