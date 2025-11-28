@@ -64,15 +64,14 @@ axiosInstance.interceptors.response.use(
 
     if (error.response.status === 401) {
       localStorage.removeItem("firebaseToken");
-      localStorage.removeItem("loginTimestamp");
+      // loginTimestamp removal is no longer needed as the feature was removed
       
       if (error.response.data?.code === "SESSION_EXPIRED") {
-        console.log("Session expired - redirecting to login");
+        console.log("Session expired - logging out");
       }
       
-      if (!window.location.pathname.includes("/login") && !window.location.pathname.includes("/register")) {
-        window.location.href = "/login";
-      }
+      // Sign out from Firebase to update AuthContext state and trigger legitimate redirect
+      auth.signOut().catch(err => console.error("Error signing out on 401:", err));
     }
 
     return Promise.reject(error);

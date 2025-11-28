@@ -34,39 +34,18 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const checkSessionExpiry = () => {
-    const loginTimestamp = localStorage.getItem("loginTimestamp");
-    if (!loginTimestamp) return false; 
-    
-    const sessionAge = Date.now() - parseInt(loginTimestamp);
-    const SESSION_DURATION = 24 * 60 * 60 * 1000;
-    return sessionAge > SESSION_DURATION;
-  };
 
-  const handleSessionExpiry = async () => {
-    if (checkSessionExpiry()) {
-      console.log("Session expired - logging out");
-      await logout();
-    }
-  };
+
+
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
         await updateToken(firebaseUser);
         
-        if (checkSessionExpiry()) {
-          console.log("Session expired on auth state change");
-          await signOut(auth);
-          localStorage.removeItem("firebaseToken");
-          localStorage.removeItem("loginTimestamp");
-          setUser(null);
-        } else {
-          setUser(firebaseUser);
-        }
+        setUser(firebaseUser);
       } else {
         localStorage.removeItem("firebaseToken");
-        localStorage.removeItem("loginTimestamp");
         setUser(null);
       }
       setLoading(false);
@@ -84,12 +63,12 @@ export const AuthProvider = ({ children }) => {
       }
     }, 50 * 60 * 1000); 
 
-    const sessionCheckInterval = setInterval(handleSessionExpiry, 60 * 1000); // 1 minute
+
 
     return () => {
       unsub();
       clearInterval(tokenRefreshInterval);
-      clearInterval(sessionCheckInterval);
+      clearInterval(tokenRefreshInterval);
     };
   }, []);
 
@@ -106,7 +85,7 @@ export const AuthProvider = ({ children }) => {
 
     await updateToken(userCredential.user);
     
-    localStorage.setItem("loginTimestamp", Date.now().toString());
+
     
     setUser(userCredential.user);
 
@@ -122,7 +101,7 @@ export const AuthProvider = ({ children }) => {
     
     await updateToken(userCredential.user);
     
-    localStorage.setItem("loginTimestamp", Date.now().toString());
+
     
     setUser(userCredential.user);
     
@@ -132,7 +111,7 @@ export const AuthProvider = ({ children }) => {
   const logout = async () => {
     await signOut(auth);
     localStorage.removeItem("firebaseToken");
-    localStorage.removeItem("loginTimestamp");
+
     setUser(null);
   };
 
@@ -144,7 +123,7 @@ export const AuthProvider = ({ children }) => {
       const result = await signInWithPopup(auth, provider);
       await updateToken(result.user);
       
-      localStorage.setItem("loginTimestamp", Date.now().toString());
+
       
       setUser(result.user);
       return result.user;

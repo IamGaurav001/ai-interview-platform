@@ -62,17 +62,9 @@ export const verifyFirebaseToken = async (req, res, next) => {
         }
       }
     } else {
-      const SESSION_DURATION = 24 * 60 * 60 * 1000;
-      
-      if (user.lastLoginAt) {
-        const sessionAge = Date.now() - new Date(user.lastLoginAt).getTime();
-        if (sessionAge > SESSION_DURATION) {
-          return res.status(401).json({ 
-            code: "SESSION_EXPIRED",
-            message: "Your session has expired. Please login again." 
-          });
-        }
-      }
+      // Session expiration check removed to allow persistent login
+      // Firebase token validation handles security
+
       
       let isModified = false;
       if (email && user.email !== email) {
