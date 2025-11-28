@@ -8,12 +8,12 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'http://localhost:3001',
+        target: 'http://13.60.25.27',
         changeOrigin: true,
         secure: false,
       },
       '/audio': {
-        target: 'http://localhost:3001',
+        target: 'http://13.60.25.27',
         changeOrigin: true,
         secure: false,
       }
