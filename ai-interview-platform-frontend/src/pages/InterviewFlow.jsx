@@ -567,7 +567,7 @@ const InterviewFlow = () => {
             <div className="relative mb-8">
               <div className="absolute inset-0 bg-indigo-200 rounded-full animate-ping opacity-40"></div>
               <div className="relative bg-white/80 backdrop-blur-xl p-6 rounded-full shadow-2xl border border-white/20">
-                <Loader2 className="h-12 w-12 text-indigo-600 animate-spin" />
+                <img src={logo} alt="Loading..." className="h-16 w-16 object-contain animate-pulse" />
               </div>
             </div>
             <h2 className="text-3xl font-bold text-slate-900 mb-3 tracking-tight">Starting Interview</h2>
