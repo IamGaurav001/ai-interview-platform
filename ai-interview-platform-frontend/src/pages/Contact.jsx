@@ -19,41 +19,6 @@ const Contact = () => {
     }, 1000);
   };
 
-  const contactMethods = [
-    {
-      icon: Mail,
-      title: "Email",
-      desc: "Our friendly team is here to help.",
-      contact: "support@prephire.ai",
-      color: "text-blue-600",
-      bg: "bg-blue-50"
-    },
-    {
-      icon: MessageSquare,
-      title: "Live Chat",
-      desc: "Speak to our team live.",
-      contact: "Start a chat",
-      color: "text-purple-600",
-      bg: "bg-purple-50"
-    },
-    {
-      icon: MapPin,
-      title: "Office",
-      desc: "Come say hello at our office HQ.",
-      contact: "123 Innovation Dr, SF",
-      color: "text-orange-600",
-      bg: "bg-orange-50"
-    },
-    {
-      icon: Phone,
-      title: "Phone",
-      desc: "Mon-Fri from 8am to 5pm.",
-      contact: "+1 (555) 000-0000",
-      color: "text-green-600",
-      bg: "bg-green-50"
-    }
-  ];
-
   return (
     <PageLayout>
       <div className="min-h-screen bg-slate-50 relative overflow-hidden">
@@ -89,26 +54,6 @@ const Contact = () => {
             </motion.p>
           </div>
 
-          {/* Contact Methods Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
-            {contactMethods.map((method, index) => (
-              <motion.div
-                key={method.title}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3 + (index * 0.1) }}
-                className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 hover:shadow-md transition-all"
-              >
-                <div className={`w-12 h-12 ${method.bg} rounded-xl flex items-center justify-center mb-4`}>
-                  <method.icon className={`h-6 w-6 ${method.color}`} />
-                </div>
-                <h3 className="font-bold text-slate-900 mb-1">{method.title}</h3>
-                <p className="text-sm text-slate-500 mb-3">{method.desc}</p>
-                <p className={`font-semibold ${method.color}`}>{method.contact}</p>
-              </motion.div>
-            ))}
-          </div>
-
           {/* Contact Form Section */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-24 items-start">
             
@@ -130,8 +75,8 @@ const Contact = () => {
                   <Clock className="h-5 w-5 text-blue-600" /> Support Hours
                 </h4>
                 <p className="text-blue-700 mb-4">
-                  Monday - Friday: 8am - 6pm EST<br/>
-                  Weekend: 10am - 4pm EST
+                  Monday - Friday: 8am - 6pm IST<br/>
+                  Weekend: 10am - 4pm IST
                 </p>
                 <p className="text-sm text-blue-600/80">
                   Typical response time: &lt; 2 hours
