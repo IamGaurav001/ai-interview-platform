@@ -202,7 +202,7 @@ const History = () => {
             <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
             <h3 className="text-xl font-bold text-slate-900 mb-2">Error Loading History</h3>
             <p className="text-slate-600 mb-6">{error}</p>
-            <button onClick={fetchHistory} className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors">
+            <button onClick={fetchHistory} className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
               Try Again
             </button>
           </div>
@@ -221,8 +221,8 @@ const History = () => {
             className="text-center max-w-lg"
           >
             <div className="bg-white/80 backdrop-blur-xl p-8 rounded-3xl shadow-xl border border-slate-200">
-              <div className="h-20 w-20 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                <MessageSquare className="h-10 w-10 text-indigo-600" />
+              <div className="h-20 w-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <MessageSquare className="h-10 w-10 text-blue-600" />
               </div>
               <h2 className="text-2xl font-bold text-slate-900 mb-3">No Interviews Yet</h2>
               <p className="text-slate-600 mb-8 text-lg">
@@ -230,7 +230,7 @@ const History = () => {
               </p>
               <a
                 href="/upload-resume"
-                className="inline-flex items-center px-8 py-4 bg-indigo-600 text-white rounded-xl font-semibold hover:bg-indigo-700 transition-all shadow-lg hover:shadow-xl hover:-translate-y-1"
+                className="inline-flex items-center px-8 py-4 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition-all shadow-lg hover:shadow-xl hover:-translate-y-1"
               >
                 Start Interview <ArrowRight className="ml-2 h-5 w-5" />
               </a>
@@ -267,7 +267,7 @@ const History = () => {
             title="Average Score" 
             value={`${stats.avg}/10`} 
             icon={Trophy} 
-            color="purple" 
+            color="blue" 
             delay={0.2}
           />
           <SummaryCard 
@@ -291,7 +291,7 @@ const History = () => {
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
-              className="px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="date">Most Recent</option>
               <option value="score">Highest Score</option>
@@ -327,8 +327,8 @@ const History = () => {
 
 const SummaryCard = ({ title, value, subValue, icon: Icon, color, delay }) => {
   const colors = {
-    blue: "bg-indigo-50 text-indigo-600 border-indigo-100",
-    purple: "bg-purple-50 text-purple-600 border-purple-100",
+    blue: "bg-blue-50 text-blue-600 border-blue-100",
+    blue: "bg-blue-50 text-blue-600 border-blue-100",
     yellow: "bg-amber-50 text-amber-600 border-amber-100",
   };
 
@@ -446,14 +446,14 @@ const SessionCard = ({ session, index, isExpanded, onToggle }) => {
             <div className="p-4 md:p-6 space-y-6 md:space-y-8">
 
               {summaryFeedback.summary && (
-                <div className="bg-indigo-50/50 rounded-xl p-4 md:p-6 border border-indigo-100">
-                  <h4 className="text-sm font-bold text-indigo-900 uppercase tracking-wide mb-3 flex items-center gap-2">
+                <div className="bg-blue-50/50 rounded-xl p-4 md:p-6 border border-blue-100">
+                  <h4 className="text-sm font-bold text-blue-900 uppercase tracking-wide mb-3 flex items-center gap-2">
                     <Star className="h-4 w-4" /> Executive Summary
                   </h4>
-                  <p className="text-indigo-900 leading-relaxed">{summaryFeedback.summary}</p>
+                  <p className="text-blue-900 leading-relaxed">{summaryFeedback.summary}</p>
                   
                   {(summaryFeedback.strengths || summaryFeedback.weaknesses) && (
-                    <div className="mt-6 pt-6 border-t border-indigo-100/50 space-y-4">
+                    <div className="mt-6 pt-6 border-t border-blue-100/50 space-y-4">
                       {summaryFeedback.strengths?.length > 0 && (
                         <FeedbackSection
                           title="Key Strengths"
@@ -467,7 +467,7 @@ const SessionCard = ({ session, index, isExpanded, onToggle }) => {
                           title="Growth Areas"
                           icon={TrendingUp}
                           items={summaryFeedback.weaknesses}
-                          color="indigo"
+                          color="blue"
                         />
                       )}
                     </div>
@@ -543,7 +543,7 @@ const QuestionItem = ({ question, answer, feedback, index }) => {
 
               <div>
                 <h5 className="text-xs font-bold text-slate-500 uppercase mb-2">AI Feedback</h5>
-                <div className="bg-indigo-50/30 p-4 rounded-lg border border-indigo-100">
+                <div className="bg-blue-50/30 p-4 rounded-lg border border-blue-100">
                   <p className="text-slate-800 text-sm leading-relaxed mb-3">{feedbackText}</p>
                   
                   {(scores.correctness !== undefined || scores.clarity !== undefined) && (
@@ -573,7 +573,7 @@ const FeedbackSection = ({ title, icon: Icon, items, color }) => {
   
   const colors = {
     green: "text-green-700 bg-green-500",
-    indigo: "text-indigo-700 bg-indigo-500"
+    blue: "text-blue-700 bg-blue-500"
   };
 
   return (
@@ -582,7 +582,7 @@ const FeedbackSection = ({ title, icon: Icon, items, color }) => {
         onClick={() => setIsOpen(!isOpen)}
         className="w-full flex items-center justify-between p-3 hover:bg-white transition-colors"
       >
-        <h5 className={`text-xs font-bold uppercase flex items-center gap-2 ${color === 'green' ? 'text-green-700' : 'text-indigo-700'}`}>
+        <h5 className={`text-xs font-bold uppercase flex items-center gap-2 ${color === 'green' ? 'text-green-700' : 'text-blue-700'}`}>
           <Icon className="h-3.5 w-3.5" /> {title}
         </h5>
         <ChevronDown className={`h-4 w-4 text-slate-400 transition-transform ${isOpen ? "rotate-180" : ""}`} />
@@ -598,7 +598,7 @@ const FeedbackSection = ({ title, icon: Icon, items, color }) => {
             <ul className="p-3 pt-0 space-y-2">
               {items.map((item, i) => (
                 <li key={i} className="text-sm text-slate-700 flex items-start gap-2">
-                  <span className={`h-1.5 w-1.5 rounded-full mt-1.5 flex-shrink-0 ${color === 'green' ? 'bg-green-500' : 'bg-indigo-500'}`} />
+                  <span className={`h-1.5 w-1.5 rounded-full mt-1.5 flex-shrink-0 ${color === 'green' ? 'bg-green-500' : 'bg-blue-500'}`} />
                   {item}
                 </li>
               ))}

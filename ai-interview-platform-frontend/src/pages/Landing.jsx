@@ -50,13 +50,13 @@ const Landing = () => {
   }, [user, navigate]);
 
   return (
-    <div className="bg-white min-h-screen font-sans text-slate-900 selection:bg-indigo-100 selection:text-indigo-900 overflow-hidden">
+    <div className="bg-white min-h-screen font-sans text-slate-900 selection:bg-blue-100 selection:text-blue-900 overflow-hidden">
       
       {/* Background Mesh Gradient */}
       <div className="fixed inset-0 z-0 pointer-events-none">
-        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-indigo-100/40 rounded-full blur-3xl opacity-70 mix-blend-multiply animate-blob" />
+        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-100/40 rounded-full blur-3xl opacity-70 mix-blend-multiply animate-blob" />
         <div className="absolute top-[-10%] right-[-10%] w-[40%] h-[40%] bg-blue-100/40 rounded-full blur-3xl opacity-70 mix-blend-multiply animate-blob animation-delay-2000" />
-        <div className="absolute bottom-[-20%] left-[20%] w-[50%] h-[50%] bg-purple-100/40 rounded-full blur-3xl opacity-70 mix-blend-multiply animate-blob animation-delay-4000" />
+        <div className="absolute bottom-[-20%] left-[20%] w-[50%] h-[50%] bg-blue-100/40 rounded-full blur-3xl opacity-70 mix-blend-multiply animate-blob animation-delay-4000" />
         <div className="absolute inset-0 bg-grid-slate-900/[0.02] -z-10" />
       </div>
 
@@ -68,14 +68,14 @@ const Landing = () => {
           variants={staggerContainer}
           className="max-w-4xl mx-auto"
         >
-          <motion.div variants={fadeIn} className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-50 border border-indigo-100 text-indigo-600 text-xs font-semibold uppercase tracking-wide mb-8">
+          <motion.div variants={fadeIn} className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 border border-blue-100 text-blue-600 text-xs font-semibold uppercase tracking-wide mb-8">
             <Sparkles className="h-3 w-3" />
             <span>AI-Powered Interview Prep</span>
           </motion.div>
           
           <motion.h1 variants={fadeIn} className="text-4xl sm:text-5xl md:text-7xl font-bold tracking-tight mb-6 text-slate-900 leading-[1.1]">
             Master your interview. <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-blue-500">
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-blue-500">
               Land the job.
             </span>
           </motion.h1>
@@ -91,13 +91,7 @@ const Landing = () => {
             >
               Start Practicing Free <ArrowRight className="h-4 w-4" />
             </Link>
-            <Link
-              to="/dashboard"
-              className="px-8 py-4 bg-white text-slate-700 border border-slate-200 text-lg font-medium rounded-xl hover:bg-slate-50 transition-all flex items-center gap-2"
-            >
-              <Play className="h-4 w-4 fill-current" /> Watch Demo
-            </Link>
-          </motion.div>
+         </motion.div>
 
 
 
@@ -160,7 +154,7 @@ const Landing = () => {
           {/* Large Item */}
           <motion.div 
             whileHover={{ y: -5 }}
-            className="md:col-span-2 bg-gradient-to-br from-indigo-500 to-blue-600 rounded-3xl p-6 sm:p-8 text-white relative overflow-hidden group"
+            className="md:col-span-2 bg-gradient-to-br from-blue-500 to-blue-600 rounded-3xl p-6 sm:p-8 text-white relative overflow-hidden group"
           >
             <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -mr-16 -mt-16 transition-transform group-hover:scale-110" />
             <div className="relative z-10">
@@ -168,7 +162,7 @@ const Landing = () => {
                 <Mic className="h-6 w-6 text-white" />
               </div>
               <h3 className="text-2xl font-bold mb-2">Real-time Voice Analysis</h3>
-              <p className="text-indigo-100 max-w-md">
+              <p className="text-blue-100 max-w-md">
                 Our advanced AI analyzes your speech patterns, tone, and pacing in real-time to provide actionable feedback that helps you sound more confident.
               </p>
             </div>
@@ -233,7 +227,7 @@ const Landing = () => {
         <div className="max-w-5xl mx-auto bg-slate-900 rounded-[2.5rem] p-8 sm:p-12 md:p-24 text-center relative overflow-hidden">
           {/* Abstract Shapes */}
           <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0">
-             <div className="absolute top-[-20%] left-[20%] w-[60%] h-[60%] bg-indigo-500/30 rounded-full blur-3xl" />
+             <div className="absolute top-[-20%] left-[20%] w-[60%] h-[60%] bg-blue-500/30 rounded-full blur-3xl" />
              <div className="absolute bottom-[-20%] right-[20%] w-[60%] h-[60%] bg-blue-500/30 rounded-full blur-3xl" />
           </div>
           
@@ -246,7 +240,7 @@ const Landing = () => {
             </p>
             <Link
               to="/register"
-              className="inline-flex items-center gap-2 px-10 py-5 bg-white text-slate-900 text-lg font-bold rounded-xl hover:bg-indigo-50 transition-all shadow-xl hover:shadow-2xl hover:-translate-y-1"
+              className="inline-flex items-center gap-2 px-10 py-5 bg-white text-slate-900 text-lg font-bold rounded-xl hover:bg-blue-50 transition-all shadow-xl hover:shadow-2xl hover:-translate-y-1"
             >
               Get Started Now <ArrowRight className="h-5 w-5" />
             </Link>
@@ -270,17 +264,16 @@ const Landing = () => {
             <div>
               <h4 className="font-bold text-slate-900 mb-6">Product</h4>
               <ul className="space-y-4 text-sm text-slate-500">
-                <li><Link to="/features" className="hover:text-indigo-600 transition-colors">Features</Link></li>
-                <li><Link to="/pricing" className="hover:text-indigo-600 transition-colors">Pricing</Link></li>
-                <li><Link to="/features" className="hover:text-indigo-600 transition-colors">Live Demo</Link></li>
+                <li><Link to="/features" className="hover:text-blue-600 transition-colors">Features</Link></li>
+                <li><Link to="/pricing" className="hover:text-blue-600 transition-colors">Pricing</Link></li>
+                <li><Link to="/features" className="hover:text-blue-600 transition-colors">Live Demo</Link></li>
               </ul>
             </div>
             <div>
               <h4 className="font-bold text-slate-900 mb-6">Company</h4>
               <ul className="space-y-4 text-sm text-slate-500">
-                <li><Link to="/about" className="hover:text-indigo-600 transition-colors">About Us</Link></li>
-                <li><Link to="/blog" className="hover:text-indigo-600 transition-colors">Blog</Link></li>
-                <li><Link to="/contact" className="hover:text-indigo-600 transition-colors">Contact</Link></li>
+                <li><Link to="/about" className="hover:text-blue-600 transition-colors">About Us</Link></li>
+                <li><Link to="/contact" className="hover:text-blue-600 transition-colors">Contact</Link></li>
               </ul>
             </div>
             
@@ -355,7 +348,7 @@ const HeroDashboardPreview = () => {
             <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm flex flex-col items-center justify-center text-center relative overflow-hidden group hover:shadow-md transition-all flex-1">
               <div className="relative mb-4">
                 <motion.div 
-                  className="h-16 w-16 rounded-2xl bg-gradient-to-tr from-indigo-500 to-violet-500 flex items-center justify-center shadow-lg z-10 relative"
+                  className="h-16 w-16 rounded-2xl bg-gradient-to-tr from-blue-500 to-blue-500 flex items-center justify-center shadow-lg z-10 relative"
                   animate={{ y: [0, -5, 0] }}
                   transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
                 >
@@ -363,7 +356,7 @@ const HeroDashboardPreview = () => {
                 </motion.div>
                 {/* Ripple Effect */}
                 <motion.div
-                  className="absolute inset-0 rounded-2xl bg-indigo-100 blur-md"
+                  className="absolute inset-0 rounded-2xl bg-blue-100 blur-md"
                   animate={{ scale: [1, 1.2, 1], opacity: [0.5, 0, 0.5] }}
                   transition={{ duration: 2, repeat: Infinity }}
                 />
@@ -371,7 +364,7 @@ const HeroDashboardPreview = () => {
               
               <div className="relative z-10">
                 <div className="text-sm font-bold text-slate-800 mb-1">AI Interviewer</div>
-                <div className="text-[10px] font-medium text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full inline-block">
+                <div className="text-[10px] font-medium text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full inline-block">
                   Listening...
                 </div>
               </div>
@@ -381,7 +374,7 @@ const HeroDashboardPreview = () => {
                 {[...Array(12)].map((_, i) => (
                   <motion.div
                     key={i}
-                    className="w-1 bg-indigo-400 rounded-full"
+                    className="w-1 bg-blue-400 rounded-full"
                     animate={{ height: ["20%", `${Math.random() * 80 + 20}%`, "20%"] }}
                     transition={{ duration: 0.5, repeat: Infinity, delay: i * 0.05 }}
                   />
@@ -428,7 +421,7 @@ const HeroDashboardPreview = () => {
 
             {/* Answer */}
             <motion.div 
-              className="bg-gradient-to-br from-indigo-600 to-violet-600 p-6 rounded-2xl rounded-br-sm shadow-lg border border-indigo-500/20 relative overflow-hidden flex-1 flex flex-col items-center justify-center text-center"
+              className="bg-gradient-to-br from-blue-600 to-blue-600 p-6 rounded-2xl rounded-br-sm shadow-lg border border-blue-500/20 relative overflow-hidden flex-1 flex flex-col items-center justify-center text-center"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3, delay: 0.1 }}
@@ -439,7 +432,7 @@ const HeroDashboardPreview = () => {
               </div>
 
               {/* Label - Centered Top */}
-              <div className="text-sm text-indigo-200 mb-4 font-medium tracking-wide">Candidate</div>
+              <div className="text-sm text-blue-200 mb-4 font-medium tracking-wide">Candidate</div>
               
               {/* Answer Text - Centered */}
               <motion.p 
@@ -502,8 +495,8 @@ const HeroDashboardPreview = () => {
               <div className="space-y-3">
                 {[
                   { label: "Clarity", val: 95, color: "bg-blue-500" },
-                  { label: "Confidence", val: 88, color: "bg-indigo-500" },
-                  { label: "Technical", val: 92, color: "bg-violet-500" }
+                  { label: "Confidence", val: 88, color: "bg-blue-500" },
+                  { label: "Technical", val: 92, color: "bg-blue-500" }
                 ].map((m, i) => (
                   <div key={m.label} className="flex items-center gap-3">
                     <span className="text-xs font-medium text-slate-500 w-16">{m.label}</span>

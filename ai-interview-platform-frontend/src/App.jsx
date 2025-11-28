@@ -15,6 +15,12 @@ import WatchDemo from "./pages/WatchDemo";
 import ForgotPassword from "./pages/ForgotPassword";
 import ScrollToTop from "./components/ScrollToTop";
 import { ToastProvider } from './context/ToastContext';
+import About from "./pages/About";
+import Contact from "./pages/Contact";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import TermsOfService from "./pages/TermsOfService";
+import Features from "./pages/Features";
+import Pricing from "./pages/Pricing";
 
 const Layout = ({ children }) => {
   const location = useLocation();
@@ -44,6 +50,12 @@ function App() {
             <Route path="/register" element={<Register />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/demo" element={<WatchDemo />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/contact" element={<Contact />} />
+            <Route path="/privacy" element={<PrivacyPolicy />} />
+            <Route path="/terms" element={<TermsOfService />} />
+            <Route path="/features" element={<Features />} />
+            <Route path="/pricing" element={<Pricing />} />
 
             {/* Protected Routes */}
             <Route

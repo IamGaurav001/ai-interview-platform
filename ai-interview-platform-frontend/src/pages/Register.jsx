@@ -113,7 +113,7 @@ const Register = () => {
       <div className="min-h-screen flex items-center justify-center p-4 relative">
         <Link 
           to="/" 
-          className="absolute top-8 left-8 flex items-center gap-2 text-slate-600 hover:text-indigo-600 transition-colors font-medium"
+          className="absolute top-8 left-8 flex items-center gap-2 text-slate-600 hover:text-blue-600 transition-colors font-medium"
         >
           <ArrowLeft className="h-5 w-5" />
           Back to Home
@@ -124,7 +124,7 @@ const Register = () => {
           className="w-full max-w-md bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/20 p-6 sm:p-8 relative overflow-hidden"
         >
           {/* Decorative background blob inside card */}
-          <div className="absolute top-0 right-0 -mt-10 -mr-10 h-40 w-40 rounded-full bg-indigo-500/10 blur-2xl"></div>
+          <div className="absolute top-0 right-0 -mt-10 -mr-10 h-40 w-40 rounded-full bg-blue-500/10 blur-2xl"></div>
           
           <div className="relative z-10">
             <div className="text-center mb-8">
@@ -158,7 +158,7 @@ const Register = () => {
                   </label>
                   <div className="relative group">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <User className="h-4 w-4 text-slate-400 group-focus-within:text-indigo-600 transition-colors" />
+                      <User className="h-4 w-4 text-slate-400 group-focus-within:text-blue-600 transition-colors" />
                     </div>
                     <input
                       id="name"
@@ -167,7 +167,7 @@ const Register = () => {
                       required
                       value={formData.name}
                       onChange={handleChange}
-                      className="block w-full pl-9 pr-3 py-2.5 border border-slate-200 rounded-xl text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all bg-white/50 focus:bg-white"
+                      className="block w-full pl-9 pr-3 py-2.5 border border-slate-200 rounded-xl text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all bg-white/50 focus:bg-white"
                       placeholder="John Doe"
                     />
                   </div>
@@ -181,7 +181,7 @@ const Register = () => {
                 </label>
                 <div className="relative group">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Mail className="h-4 w-4 text-slate-400 group-focus-within:text-indigo-600 transition-colors" />
+                    <Mail className="h-4 w-4 text-slate-400 group-focus-within:text-blue-600 transition-colors" />
                   </div>
                   <input
                     id="email"
@@ -191,7 +191,7 @@ const Register = () => {
                     required
                     value={formData.email}
                     onChange={handleChange}
-                    className="block w-full pl-9 pr-3 py-2.5 border border-slate-200 rounded-xl text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all bg-white/50 focus:bg-white"
+                    className="block w-full pl-9 pr-3 py-2.5 border border-slate-200 rounded-xl text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all bg-white/50 focus:bg-white"
                     placeholder="you@example.com"
                   />
                 </div>
@@ -204,7 +204,7 @@ const Register = () => {
                   </label>
                   <div className="relative group">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <Lock className="h-4 w-4 text-slate-400 group-focus-within:text-indigo-600 transition-colors" />
+                      <Lock className="h-4 w-4 text-slate-400 group-focus-within:text-blue-600 transition-colors" />
                     </div>
                     <input
                       id="password"
@@ -214,7 +214,7 @@ const Register = () => {
                       required
                       value={formData.password}
                       onChange={handleChange}
-                      className="block w-full pl-9 pr-3 py-2.5 border border-slate-200 rounded-xl text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all bg-white/50 focus:bg-white"
+                      className="block w-full pl-9 pr-3 py-2.5 border border-slate-200 rounded-xl text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all bg-white/50 focus:bg-white"
                       placeholder="••••••••"
                     />
                   </div>
@@ -226,7 +226,7 @@ const Register = () => {
                   </label>
                   <div className="relative group">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <Lock className="h-4 w-4 text-slate-400 group-focus-within:text-indigo-600 transition-colors" />
+                      <Lock className="h-4 w-4 text-slate-400 group-focus-within:text-blue-600 transition-colors" />
                     </div>
                     <input
                       id="confirmPassword"
@@ -236,7 +236,7 @@ const Register = () => {
                       required
                       value={formData.confirmPassword}
                       onChange={handleChange}
-                      className="block w-full pl-9 pr-3 py-2.5 border border-slate-200 rounded-xl text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all bg-white/50 focus:bg-white"
+                      className="block w-full pl-9 pr-3 py-2.5 border border-slate-200 rounded-xl text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all bg-white/50 focus:bg-white"
                       placeholder="••••••••"
                     />
                   </div>
@@ -246,7 +246,7 @@ const Register = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full relative flex justify-center items-center py-3 px-4 border border-transparent rounded-xl shadow-lg shadow-indigo-500/20 text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-600 disabled:opacity-70 disabled:cursor-not-allowed transition-all transform active:scale-[0.98]"
+                className="w-full relative flex justify-center items-center py-3 px-4 border border-transparent rounded-xl shadow-lg shadow-blue-500/20 text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-600 disabled:opacity-70 disabled:cursor-not-allowed transition-all transform active:scale-[0.98]"
               >
                 {loading ? (
                   <>
@@ -302,7 +302,7 @@ const Register = () => {
                 Already have an account?{" "}
                 <Link
                   to="/login"
-                  className="font-bold text-indigo-600 hover:text-indigo-700 hover:underline underline-offset-4 transition-all"
+                  className="font-bold text-blue-600 hover:text-blue-700 hover:underline underline-offset-4 transition-all"
                 >
                   Sign in
                 </Link>

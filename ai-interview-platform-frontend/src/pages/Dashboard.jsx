@@ -286,7 +286,7 @@ const Dashboard = () => {
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
               <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-2 tracking-tight">
-                Welcome back, <span className="text-indigo-600">{userDisplayName}</span>! 👋
+                Welcome back, <span className="text-blue-600">{userDisplayName}</span>! 👋
               </h1>
               <p className="text-lg text-slate-500">
                 Ready to ace your next interview? Let's get started.
@@ -312,7 +312,7 @@ const Dashboard = () => {
               <div
                 data-tour="start-interview"
                 onClick={handleStartInterview}
-                className="group relative block overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-600 to-blue-700 p-8 sm:p-10 shadow-xl transition-all duration-300 hover:shadow-2xl hover:scale-[1.01] cursor-pointer"
+                className="group relative block overflow-hidden rounded-3xl bg-gradient-to-br from-blue-600 to-blue-700 p-8 sm:p-10 shadow-xl transition-all duration-300 hover:shadow-2xl hover:scale-[1.01] cursor-pointer"
               >
                 <div className="absolute top-0 right-0 -mt-10 -mr-10 h-64 w-64 rounded-full bg-white opacity-10 blur-3xl transition-all duration-500 group-hover:scale-125"></div>
                 <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
@@ -324,11 +324,11 @@ const Dashboard = () => {
                     <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
                       Start New Interview
                     </h2>
-                    <p className="text-lg text-indigo-100 max-w-xl leading-relaxed">
+                    <p className="text-lg text-blue-100 max-w-xl leading-relaxed">
                       Practice with personalized AI-generated questions based on your resume. Get instant feedback and improve your confidence.
                     </p>
                     
-                    <div className="mt-8 inline-flex items-center gap-3 px-6 py-3 bg-white text-indigo-600 rounded-xl font-bold shadow-lg group-hover:bg-indigo-50 transition-colors">
+                    <div className="mt-8 inline-flex items-center gap-3 px-6 py-3 bg-white text-blue-600 rounded-xl font-bold shadow-lg group-hover:bg-blue-50 transition-colors">
                       <span>Begin Session</span>
                       <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
                     </div>
@@ -343,16 +343,16 @@ const Dashboard = () => {
             {/* 2. Recent Interview Preview - Animated Q&A */}
             {recentQAs.length > 0 && (
               <motion.div variants={itemVariants} data-tour="recent-interviews">
-                <div className="bg-gradient-to-br from-slate-50 to-indigo-50 p-5 rounded-2xl shadow-lg border border-indigo-100 relative overflow-hidden">
+                <div className="bg-gradient-to-br from-slate-50 to-blue-50 p-5 rounded-2xl shadow-lg border border-blue-100 relative overflow-hidden">
                   {/* Animated background elements */}
-                  <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-200 rounded-full blur-3xl opacity-20 animate-pulse"></div>
+                  <div className="absolute top-0 right-0 w-64 h-64 bg-blue-200 rounded-full blur-3xl opacity-20 animate-pulse"></div>
                   <div className="absolute bottom-0 left-0 w-48 h-48 bg-blue-200 rounded-full blur-3xl opacity-20 animate-pulse" style={{ animationDelay: '1s' }}></div>
                   
                   <div className="relative z-10">
                     <div className="flex items-center justify-between mb-4">
                       <div>
                         <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-                          <Brain className="h-6 w-6 text-indigo-600" />
+                          <Brain className="h-6 w-6 text-blue-600" />
                           Recent Interview Preview
                         </h3>
                         <p className="text-sm text-slate-500 mt-1">Auto-rotating through your latest sessions</p>
@@ -362,7 +362,7 @@ const Dashboard = () => {
                           <motion.div
                             key={idx}
                             className={`h-2 rounded-full transition-all duration-300 ${
-                              idx === currentQAIndex ? 'w-8 bg-indigo-600' : 'w-2 bg-slate-300'
+                              idx === currentQAIndex ? 'w-8 bg-blue-600' : 'w-2 bg-slate-300'
                             }`}
                             animate={{
                               scale: idx === currentQAIndex ? 1.2 : 1
@@ -384,11 +384,11 @@ const Dashboard = () => {
                         <div className="lg:col-span-2 space-y-3">
                           <div className="bg-white rounded-xl p-4 shadow-sm border border-slate-200">
                             <div className="flex items-start gap-3">
-                              <div className="h-8 w-8 bg-indigo-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                                <MessageCircle className="h-4 w-4 text-indigo-600" />
+                              <div className="h-8 w-8 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                                <MessageCircle className="h-4 w-4 text-blue-600" />
                               </div>
                               <div className="flex-1">
-                                <h4 className="text-xs font-bold text-indigo-600 mb-1.5">QUESTION</h4>
+                                <h4 className="text-xs font-bold text-blue-600 mb-1.5">QUESTION</h4>
                                 <p className="text-base text-slate-800 leading-relaxed">
                                   {recentQAs[currentQAIndex].question}
                                 </p>
@@ -497,7 +497,7 @@ const Dashboard = () => {
                 <div className="flex items-center justify-between mb-6">
                   <div>
                     <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-                      <Activity className="h-5 w-5 text-indigo-600" />
+                      <Activity className="h-5 w-5 text-blue-600" />
                       Performance Trend
                     </h3>
                     <p className="text-sm text-slate-500">Your scores over the last 10 sessions</p>
@@ -562,10 +562,10 @@ const Dashboard = () => {
                     </ResponsiveContainer>
                   </div>
                 ) : (
-                  <div className="h-64 w-full flex flex-col items-center justify-center bg-gradient-to-br from-indigo-50 to-blue-50 rounded-xl border-2 border-dashed border-indigo-200">
+                  <div className="h-64 w-full flex flex-col items-center justify-center bg-gradient-to-br from-blue-50 to-blue-50 rounded-xl border-2 border-dashed border-blue-200">
                     <div className="text-center px-6">
-                      <div className="h-16 w-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <Activity className="h-8 w-8 text-indigo-600" />
+                      <div className="h-16 w-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <Activity className="h-8 w-8 text-blue-600" />
                       </div>
                       <h4 className="text-lg font-bold text-slate-900 mb-2">No Data Yet</h4>
                       <p className="text-sm text-slate-600 max-w-sm">
@@ -573,7 +573,7 @@ const Dashboard = () => {
                       </p>
                       <button 
                         onClick={handleStartInterview}
-                        className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700 transition-colors"
+                        className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors"
                       >
                         Start First Interview
                         <ArrowRight className="h-4 w-4" />
@@ -601,7 +601,7 @@ const Dashboard = () => {
                   totalCredits === 0 ? (
                     <button
                       onClick={() => setShowPricingModal(true)}
-                      className="text-xs font-semibold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded-lg transition-colors w-full flex items-center justify-center gap-1"
+                      className="text-xs font-semibold text-blue-600 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition-colors w-full flex items-center justify-center gap-1"
                     >
                       Buy Credits <ArrowRight className="h-3 w-3" />
                     </button>
@@ -669,7 +669,7 @@ const Dashboard = () => {
 
 const StatCard = ({ title, value, subtitle, icon: Icon, color, trend, action }) => {
   const colors = {
-    blue: "bg-indigo-50 text-indigo-600 border-indigo-100",
+    blue: "bg-blue-50 text-blue-600 border-blue-100",
     green: "bg-emerald-50 text-emerald-600 border-emerald-100",
     orange: "bg-amber-50 text-amber-600 border-amber-100",
   };

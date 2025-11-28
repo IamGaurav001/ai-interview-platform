@@ -534,7 +534,7 @@ const InterviewFlow = () => {
             className="flex flex-col items-center max-w-md mx-auto p-8 text-center"
           >
             <div className="relative mb-8">
-              <div className="absolute inset-0 bg-indigo-200 rounded-full animate-ping opacity-40"></div>
+              <div className="absolute inset-0 bg-blue-200 rounded-full animate-ping opacity-40"></div>
               <div className="relative bg-white/80 backdrop-blur-xl p-6 rounded-full shadow-2xl border border-white/20">
                 <img src={logo} alt="Prephire" className="h-16 w-16 object-contain animate-pulse" />
               </div>
@@ -545,9 +545,9 @@ const InterviewFlow = () => {
             </p>
             
             <div className="mt-8 flex gap-2">
-              <div className="w-2.5 h-2.5 bg-indigo-500 rounded-full animate-bounce" style={{ animationDelay: '0s' }}></div>
-              <div className="w-2.5 h-2.5 bg-indigo-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-              <div className="w-2.5 h-2.5 bg-indigo-500 rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></div>
+              <div className="w-2.5 h-2.5 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0s' }}></div>
+              <div className="w-2.5 h-2.5 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+              <div className="w-2.5 h-2.5 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></div>
             </div>
           </motion.div>
         </div>
@@ -565,7 +565,7 @@ const InterviewFlow = () => {
             className="flex flex-col items-center max-w-md mx-auto p-8 text-center"
           >
             <div className="relative mb-8">
-              <div className="absolute inset-0 bg-indigo-200 rounded-full animate-ping opacity-40"></div>
+              <div className="absolute inset-0 bg-blue-200 rounded-full animate-ping opacity-40"></div>
               <div className="relative bg-white/80 backdrop-blur-xl p-6 rounded-full shadow-2xl border border-white/20">
                 <img src={logo} alt="Loading..." className="h-16 w-16 object-contain animate-pulse" />
               </div>
@@ -576,9 +576,9 @@ const InterviewFlow = () => {
             </p>
             
             <div className="mt-8 flex gap-2">
-              <div className="w-2.5 h-2.5 bg-indigo-500 rounded-full animate-bounce" style={{ animationDelay: '0s' }}></div>
-              <div className="w-2.5 h-2.5 bg-indigo-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-              <div className="w-2.5 h-2.5 bg-indigo-500 rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></div>
+              <div className="w-2.5 h-2.5 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0s' }}></div>
+              <div className="w-2.5 h-2.5 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+              <div className="w-2.5 h-2.5 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></div>
             </div>
           </motion.div>
         </div>
@@ -605,7 +605,7 @@ const InterviewFlow = () => {
 
           <div className="bg-white rounded-2xl shadow-xl p-8 border border-slate-200 mb-8">
             <h2 className="text-2xl font-bold text-slate-900 mb-6 flex items-center gap-3">
-              Overall Score: <span className="text-indigo-600">{summary.overallScore}/10</span>
+              Overall Score: <span className="text-blue-600">{summary.overallScore}/10</span>
             </h2>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
@@ -622,14 +622,14 @@ const InterviewFlow = () => {
                   ))}
                 </ul>
               </div>
-              <div className="bg-indigo-50 rounded-xl p-6 border border-indigo-100">
-                <h3 className="text-lg font-semibold text-indigo-900 mb-4 flex items-center gap-2">
+              <div className="bg-blue-50 rounded-xl p-6 border border-blue-100">
+                <h3 className="text-lg font-semibold text-blue-900 mb-4 flex items-center gap-2">
                   <AlertCircle className="h-5 w-5" /> Areas for Improvement
                 </h3>
                 <ul className="space-y-3">
                   {summary.weaknesses?.map((weakness, idx) => (
-                    <li key={idx} className="flex items-start gap-3 text-indigo-800">
-                      <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-indigo-500 flex-shrink-0" />
+                    <li key={idx} className="flex items-start gap-3 text-blue-800">
+                      <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-blue-500 flex-shrink-0" />
                       <span>{weakness}</span>
                     </li>
                   ))}
@@ -643,12 +643,12 @@ const InterviewFlow = () => {
             </div>
 
             {summary.recommendations && summary.recommendations.length > 0 && (
-              <div className="bg-indigo-50 rounded-xl p-6 border border-indigo-100">
-                <h3 className="text-lg font-semibold text-indigo-900 mb-4">Key Recommendations</h3>
+              <div className="bg-blue-50 rounded-xl p-6 border border-blue-100">
+                <h3 className="text-lg font-semibold text-blue-900 mb-4">Key Recommendations</h3>
                 <ul className="space-y-3">
                   {summary.recommendations.map((rec, idx) => (
-                    <li key={idx} className="flex items-start gap-3 text-indigo-800">
-                      <ArrowRight className="h-5 w-5 mt-0.5 flex-shrink-0 text-indigo-500" />
+                    <li key={idx} className="flex items-start gap-3 text-blue-800">
+                      <ArrowRight className="h-5 w-5 mt-0.5 flex-shrink-0 text-blue-500" />
                       <span>{rec}</span>
                     </li>
                   ))}
@@ -687,21 +687,21 @@ const InterviewFlow = () => {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 sm:gap-4">
               <h1 className="hidden sm:block text-lg font-bold text-slate-900 tracking-tight">AI Interview Session</h1>
-              <span className="text-xs sm:text-sm font-bold text-indigo-600 bg-indigo-50 px-3 py-1.5 rounded-full whitespace-nowrap border border-indigo-100">
-                Q {questionCount} <span className="text-indigo-300 mx-1">/</span> ~25
+              <span className="text-xs sm:text-sm font-bold text-blue-600 bg-blue-50 px-3 py-1.5 rounded-full whitespace-nowrap border border-blue-100">
+                Q {questionCount} <span className="text-blue-300 mx-1">/</span> ~25
               </span>
             </div>
             <div className="flex items-center gap-2 sm:gap-3">
               <button
                 onClick={() => setStartTour(true)}
-                className="text-xs sm:text-sm font-semibold text-slate-600 hover:text-indigo-600 hover:bg-slate-50 px-3 py-2 rounded-xl transition-colors flex items-center gap-2"
+                className="text-xs sm:text-sm font-semibold text-slate-600 hover:text-blue-600 hover:bg-slate-50 px-3 py-2 rounded-xl transition-colors flex items-center gap-2"
               >
                 <Sparkles className="h-4 w-4" />
                 <span className="hidden sm:inline">Tour</span>
               </button>
               <button
                 onClick={() => setShowResetModal(true)}
-                className="text-xs sm:text-sm font-semibold text-slate-600 hover:text-indigo-600 hover:bg-slate-50 px-3 py-2 rounded-xl transition-colors flex items-center gap-2"
+                className="text-xs sm:text-sm font-semibold text-slate-600 hover:text-blue-600 hover:bg-slate-50 px-3 py-2 rounded-xl transition-colors flex items-center gap-2"
                 data-tour="reset-interview"
               >
                 <RefreshCw className="h-4 w-4" />
@@ -727,7 +727,7 @@ const InterviewFlow = () => {
           </div>
           <div className="mt-4 w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
             <motion.div
-              className="bg-gradient-to-r from-indigo-500 to-indigo-600 h-full rounded-full shadow-[0_0_10px_rgba(99,102,241,0.5)]"
+              className="bg-gradient-to-r from-blue-500 to-blue-600 h-full rounded-full shadow-[0_0_10px_rgba(99,102,241,0.5)]"
               initial={{ width: 0 }}
               animate={{ width: `${Math.min((questionCount / 25) * 100, 100)}%` }}
               transition={{ duration: 0.8, ease: "easeOut" }}
@@ -750,18 +750,18 @@ const InterviewFlow = () => {
               className="bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden flex flex-col"
             >
 
-              <div className="bg-gradient-to-br from-indigo-600 to-indigo-800 p-6 text-white relative overflow-hidden">
+              <div className="bg-gradient-to-br from-blue-600 to-blue-800 p-6 text-white relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
                 <div className="relative z-10 flex items-center gap-5">
                   <div className="flex-shrink-0 relative">
                     <SpeakingAvatar isSpeaking={isPlayingQuestion || isPlayingFeedback} size="large" />
                     {(isPlayingQuestion || isPlayingFeedback) && (
-                      <div className="absolute -bottom-1 -right-1 bg-green-500 border-2 border-indigo-700 w-4 h-4 rounded-full animate-pulse"></div>
+                      <div className="absolute -bottom-1 -right-1 bg-green-500 border-2 border-blue-700 w-4 h-4 rounded-full animate-pulse"></div>
                     )}
                   </div>
                   <div>
                     <h2 className="text-2xl font-bold tracking-tight">AI Interviewer</h2>
-                    <p className="text-indigo-100 text-sm font-medium flex items-center gap-2">
+                    <p className="text-blue-100 text-sm font-medium flex items-center gap-2">
                       <Sparkles className="h-3 w-3" />
                       Evaluating your responses in real-time
                     </p>
@@ -773,7 +773,7 @@ const InterviewFlow = () => {
               <div className="flex-1 lg:overflow-y-auto p-4 sm:p-6 space-y-4 sm:space-y-6">
                 <div>
                   <div className="flex items-center justify-between mb-4">
-                    <span className="text-xs font-bold text-indigo-600 uppercase tracking-wider bg-indigo-50 px-3 py-1 rounded-full">
+                    <span className="text-xs font-bold text-blue-600 uppercase tracking-wider bg-blue-50 px-3 py-1 rounded-full">
                       Current Question
                     </span>
                     <button
@@ -786,7 +786,7 @@ const InterviewFlow = () => {
                       }}
                       className={`flex items-center gap-2 px-4 py-2 rounded-lg font-semibold text-sm transition-all shadow-sm ${
                         isPlayingQuestion 
-                          ? "bg-indigo-100 text-indigo-700" 
+                          ? "bg-blue-100 text-blue-700" 
                           : "bg-slate-100 text-slate-700 hover:bg-slate-200"
                       }`}
                       data-tour="tts-control"
@@ -884,15 +884,15 @@ const InterviewFlow = () => {
                         <div className="px-5 pb-5">
                           <ul className="space-y-2 text-sm text-slate-700">
                             <li className="flex items-start gap-2">
-                              <span className="text-indigo-500 mt-1">•</span>
+                              <span className="text-blue-500 mt-1">•</span>
                               <span>Be specific and provide concrete examples</span>
                             </li>
                             <li className="flex items-start gap-2">
-                              <span className="text-indigo-500 mt-1">•</span>
+                              <span className="text-blue-500 mt-1">•</span>
                               <span>Structure your answer clearly (situation, action, result)</span>
                             </li>
                             <li className="flex items-start gap-2">
-                              <span className="text-indigo-500 mt-1">•</span>
+                              <span className="text-blue-500 mt-1">•</span>
                               <span>Take your time to think before answering</span>
                             </li>
                           </ul>
@@ -943,8 +943,8 @@ const InterviewFlow = () => {
                   disabled={loading || isComplete}
                   className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5 ${
                     isRecording
-                      ? "bg-indigo-600 text-white ring-4 ring-indigo-100 animate-pulse"
-                      : "bg-white text-indigo-600 border border-indigo-100 hover:bg-indigo-50"
+                      ? "bg-blue-600 text-white ring-4 ring-blue-100 animate-pulse"
+                      : "bg-white text-blue-600 border border-blue-100 hover:bg-blue-50"
                   } disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none`}
                   data-tour="mic-button"
                 >
@@ -976,9 +976,9 @@ const InterviewFlow = () => {
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0 }}
-                    className="p-4 bg-indigo-50 border border-indigo-200 rounded-xl"
+                    className="p-4 bg-blue-50 border border-blue-200 rounded-xl"
                   >
-                    <p className="text-sm text-indigo-900">
+                    <p className="text-sm text-blue-900">
                       <span className="font-bold">Transcribed:</span> {transcribedText}
                     </p>
                   </motion.div>
@@ -993,8 +993,8 @@ const InterviewFlow = () => {
                   className="p-4 bg-slate-50 border border-slate-200 rounded-xl"
                 >
                   <div className="flex items-center gap-4 mb-3">
-                    <div className="h-10 w-10 bg-indigo-100 rounded-full flex items-center justify-center">
-                      <Volume2 className="h-5 w-5 text-indigo-600" />
+                    <div className="h-10 w-10 bg-blue-100 rounded-full flex items-center justify-center">
+                      <Volume2 className="h-5 w-5 text-blue-600" />
                     </div>
                     <span className="text-sm font-semibold text-slate-700">Recorded Answer</span>
                   </div>
@@ -1006,7 +1006,7 @@ const InterviewFlow = () => {
                   <button
                     onClick={handleSubmitVoiceAnswer}
                     disabled={loading}
-                    className="w-full px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 font-bold transition-colors shadow-md"
+                    className="w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 font-bold transition-colors shadow-md"
                   >
                     {loading ? "Processing..." : "Submit Voice Answer"}
                   </button>
@@ -1015,7 +1015,7 @@ const InterviewFlow = () => {
 
               {/* Text Input */}
               <div className="relative group">
-                <div className="absolute -inset-0.5 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-xl opacity-20 group-hover:opacity-40 transition duration-500 blur"></div>
+                <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl opacity-20 group-hover:opacity-40 transition duration-500 blur"></div>
                 <textarea
                   value={currentAnswer}
                   onChange={(e) => setCurrentAnswer(e.target.value)}
@@ -1024,7 +1024,7 @@ const InterviewFlow = () => {
                   disabled={loading || isComplete || isRecording}
                   data-tour="answer-area"
                 />
-                <div className="absolute bottom-4 right-4 text-xs font-bold text-indigo-600 bg-indigo-50/80 backdrop-blur-md px-3 py-1.5 rounded-lg border border-indigo-100 shadow-sm flex items-center gap-2">
+                <div className="absolute bottom-4 right-4 text-xs font-bold text-blue-600 bg-blue-50/80 backdrop-blur-md px-3 py-1.5 rounded-lg border border-blue-100 shadow-sm flex items-center gap-2">
                   <span className={currentAnswer.length < 10 ? "text-red-500" : "text-green-600"}>
                     {currentAnswer.length} chars
                   </span>
@@ -1041,7 +1041,7 @@ const InterviewFlow = () => {
               <button
                 onClick={handleSubmitAnswer}
                 disabled={loading || isComplete || !currentAnswer.trim()}
-                className="w-full px-8 py-4 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-3 text-lg"
+                className="w-full px-8 py-4 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-3 text-lg"
               >
                 {loading ? (
                   <>

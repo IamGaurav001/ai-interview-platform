@@ -471,7 +471,7 @@ const SequentialInterview = () => {
             className="flex flex-col items-center"
           >
             <div className="relative mb-8">
-              <div className="absolute inset-0 bg-indigo-200 rounded-full animate-ping opacity-40"></div>
+              <div className="absolute inset-0 bg-blue-200 rounded-full animate-ping opacity-40"></div>
               <div className="relative bg-white/80 backdrop-blur-xl p-6 rounded-full shadow-2xl border border-white/20">
                 <img src={logo} alt="Loading..." className="h-16 w-16 object-contain animate-pulse" />
               </div>
@@ -494,7 +494,7 @@ const SequentialInterview = () => {
             className="flex flex-col items-center max-w-md mx-auto p-8 text-center"
           >
             <div className="relative mb-8">
-              <div className="absolute inset-0 bg-indigo-200 rounded-full animate-ping opacity-40"></div>
+              <div className="absolute inset-0 bg-blue-200 rounded-full animate-ping opacity-40"></div>
               <div className="relative bg-white/80 backdrop-blur-xl p-6 rounded-full shadow-2xl border border-white/20">
                 <img src={logo} alt="Prephire" className="h-16 w-16 object-contain animate-pulse" />
               </div>
@@ -505,9 +505,9 @@ const SequentialInterview = () => {
             </p>
             
             <div className="mt-8 flex gap-2">
-              <div className="w-2.5 h-2.5 bg-indigo-500 rounded-full animate-bounce" style={{ animationDelay: '0s' }}></div>
-              <div className="w-2.5 h-2.5 bg-indigo-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-              <div className="w-2.5 h-2.5 bg-indigo-500 rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></div>
+              <div className="w-2.5 h-2.5 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0s' }}></div>
+              <div className="w-2.5 h-2.5 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+              <div className="w-2.5 h-2.5 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></div>
             </div>
           </motion.div>
         </div>
@@ -519,7 +519,7 @@ const SequentialInterview = () => {
     return (
       <PageLayout>
         <div className="min-h-[60vh] flex items-center justify-center">
-          <Loader2 className="h-12 w-12 animate-spin text-indigo-600" />
+          <Loader2 className="h-12 w-12 animate-spin text-blue-600" />
         </div>
       </PageLayout>
     );
@@ -546,7 +546,7 @@ const SequentialInterview = () => {
 
           <div className="bg-white rounded-2xl shadow-xl p-6 sm:p-8 border border-slate-200 mb-8 text-center">
             <h2 className="text-xl sm:text-2xl font-bold text-slate-900 mb-4">Overall Score</h2>
-            <div className="text-5xl sm:text-7xl font-bold text-indigo-600 mb-2 tracking-tight">{overallScore}/10</div>
+            <div className="text-5xl sm:text-7xl font-bold text-blue-600 mb-2 tracking-tight">{overallScore}/10</div>
             <p className="text-slate-500 font-medium">
               Based on {feedbacks.length} question{feedbacks.length !== 1 ? "s" : ""}
             </p>
@@ -565,7 +565,7 @@ const SequentialInterview = () => {
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-3">
-                      <span className="px-3 py-1 bg-indigo-100 text-indigo-700 rounded-full text-sm font-bold">
+                      <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-bold">
                         Question {idx + 1}
                       </span>
                       {feedbacks[idx] && (
@@ -599,18 +599,18 @@ const SequentialInterview = () => {
                       <div className="bg-blue-50/50 backdrop-blur-sm rounded-xl p-4 border border-blue-100 shadow-sm">
                         {renderScoreBar(feedbacks[idx].clarity, "Clarity", "bg-gradient-to-r from-blue-400 to-blue-500")}
                       </div>
-                      <div className="bg-purple-50/50 backdrop-blur-sm rounded-xl p-4 border border-purple-100 shadow-sm">
-                        {renderScoreBar(feedbacks[idx].confidence, "Confidence", "bg-gradient-to-r from-purple-400 to-purple-500")}
+                      <div className="bg-blue-50/50 backdrop-blur-sm rounded-xl p-4 border border-blue-100 shadow-sm">
+                        {renderScoreBar(feedbacks[idx].confidence, "Confidence", "bg-gradient-to-r from-blue-400 to-blue-500")}
                       </div>
                     </div>
                     {feedbacks[idx].overall_feedback && (
-                      <div className="bg-indigo-50/50 backdrop-blur-sm rounded-xl p-5 border border-indigo-100 shadow-sm relative overflow-hidden">
-                        <div className="absolute top-0 left-0 w-1 h-full bg-indigo-400"></div>
-                        <h4 className="text-sm font-bold text-indigo-900 uppercase tracking-wide mb-2 flex items-center gap-2">
-                          <Sparkles className="h-4 w-4 text-indigo-500" />
+                      <div className="bg-blue-50/50 backdrop-blur-sm rounded-xl p-5 border border-blue-100 shadow-sm relative overflow-hidden">
+                        <div className="absolute top-0 left-0 w-1 h-full bg-blue-400"></div>
+                        <h4 className="text-sm font-bold text-blue-900 uppercase tracking-wide mb-2 flex items-center gap-2">
+                          <Sparkles className="h-4 w-4 text-blue-500" />
                           AI Feedback
                         </h4>
-                        <p className="text-indigo-800 leading-relaxed">{feedbacks[idx].overall_feedback}</p>
+                        <p className="text-blue-800 leading-relaxed">{feedbacks[idx].overall_feedback}</p>
                       </div>
                     )}
                   </div>
@@ -657,7 +657,7 @@ const SequentialInterview = () => {
         >
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-3">
-              <span className="flex items-center justify-center h-8 w-8 rounded-full bg-indigo-100 text-indigo-600 text-sm font-bold">
+              <span className="flex items-center justify-center h-8 w-8 rounded-full bg-blue-100 text-blue-600 text-sm font-bold">
                 {currentQuestionIndex + 1}
               </span>
               <span className="text-sm font-medium text-slate-500 uppercase tracking-wider">
@@ -670,7 +670,7 @@ const SequentialInterview = () => {
                 console.log('Manual Tour button clicked');
                 setStartTour(true);
               }}
-              className="group flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium text-slate-500 hover:text-indigo-600 hover:bg-slate-100 transition-all duration-200"
+              className="group flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium text-slate-500 hover:text-blue-600 hover:bg-slate-100 transition-all duration-200"
             >
               <Sparkles className="h-4 w-4 transition-transform group-hover:scale-110" />
               Tour
@@ -687,12 +687,12 @@ const SequentialInterview = () => {
           
           <div className="relative pt-2">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-semibold text-indigo-600">Progress</span>
+              <span className="text-xs font-semibold text-blue-600">Progress</span>
               <span className="text-xs font-bold text-slate-700">{Math.round(progress)}%</span>
             </div>
             <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
               <motion.div
-                className="bg-gradient-to-r from-indigo-500 to-indigo-600 h-full rounded-full shadow-[0_0_10px_rgba(99,102,241,0.5)]"
+                className="bg-gradient-to-r from-blue-500 to-blue-600 h-full rounded-full shadow-[0_0_10px_rgba(99,102,241,0.5)]"
                 initial={{ width: 0 }}
                 animate={{ width: `${progress}%` }}
                 transition={{ duration: 0.8, ease: "easeOut" }}
@@ -711,7 +711,7 @@ const SequentialInterview = () => {
             transition={{ duration: 0.4 }}
             className="bg-white/90 backdrop-blur-xl rounded-3xl shadow-2xl p-6 sm:p-10 border border-white/20 relative overflow-hidden"
           >
-            <div className="absolute top-0 left-0 w-1.5 h-full bg-gradient-to-b from-indigo-500 via-purple-500 to-indigo-500" />
+            <div className="absolute top-0 left-0 w-1.5 h-full bg-gradient-to-b from-blue-500 via-blue-500 to-blue-500" />
 
             {/* Loading Overlay */}
             <AnimatePresence>
@@ -726,12 +726,12 @@ const SequentialInterview = () => {
                     initial={{ scale: 0.8, opacity: 0, y: 20 }}
                     animate={{ scale: 1, opacity: 1, y: 0 }}
                     exit={{ scale: 0.8, opacity: 0, y: -20 }}
-                    className="bg-white p-8 rounded-3xl shadow-2xl border border-indigo-50 flex flex-col items-center max-w-sm mx-4"
+                    className="bg-white p-8 rounded-3xl shadow-2xl border border-blue-50 flex flex-col items-center max-w-sm mx-4"
                   >
                     <div className="relative mb-6">
-                      <div className="absolute inset-0 bg-indigo-100 rounded-full animate-ping opacity-75"></div>
-                      <div className="relative bg-indigo-50 p-4 rounded-full">
-                        <Sparkles className="h-10 w-10 text-indigo-600 animate-pulse" />
+                      <div className="absolute inset-0 bg-blue-100 rounded-full animate-ping opacity-75"></div>
+                      <div className="relative bg-blue-50 p-4 rounded-full">
+                        <Sparkles className="h-10 w-10 text-blue-600 animate-pulse" />
                       </div>
                     </div>
                     <h3 className="text-xl font-bold text-slate-900 mb-2">Analyzing Answer</h3>
@@ -763,7 +763,7 @@ const SequentialInterview = () => {
                   </div>
                   <div>
                     <h2 className="text-lg font-bold text-slate-900">Question {currentQuestionIndex + 1}</h2>
-                    <span className="text-xs font-medium text-indigo-600 bg-indigo-50 px-2 py-1 rounded-md">AI Interviewer</span>
+                    <span className="text-xs font-medium text-blue-600 bg-blue-50 px-2 py-1 rounded-md">AI Interviewer</span>
                   </div>
                 </div>
                 <p className="text-xl sm:text-2xl text-slate-800 leading-relaxed font-medium tracking-tight" data-tour="question-area">
@@ -783,8 +783,8 @@ const SequentialInterview = () => {
                   }}
                   className={`group relative flex items-center justify-center h-14 w-14 rounded-2xl transition-all duration-300 shadow-lg hover:shadow-xl hover:-translate-y-1 ${
                     playingAudio[`question_${currentQuestionIndex}`]
-                      ? "bg-indigo-100 text-indigo-600 ring-2 ring-indigo-200" 
-                      : "bg-gradient-to-br from-indigo-600 to-indigo-700 text-white"
+                      ? "bg-blue-100 text-blue-600 ring-2 ring-blue-200" 
+                      : "bg-gradient-to-br from-blue-600 to-blue-700 text-white"
                   }`}
                   title={
                     playingAudio[`question_${currentQuestionIndex}`]
@@ -826,7 +826,7 @@ const SequentialInterview = () => {
                     disabled={loading}
                     className={`flex items-center gap-2 px-4 py-2 rounded-lg font-semibold transition-all shadow-sm ${
                       isRecording
-                        ? "bg-indigo-600 text-white border border-indigo-700 hover:bg-indigo-700 animate-pulse ring-2 ring-indigo-100"
+                        ? "bg-blue-600 text-white border border-blue-700 hover:bg-blue-700 animate-pulse ring-2 ring-blue-100"
                         : "bg-white text-slate-700 border border-slate-300 hover:bg-slate-50 hover:border-slate-400 hover:shadow-md"
                     } disabled:opacity-50 disabled:cursor-not-allowed`}
                     data-tour="voice-input"
@@ -858,9 +858,9 @@ const SequentialInterview = () => {
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0 }}
-                    className="p-4 bg-indigo-50 border border-indigo-100 rounded-xl"
+                    className="p-4 bg-blue-50 border border-blue-100 rounded-xl"
                   >
-                    <p className="text-sm text-indigo-900">
+                    <p className="text-sm text-blue-900">
                       <span className="font-semibold">Transcribed:</span> {transcribedText}
                     </p>
                   </motion.div>
@@ -885,7 +885,7 @@ const SequentialInterview = () => {
                   <button
                     onClick={handleSubmitVoiceAnswer}
                     disabled={loading}
-                    className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium transition-colors shadow-sm"
+                    className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium transition-colors shadow-sm"
                   >
                     {loading || isSubmitting ? "Processing..." : "Submit Voice"}
                   </button>
@@ -897,7 +897,7 @@ const SequentialInterview = () => {
                   value={currentAnswer}
                   onChange={(e) => setCurrentAnswer(e.target.value)}
                   placeholder="Type your detailed answer here... Be specific and provide examples."
-                  className="w-full p-4 sm:p-5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none min-h-[200px] text-slate-700 leading-relaxed transition-shadow shadow-sm focus:shadow-md"
+                  className="w-full p-4 sm:p-5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none min-h-[200px] text-slate-700 leading-relaxed transition-shadow shadow-sm focus:shadow-md"
                   disabled={loading}
                   data-tour="answer-input"
                 />
@@ -931,20 +931,20 @@ const SequentialInterview = () => {
                   <div className="bg-blue-50 rounded-xl p-4 border border-blue-100">
                     {renderScoreBar(feedbacks[currentQuestionIndex].clarity, "Clarity", "bg-blue-500")}
                   </div>
-                  <div className="bg-purple-50 rounded-xl p-4 border border-purple-100">
+                  <div className="bg-blue-50 rounded-xl p-4 border border-blue-100">
                     {renderScoreBar(
                       feedbacks[currentQuestionIndex].confidence,
                       "Confidence",
-                      "bg-purple-500"
+                      "bg-blue-500"
                     )}
                   </div>
                 </div>
                 {feedbacks[currentQuestionIndex].overall_feedback && (
-                  <div className="bg-indigo-50 rounded-xl p-6 border border-indigo-100">
+                  <div className="bg-blue-50 rounded-xl p-6 border border-blue-100">
                     <div className="flex items-start gap-4">
                       <div className="flex-1">
-                        <h4 className="text-sm font-bold text-indigo-900 uppercase tracking-wide mb-2">Overall Feedback</h4>
-                        <p className="text-indigo-800 leading-relaxed">{feedbacks[currentQuestionIndex].overall_feedback}</p>
+                        <h4 className="text-sm font-bold text-blue-900 uppercase tracking-wide mb-2">Overall Feedback</h4>
+                        <p className="text-blue-800 leading-relaxed">{feedbacks[currentQuestionIndex].overall_feedback}</p>
                       </div>
                       {feedbackAudioUrls[currentQuestionIndex] && (
                         <button
@@ -960,7 +960,7 @@ const SequentialInterview = () => {
                               );
                             }
                           }}
-                          className="flex items-center justify-center h-10 w-10 rounded-full bg-white text-indigo-600 hover:bg-indigo-50 shadow-sm border border-indigo-200 transition-colors flex-shrink-0"
+                          className="flex items-center justify-center h-10 w-10 rounded-full bg-white text-blue-600 hover:bg-blue-50 shadow-sm border border-blue-200 transition-colors flex-shrink-0"
                           title={
                             playingAudio[`feedback_${currentQuestionIndex}`]
                               ? "Stop audio"
@@ -1002,7 +1002,7 @@ const SequentialInterview = () => {
                 onClick={handleSubmitAnswer}
                 disabled={loading || isSubmitting}
                 data-tour="submit-answer"
-                className="flex items-center gap-2 px-8 py-3 bg-indigo-600 text-white rounded-xl font-semibold hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5"
+                className="flex items-center gap-2 px-8 py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5"
               >
                 {loading || isSubmitting ? (
                   <>

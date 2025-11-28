@@ -258,8 +258,8 @@ const ResumeUpload = () => {
       >
         {/* Header */}
         <motion.div className="text-center mb-6 sm:mb-10" variants={itemVariants}>
-          <div className="inline-flex items-center justify-center p-2 sm:p-3 bg-indigo-100 rounded-full mb-3 sm:mb-4">
-            <Sparkles className="h-6 w-6 sm:h-8 sm:w-8 text-indigo-600" />
+          <div className="inline-flex items-center justify-center p-2 sm:p-3 bg-blue-100 rounded-full mb-3 sm:mb-4">
+            <Sparkles className="h-6 w-6 sm:h-8 sm:w-8 text-blue-600" />
           </div>
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-slate-900 mb-3 sm:mb-4 tracking-tight px-2">
             AI Resume Analysis
@@ -285,10 +285,10 @@ const ResumeUpload = () => {
                 <div
                   className={`relative group flex flex-col items-center justify-center w-full p-6 sm:p-10 border-2 border-dashed rounded-2xl transition-all duration-300 cursor-pointer ${
                     isDragging
-                      ? "border-indigo-500 bg-indigo-50 scale-[1.02]"
+                      ? "border-blue-500 bg-blue-50 scale-[1.02]"
                       : file
-                      ? "border-indigo-200 bg-indigo-50/50"
-                      : "border-slate-300 bg-slate-50 hover:bg-slate-100 hover:border-indigo-400"
+                      ? "border-blue-200 bg-blue-50/50"
+                      : "border-slate-300 bg-slate-50 hover:bg-slate-100 hover:border-blue-400"
                   }`}
                   onDragOver={(e) => {
                     e.preventDefault();
@@ -316,7 +316,7 @@ const ResumeUpload = () => {
                         className="flex flex-col items-center text-center"
                       >
                         <div className="h-12 w-12 sm:h-16 sm:w-16 bg-white rounded-2xl shadow-sm flex items-center justify-center mb-3 sm:mb-4">
-                          <FileText className="h-6 w-6 sm:h-8 sm:w-8 text-indigo-600" />
+                          <FileText className="h-6 w-6 sm:h-8 sm:w-8 text-blue-600" />
                         </div>
                         <p className="text-base sm:text-lg font-semibold text-slate-900 mb-1 break-all px-2">
                           {file.name}
@@ -349,11 +349,11 @@ const ResumeUpload = () => {
                         exit={{ opacity: 0 }}
                         className="flex flex-col items-center text-center"
                       >
-                        <div className="h-12 w-12 sm:h-16 sm:w-16 bg-indigo-100 rounded-full flex items-center justify-center mb-3 sm:mb-4 group-hover:scale-110 transition-transform duration-300">
-                          <Upload className="h-6 w-6 sm:h-8 sm:w-8 text-indigo-600" />
+                        <div className="h-12 w-12 sm:h-16 sm:w-16 bg-blue-100 rounded-full flex items-center justify-center mb-3 sm:mb-4 group-hover:scale-110 transition-transform duration-300">
+                          <Upload className="h-6 w-6 sm:h-8 sm:w-8 text-blue-600" />
                         </div>
                         <p className="text-base sm:text-lg font-medium text-slate-700 mb-2 px-2">
-                          <span className="text-indigo-600 font-bold">Click to upload</span> or drag and drop
+                          <span className="text-blue-600 font-bold">Click to upload</span> or drag and drop
                         </p>
                         <p className="text-xs sm:text-sm text-slate-400">
                           PDF files only (Max 5MB)
@@ -403,7 +403,7 @@ const ResumeUpload = () => {
                   className={`relative w-full py-3 sm:py-4 px-4 sm:px-6 rounded-xl font-bold text-base sm:text-lg text-white shadow-lg transition-all duration-300 flex items-center justify-center gap-2 sm:gap-3 overflow-hidden ${
                     loading || !file
                       ? "bg-slate-300 cursor-not-allowed shadow-none"
-                      : "bg-indigo-600 hover:shadow-indigo-200 hover:scale-[1.01] active:scale-[0.99]"
+                      : "bg-blue-600 hover:shadow-blue-200 hover:scale-[1.01] active:scale-[0.99]"
                   }`}
                 >
                   {loading ? (
@@ -468,7 +468,7 @@ const ResumeUpload = () => {
                         .slice(0, 3)
                         .map((q, i) => (
                           <div key={i} className="flex gap-2 sm:gap-3">
-                            <span className="font-mono text-indigo-500 font-bold text-sm sm:text-base flex-shrink-0">
+                            <span className="font-mono text-blue-500 font-bold text-sm sm:text-base flex-shrink-0">
                               {i + 1}.
                             </span>
                             <p className="text-slate-700 font-medium line-clamp-2 text-sm sm:text-base">
@@ -487,7 +487,7 @@ const ResumeUpload = () => {
                   <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
                     <button
                       onClick={() => navigate("/interview-flow")}
-                      className="w-full sm:flex-1 py-3 sm:py-4 px-6 sm:px-8 bg-indigo-600 text-white rounded-xl font-bold text-base sm:text-lg hover:bg-indigo-700 transition-all shadow-lg hover:shadow-indigo-200 flex items-center justify-center gap-2 group"
+                      className="w-full sm:flex-1 py-3 sm:py-4 px-6 sm:px-8 bg-blue-600 text-white rounded-xl font-bold text-base sm:text-lg hover:bg-blue-700 transition-all shadow-lg hover:shadow-blue-200 flex items-center justify-center gap-2 group"
                     >
                       <Play className="h-4 w-4 sm:h-5 sm:w-5 fill-current" />
                       <span>Start Full Interview</span>
@@ -546,11 +546,11 @@ const StepCard = ({ icon: Icon, step, title, description }) => (
     }}
     className="bg-white p-4 sm:p-6 rounded-xl sm:rounded-2xl shadow-sm border border-slate-100 relative overflow-hidden group hover:shadow-md transition-shadow"
   >
-    <div className="absolute -right-2 sm:-right-4 -top-2 sm:-top-4 text-6xl sm:text-9xl font-bold text-slate-50 opacity-50 group-hover:text-indigo-50 transition-colors select-none">
+    <div className="absolute -right-2 sm:-right-4 -top-2 sm:-top-4 text-6xl sm:text-9xl font-bold text-slate-50 opacity-50 group-hover:text-blue-50 transition-colors select-none">
       {step}
     </div>
     <div className="relative z-10">
-      <div className="h-10 w-10 sm:h-12 sm:w-12 bg-indigo-50 rounded-lg sm:rounded-xl flex items-center justify-center mb-3 sm:mb-4 text-indigo-600 group-hover:scale-110 transition-transform duration-300">
+      <div className="h-10 w-10 sm:h-12 sm:w-12 bg-blue-50 rounded-lg sm:rounded-xl flex items-center justify-center mb-3 sm:mb-4 text-blue-600 group-hover:scale-110 transition-transform duration-300">
         <Icon className="h-5 w-5 sm:h-6 sm:w-6" />
       </div>
       <h3 className="text-base sm:text-lg font-bold text-slate-900 mb-2">{title}</h3>
