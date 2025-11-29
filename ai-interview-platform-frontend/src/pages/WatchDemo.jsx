@@ -225,10 +225,6 @@ const WatchDemo = () => {
               className="mt-12 flex flex-wrap items-center justify-center gap-6 md:gap-8 text-sm font-medium text-slate-500"
             >
               <div className="flex items-center gap-2">
-                <CheckCircle2 className="h-5 w-5 text-green-500" />
-                No credit card required
-              </div>
-              <div className="flex items-center gap-2">
                 <Star className="h-5 w-5 text-yellow-400 fill-current" />
                 4.9/5 Average Rating
               </div>

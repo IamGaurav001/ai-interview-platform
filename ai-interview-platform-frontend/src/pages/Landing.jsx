@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useAuth } from "../context/AuthContext";
 import logo from "../assets/intervueai-logo.png";
+import icon from "../assets/prephire-icon-circle.png";
 import { 
   ArrowRight, 
   CheckCircle2, 
@@ -15,7 +16,8 @@ import {
   TrendingUp,
   Sparkles,
   ShieldCheck,
-  Users
+  Users,
+  Star
 } from "lucide-react";
 
 // --- Animation Variants ---
@@ -50,7 +52,7 @@ const Landing = () => {
   }, [user, navigate]);
 
   return (
-    <div className="bg-white min-h-screen font-sans text-slate-900 selection:bg-blue-100 selection:text-blue-900 overflow-hidden">
+    <div className="bg-slate-50 min-h-screen font-sans text-slate-900 selection:bg-indigo-100 selection:text-indigo-900">
       
       {/* Background Mesh Gradient */}
       <div className="fixed inset-0 z-0 pointer-events-none">
@@ -60,230 +62,253 @@ const Landing = () => {
         <div className="absolute inset-0 bg-grid-slate-900/[0.02] -z-10" />
       </div>
 
-      {/* Hero Section */}
-      <section className="relative z-10 min-h-screen pt-20 sm:pt-24 pb-12 sm:pb-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto text-center">
-        <motion.div 
-          initial="hidden"
-          animate="visible"
-          variants={staggerContainer}
-          className="max-w-4xl mx-auto"
-        >
-          <motion.div variants={fadeIn} className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 border border-blue-100 text-blue-600 text-xs font-semibold uppercase tracking-wide mb-8">
-            <Sparkles className="h-3 w-3" />
-            <span>AI-Powered Interview Prep</span>
+      {/* --- HERO SECTION --- */}
+      <section className="relative z-10 pt-20 pb-32 overflow-hidden">
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <motion.div 
+            initial="hidden"
+            animate="visible"
+            variants={staggerContainer}
+            className="max-w-4xl mx-auto"
+          >
+            {/* Badge */}
+            <motion.div variants={fadeIn} className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-50 border border-blue-100 text-blue-600 text-xs font-medium uppercase tracking-wider mb-8 shadow-sm">
+              <Sparkles className="h-3 w-3" />
+              <span>The Future of Interview Prep</span>
+            </motion.div>
+            
+            {/* Headline */}
+            <motion.h1 variants={fadeIn} className="text-5xl sm:text-6xl md:text-7xl font-bold tracking-tight mb-8 text-slate-900 leading-[1.1]">
+              Master your interview. <br />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">
+                Secure your dream job.
+              </span>
+            </motion.h1>
+            
+            {/* Subheadline */}
+            <motion.p variants={fadeIn} className="text-lg sm:text-xl text-slate-500 mb-10 leading-relaxed max-w-2xl mx-auto font-light">
+              Experience the most realistic AI interview simulation. Get real-time feedback on your answers, tone, and body language to perform at your absolute best.
+            </motion.p>
+            
+            {/* CTAs */}
+            <motion.div variants={fadeIn} className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-20">
+              <Link
+                to="/register"
+                className="px-8 py-4 bg-slate-900 text-white text-lg font-semibold rounded-full hover:bg-slate-800 transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5 flex items-center gap-2"
+              >
+                Start Practicing Free <ArrowRight className="h-4 w-4" />
+              </Link>
+            </motion.div>
+
+            {/* Dashboard Preview */}
+            <motion.div variants={fadeIn} className="relative mx-auto max-w-6xl">
+              <div className="relative rounded-2xl bg-white p-2 ring-1 ring-slate-200 shadow-2xl lg:rounded-3xl">
+                <HeroDashboardPreview />
+              </div>
+            </motion.div>
           </motion.div>
-          
-          <motion.h1 variants={fadeIn} className="text-4xl sm:text-5xl md:text-7xl font-bold tracking-tight mb-6 text-slate-900 leading-[1.1]">
-            Master your interview. <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-blue-500">
-              Land the job.
-            </span>
-          </motion.h1>
-          
-          <motion.p variants={fadeIn} className="text-lg sm:text-xl text-slate-500 mb-10 leading-relaxed max-w-2xl mx-auto">
-            Practice with our hyper-realistic AI interviewer. Get instant feedback on your answers, body language, and speaking pace.
-          </motion.p>
-          
-          <motion.div variants={fadeIn} className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link
-              to="/register"
-              className="px-8 py-4 bg-slate-900 text-white text-lg font-medium rounded-xl hover:bg-slate-800 transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5 flex items-center gap-2"
-            >
-              Start Practicing Free <ArrowRight className="h-4 w-4" />
-            </Link>
-         </motion.div>
-
-
-
-          {/* Hero Visual / Dashboard Preview */}
-          <div className="mt-20 relative mx-auto max-w-7xl">
-            <div className="relative rounded-2xl bg-slate-900/5 p-1 ring-1 ring-inset ring-slate-900/10 lg:rounded-3xl lg:p-2">
-              <HeroDashboardPreview />
-            </div>
-          </div>
-        </motion.div>
+        </div>
       </section>
 
-      {/* Social Proof */}
-      <section className="py-10 border-y border-slate-100 bg-white/50 backdrop-blur-sm relative z-10 overflow-hidden">
+      {/* --- SOCIAL PROOF --- */}
+      <section className="py-10 border-b border-slate-200 bg-white/50 backdrop-blur-sm relative z-10 overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 text-center">
-          <p className="text-sm font-medium text-slate-500 mb-6 uppercase tracking-widest">Trusted by top candidates</p>
+          <p className="text-sm font-medium text-slate-500 mb-8 uppercase tracking-widest">Trusted by candidates from</p>
           
-          {/* Mobile: Auto-scrolling */}
-          <div className="md:hidden relative">
-            <div className="flex animate-scroll-mobile">
-              <div className="flex gap-8 px-4 whitespace-nowrap">
-                <span className="text-xl font-bold text-slate-800 opacity-40">Google</span>
-                <span className="text-xl font-bold text-slate-800 opacity-40">Amazon</span>
-                <span className="text-xl font-bold text-slate-800 opacity-40">Microsoft</span>
-                <span className="text-xl font-bold text-slate-800 opacity-40">Netflix</span>
-                <span className="text-xl font-bold text-slate-800 opacity-40">Uber</span>
+          {/* Auto-scrolling Marquee (All Screens) */}
+          <div className="relative w-full overflow-hidden">
+            <div className="flex animate-scroll-mobile w-max">
+              {/* Set 1 */}
+              <div className="flex gap-8 md:gap-16 px-4 whitespace-nowrap">
+                {["Google", "Amazon", "Microsoft", "Netflix", "Uber", "Meta"].map((company) => (
+                  <span key={`${company}-1`} className="text-xl md:text-2xl font-bold text-slate-800 opacity-60">{company}</span>
+                ))}
               </div>
-              {/* Duplicate for seamless loop */}
-              <div className="flex gap-8 px-4 whitespace-nowrap">
-                <span className="text-xl font-bold text-slate-800 opacity-40">Google</span>
-                <span className="text-xl font-bold text-slate-800 opacity-40">Amazon</span>
-                <span className="text-xl font-bold text-slate-800 opacity-40">Microsoft</span>
-                <span className="text-xl font-bold text-slate-800 opacity-40">Netflix</span>
-                <span className="text-xl font-bold text-slate-800 opacity-40">Uber</span>
+              {/* Set 2 */}
+              <div className="flex gap-8 md:gap-16 px-4 whitespace-nowrap">
+                {["Google", "Amazon", "Microsoft", "Netflix", "Uber", "Meta"].map((company) => (
+                  <span key={`${company}-2`} className="text-xl md:text-2xl font-bold text-slate-800 opacity-60">{company}</span>
+                ))}
+              </div>
+              {/* Set 3 (Extra for wide screens) */}
+              <div className="flex gap-8 md:gap-16 px-4 whitespace-nowrap">
+                {["Google", "Amazon", "Microsoft", "Netflix", "Uber", "Meta"].map((company) => (
+                  <span key={`${company}-3`} className="text-xl md:text-2xl font-bold text-slate-800 opacity-60">{company}</span>
+                ))}
+              </div>
+              {/* Set 4 (Extra for wide screens) */}
+              <div className="flex gap-8 md:gap-16 px-4 whitespace-nowrap">
+                {["Google", "Amazon", "Microsoft", "Netflix", "Uber", "Meta"].map((company) => (
+                  <span key={`${company}-4`} className="text-xl md:text-2xl font-bold text-slate-800 opacity-60">{company}</span>
+                ))}
               </div>
             </div>
-          </div>
-          
-          {/* Desktop: Static centered */}
-          <div className="hidden md:flex flex-wrap justify-center gap-8 md:gap-16 opacity-40 grayscale transition-all hover:grayscale-0 hover:opacity-100 duration-500">
-             <span className="text-xl font-bold text-slate-800">Google</span>
-             <span className="text-xl font-bold text-slate-800">Amazon</span>
-             <span className="text-xl font-bold text-slate-800">Microsoft</span>
-             <span className="text-xl font-bold text-slate-800">Netflix</span>
-             <span className="text-xl font-bold text-slate-800">Uber</span>
           </div>
         </div>
       </section>
 
-      {/* Bento Grid Features */}
+      {/* --- FEATURES (Bento Grid) --- */}
       <section className="py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="mb-16 text-center max-w-3xl mx-auto">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4 text-slate-900">Everything you need to succeed</h2>
-          <p className="text-lg text-slate-500">
-            A complete suite of tools designed to help you ace your next interview.
+        <div className="mb-20 text-center max-w-3xl mx-auto">
+          <h2 className="text-3xl md:text-5xl font-bold mb-6 text-slate-900 tracking-tight">Everything you need to excel</h2>
+          <p className="text-xl text-slate-500 font-light">
+            A comprehensive suite of AI-powered tools designed to transform your interview skills.
           </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* Large Item */}
+          {/* Large Item - Voice Analysis */}
           <motion.div 
             whileHover={{ y: -5 }}
-            className="md:col-span-2 bg-gradient-to-br from-blue-500 to-blue-600 rounded-3xl p-6 sm:p-8 text-white relative overflow-hidden group"
+            className="md:col-span-2 bg-white border border-slate-200 rounded-[2rem] p-8 sm:p-10 text-slate-900 relative overflow-hidden group shadow-xl"
           >
-            <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -mr-16 -mt-16 transition-transform group-hover:scale-110" />
+            <div className="absolute top-0 right-0 w-96 h-96 bg-blue-50 rounded-full blur-[80px] -mr-20 -mt-20 transition-transform group-hover:scale-110" />
             <div className="relative z-10">
-              <div className="h-12 w-12 bg-white/20 backdrop-blur-md rounded-xl flex items-center justify-center mb-6">
-                <Mic className="h-6 w-6 text-white" />
+              <div className="h-14 w-14 bg-blue-50 rounded-2xl flex items-center justify-center mb-8 border border-blue-100">
+                <Mic className="h-7 w-7 text-blue-600" />
               </div>
-              <h3 className="text-2xl font-bold mb-2">Real-time Voice Analysis</h3>
-              <p className="text-blue-100 max-w-md">
-                Our advanced AI analyzes your speech patterns, tone, and pacing in real-time to provide actionable feedback that helps you sound more confident.
+              <h3 className="text-3xl font-bold mb-4">Real-time Voice Analysis</h3>
+              <p className="text-slate-500 text-lg max-w-lg leading-relaxed">
+                Our advanced AI analyzes your speech patterns, tone, and pacing in real-time. Receive instant, actionable feedback to sound more confident and professional.
               </p>
+            </div>
+            {/* Visual Element */}
+            <div className="absolute bottom-0 right-0 w-1/2 h-32 bg-gradient-to-t from-white to-transparent z-20" />
+            <div className="absolute bottom-8 right-8 flex gap-1 opacity-50">
+               {[...Array(8)].map((_, i) => (
+                  <div key={i} className="w-2 bg-blue-400 rounded-full h-12 animate-pulse" style={{ animationDelay: `${i * 0.1}s` }} />
+               ))}
             </div>
           </motion.div>
 
-          {/* Tall Item */}
+          {/* Tall Item - Progress Tracking */}
           <motion.div 
             whileHover={{ y: -5 }}
-            className="md:row-span-2 bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 shadow-sm hover:shadow-md transition-all relative overflow-hidden group"
+            className="md:row-span-2 bg-white border border-slate-200 rounded-[2rem] p-8 sm:p-10 shadow-xl hover:shadow-2xl transition-all relative overflow-hidden group"
           >
-            <div className="absolute bottom-0 right-0 w-32 h-32 bg-green-50 rounded-full blur-2xl -mr-8 -mb-8" />
-            <div className="h-12 w-12 bg-green-100 rounded-xl flex items-center justify-center mb-6 text-green-600">
-              <TrendingUp className="h-6 w-6" />
+            <div className="absolute bottom-0 right-0 w-64 h-64 bg-emerald-50 rounded-full blur-3xl -mr-16 -mb-16" />
+            <div className="h-14 w-14 bg-emerald-100/50 rounded-2xl flex items-center justify-center mb-8 text-emerald-600">
+              <TrendingUp className="h-7 w-7" />
             </div>
-            <h3 className="text-xl font-bold text-slate-900 mb-2">Progress Tracking</h3>
-            <p className="text-slate-500 mb-6">
-              Visualize your improvement over time with detailed analytics and performance charts.
+            <h3 className="text-2xl font-bold text-slate-900 mb-4">Progress Tracking</h3>
+            <p className="text-slate-500 mb-8 leading-relaxed">
+              Visualize your improvement over time with detailed analytics. Track your confidence, clarity, and technical accuracy scores.
             </p>
-            <div className="space-y-3">
-               {[1, 2, 3].map((i) => (
-                 <div key={i} className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 border border-slate-100">
-                    <div className="h-2 w-2 rounded-full bg-green-500" />
-                    <div className="h-2 w-16 bg-slate-200 rounded" />
-                    <div className="ml-auto h-2 w-8 bg-slate-200 rounded" />
+            <div className="space-y-4 relative z-10">
+               {[
+                 { label: "Confidence", val: 85, color: "bg-emerald-500" },
+                 { label: "Clarity", val: 92, color: "bg-emerald-500" },
+                 { label: "Technical", val: 78, color: "bg-emerald-500" }
+               ].map((item, i) => (
+                 <div key={i} className="space-y-2">
+                    <div className="flex justify-between text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                      <span>{item.label}</span>
+                      <span>{item.val}%</span>
+                    </div>
+                    <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
+                      <motion.div 
+                        initial={{ width: 0 }}
+                        whileInView={{ width: `${item.val}%` }}
+                        transition={{ duration: 1, delay: 0.2 }}
+                        className={`h-full ${item.color} rounded-full`} 
+                      />
+                    </div>
                  </div>
                ))}
             </div>
           </motion.div>
 
-          {/* Standard Item */}
+          {/* Standard Item - Smart Questioning */}
           <motion.div 
             whileHover={{ y: -5 }}
-            className="bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 shadow-sm hover:shadow-md transition-all group"
+            className="bg-white border border-slate-200 rounded-[2rem] p-8 sm:p-10 shadow-xl hover:shadow-2xl transition-all group"
           >
-            <div className="h-12 w-12 bg-orange-100 rounded-xl flex items-center justify-center mb-6 text-orange-600 group-hover:scale-110 transition-transform">
-              <Brain className="h-6 w-6" />
+            <div className="h-14 w-14 bg-orange-100/50 rounded-2xl flex items-center justify-center mb-8 text-orange-600 group-hover:scale-110 transition-transform">
+              <Brain className="h-7 w-7" />
             </div>
-            <h3 className="text-xl font-bold text-slate-900 mb-2">Smart Questioning</h3>
-            <p className="text-slate-500">
-              Questions adapt to your responses, digging deeper just like a real hiring manager.
+            <h3 className="text-2xl font-bold text-slate-900 mb-4">Adaptive AI</h3>
+            <p className="text-slate-500 leading-relaxed">
+              Questions adapt to your responses in real-time, digging deeper into your answers just like a seasoned hiring manager would.
             </p>
           </motion.div>
 
-          {/* Standard Item */}
+          {/* Standard Item - Resume Integration */}
           <motion.div 
             whileHover={{ y: -5 }}
-            className="bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 shadow-sm hover:shadow-md transition-all group"
+            className="bg-white border border-slate-200 rounded-[2rem] p-8 sm:p-10 shadow-xl hover:shadow-2xl transition-all group"
           >
-            <div className="h-12 w-12 bg-blue-100 rounded-xl flex items-center justify-center mb-6 text-blue-600 group-hover:scale-110 transition-transform">
-              <FileText className="h-6 w-6" />
+            <div className="h-14 w-14 bg-blue-100/50 rounded-2xl flex items-center justify-center mb-8 text-blue-600 group-hover:scale-110 transition-transform">
+              <FileText className="h-7 w-7" />
             </div>
-            <h3 className="text-xl font-bold text-slate-900 mb-2">Resume Integration</h3>
-            <p className="text-slate-500">
-              Upload your resume to get tailored questions about your specific experience.
+            <h3 className="text-2xl font-bold text-slate-900 mb-4">Resume Integration</h3>
+            <p className="text-slate-500 leading-relaxed">
+              Upload your resume to generate a personalized interview plan. We tailor questions to your specific experience and skills.
             </p>
           </motion.div>
         </div>
       </section>
 
-      {/* CTA Section */}
+      {/* --- CTA SECTION --- */}
       <section className="py-12 sm:py-24 px-4 relative z-10">
-        <div className="max-w-5xl mx-auto bg-slate-900 rounded-[2.5rem] p-8 sm:p-12 md:p-24 text-center relative overflow-hidden">
+        <div className="max-w-5xl mx-auto bg-white border border-slate-200 rounded-[3rem] p-8 sm:p-16 md:p-20 text-center relative overflow-hidden shadow-2xl">
           {/* Abstract Shapes */}
-          <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0">
-             <div className="absolute top-[-20%] left-[20%] w-[60%] h-[60%] bg-blue-500/30 rounded-full blur-3xl" />
-             <div className="absolute bottom-[-20%] right-[20%] w-[60%] h-[60%] bg-blue-500/30 rounded-full blur-3xl" />
+          <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0 pointer-events-none">
+             <div className="absolute top-[-20%] left-[20%] w-[60%] h-[60%] bg-blue-50/50 rounded-full blur-[100px]" />
+             <div className="absolute bottom-[-20%] right-[20%] w-[60%] h-[60%] bg-indigo-50/50 rounded-full blur-[100px]" />
           </div>
           
           <div className="relative z-10">
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-6 tracking-tight">
-              Ready to upgrade your career?
+            <h2 className="text-4xl sm:text-5xl md:text-6xl font-bold text-slate-900 mb-6 tracking-tight">
+              Ready to land your dream job?
             </h2>
-            <p className="text-slate-300 text-xl mb-10 max-w-2xl mx-auto font-light">
-              Join thousands of candidates who are landing their dream jobs with PrepHire.
+            <p className="text-slate-500 text-xl mb-12 max-w-2xl mx-auto font-light leading-relaxed">
+              Join thousands of candidates who are upgrading their careers with PrepHire. Start your journey today.
             </p>
-            <Link
-              to="/register"
-              className="inline-flex items-center gap-2 px-10 py-5 bg-white text-slate-900 text-lg font-bold rounded-xl hover:bg-blue-50 transition-all shadow-xl hover:shadow-2xl hover:-translate-y-1"
-            >
-              Get Started Now <ArrowRight className="h-5 w-5" />
-            </Link>
-            <p className="mt-6 text-sm text-slate-400">
-              No credit card required · Cancel anytime
-            </p>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+              <Link
+                to="/register"
+                className="px-10 py-5 bg-slate-900 text-white text-lg font-bold rounded-full hover:bg-slate-800 transition-all shadow-lg hover:shadow-xl hover:-translate-y-1 flex items-center gap-2"
+              >
+                Get Started Now <ArrowRight className="h-5 w-5" />
+              </Link>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="bg-white py-8 sm:py-16 border-t border-slate-200 relative z-10">
+      {/* --- FOOTER --- */}
+      <footer className="bg-white py-12 sm:py-20 border-t border-slate-100 relative z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-8 md:gap-12 mb-8 md:mb-12">
-            <div className="col-span-2 md:col-span-1">
-              <img src={logo} alt="Logo" className="h-8 w-auto mb-4 sm:mb-6" />
-              <p className="text-slate-500 text-sm leading-relaxed">
-                The smartest way to prepare for your next interview.
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12 mb-16">
+            <div className="col-span-2">
+              <img src={logo} alt="Logo" className="h-8 w-auto mb-6" />
+              <p className="text-slate-500 text-base leading-relaxed max-w-xs">
+                The smartest way to prepare for your next interview. AI-powered feedback, real-time analysis, and personalized coaching.
               </p>
             </div>
             <div>
               <h4 className="font-bold text-slate-900 mb-6">Product</h4>
               <ul className="space-y-4 text-sm text-slate-500">
-                <li><Link to="/features" className="hover:text-blue-600 transition-colors">Features</Link></li>
-                <li><Link to="/pricing" className="hover:text-blue-600 transition-colors">Pricing</Link></li>
-                <li><Link to="/features" className="hover:text-blue-600 transition-colors">Live Demo</Link></li>
+                <li><Link to="/features" className="hover:text-indigo-600 transition-colors">Features</Link></li>
+                <li><Link to="/pricing" className="hover:text-indigo-600 transition-colors">Pricing</Link></li>
+                <li><Link to="/demo" className="hover:text-indigo-600 transition-colors">Live Demo</Link></li>
               </ul>
             </div>
             <div>
               <h4 className="font-bold text-slate-900 mb-6">Company</h4>
               <ul className="space-y-4 text-sm text-slate-500">
-                <li><Link to="/about" className="hover:text-blue-600 transition-colors">About Us</Link></li>
-                <li><Link to="/contact" className="hover:text-blue-600 transition-colors">Contact</Link></li>
+                <li><Link to="/about" className="hover:text-indigo-600 transition-colors">About Us</Link></li>
+                <li><Link to="/contact" className="hover:text-indigo-600 transition-colors">Contact</Link></li>
+                <li><Link to="/privacy" className="hover:text-indigo-600 transition-colors">Privacy</Link></li>
               </ul>
             </div>
-            
           </div>
-          <div className="pt-6 md:pt-8 border-t border-slate-100 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-slate-400">
+          <div className="pt-8 border-t border-slate-100 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-slate-400">
             <p>© {new Date().getFullYear()} PrepHire. All rights reserved.</p>
             <div className="flex gap-6">
-              <a href="#" className="hover:text-slate-600">Twitter</a>
-              <a href="#" className="hover:text-slate-600">LinkedIn</a>
-              <a href="#" className="hover:text-slate-600">Instagram</a>
+              <a href="#" className="hover:text-slate-600 transition-colors">Twitter</a>
+              <a href="#" className="hover:text-slate-600 transition-colors">LinkedIn</a>
+              <a href="#" className="hover:text-slate-600 transition-colors">Instagram</a>
             </div>
           </div>
         </div>
@@ -292,21 +317,22 @@ const Landing = () => {
   );
 };
 
+// --- HERO DASHBOARD PREVIEW COMPONENT ---
 const HeroDashboardPreview = () => {
   const [index, setIndex] = React.useState(0);
   
   const mockData = [
     {
       question: "Can you describe a challenging project you worked on?",
-      answer: "In my previous role, we faced a critical database scaling issue during Black Friday that affected 2M+ users. I led the migration to a distributed architecture..."
+      answer: "In my previous role, we faced a critical database scaling issue during Black Friday..."
     },
     {
       question: "How do you handle constructive criticism?",
-      answer: "I view it as an opportunity to grow. Recently, I improved my code documentation habits after feedback, which increased team productivity by 40%..."
+      answer: "I view it as an opportunity to grow. Recently, I improved my documentation habits..."
     },
     {
       question: "Tell me about a time you showed leadership.",
-      answer: "I took the initiative to organize a team hackathon that resulted in two new product features, improved team morale, and reduced technical debt by 30%..."
+      answer: "I took the initiative to organize a team hackathon that resulted in two new features..."
     }
   ];
 
@@ -318,204 +344,114 @@ const HeroDashboardPreview = () => {
   }, []);
 
   return (
-    <div className="rounded-3xl bg-slate-50 shadow-2xl ring-1 ring-slate-900/5 overflow-hidden flex flex-col w-full h-[300px] md:h-auto md:aspect-[16/9] relative group">
+    <div className="rounded-xl bg-white border border-slate-200 shadow-2xl overflow-hidden flex flex-col w-full h-[350px] md:h-[450px] relative group">
       
       {/* Window Header */}
-      <div className="flex items-center justify-between border-b border-slate-200 bg-white px-4 py-3 sm:px-6 sm:py-4 z-20 shadow-sm">
+      <div className="flex items-center justify-between border-b border-slate-200 bg-slate-50 px-4 py-3">
         <div className="flex items-center gap-4">
           <div className="flex space-x-2">
-            <div className="h-3 w-3 rounded-full bg-[#FF5F56] shadow-sm" />
-            <div className="h-3 w-3 rounded-full bg-[#FFBD2E] shadow-sm" />
-            <div className="h-3 w-3 rounded-full bg-[#27C93F] shadow-sm" />
+            <div className="h-3 w-3 rounded-full bg-red-400/80" />
+            <div className="h-3 w-3 rounded-full bg-yellow-400/80" />
+            <div className="h-3 w-3 rounded-full bg-green-400/80" />
           </div>
-          <div className="text-xs md:text-sm font-semibold text-slate-500 tracking-wide flex items-center gap-2">
-            <span className="opacity-50">/</span> PrepHire AI Interview
+          <div className="text-xs font-medium text-slate-400 flex items-center gap-2">
+            <span className="opacity-50">/</span> interview-session-01
           </div>
         </div>
-        <div className="flex items-center gap-2 px-3 py-1.5 bg-red-50 border border-red-100 rounded-full">
+        <div className="flex items-center gap-2 px-2 py-1 bg-red-50 border border-red-100 rounded-md">
           <div className="h-1.5 w-1.5 rounded-full bg-red-500 animate-pulse" />
           <span className="text-[10px] font-bold text-red-500 uppercase tracking-wider">REC</span>
         </div>
       </div>
 
-      {/* Dashboard Content - Scrollable Area */}
-      <div className="flex-1 p-2 overflow-y-auto custom-scrollbar bg-slate-50/50 relative">
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-2 pb-2 h-full">
-          
-          {/* LEFT COLUMN (3 cols) - AI & Stats */}
-          <div className="md:col-span-3 flex flex-col gap-2 h-full">
-            {/* AI Avatar Card */}
-            <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm flex flex-col items-center justify-center text-center relative overflow-hidden group hover:shadow-md transition-all flex-1">
-              <div className="relative mb-4">
-                <motion.div 
-                  className="h-16 w-16 rounded-2xl bg-gradient-to-tr from-blue-500 to-blue-500 flex items-center justify-center shadow-lg z-10 relative"
-                  animate={{ y: [0, -5, 0] }}
-                  transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-                >
-                  <Brain className="h-8 w-8 text-white" />
-                </motion.div>
-                {/* Ripple Effect */}
+      {/* Content */}
+      <div className="flex-1 p-4 grid grid-cols-1 md:grid-cols-12 gap-4 bg-slate-50 overflow-y-auto custom-scrollbar">
+        
+        {/* LEFT: AI Avatar */}
+        <div className="md:col-span-4 flex flex-col gap-4">
+          <div className="flex-1 bg-white rounded-xl border border-slate-200 p-6 flex flex-col items-center justify-center relative overflow-hidden shadow-sm">
+            <div className="absolute inset-0 bg-gradient-to-b from-blue-50/50 to-transparent" />
+            
+            <div className="relative mb-6">
+              <div className="h-24 w-24 rounded-full bg-white-teal-400 to-emerald-500 p-1 shadow-lg z-10 relative">
+                <div className="h-full w-full rounded-full bg-white overflow-hidden">
+                  <img src={icon} alt="AI Interviewer" className="h-full w-full object-cover" />
+                </div>
+              </div>
+              <motion.div
+                className="absolute inset-0 rounded-full bg-blue-400/20 blur-xl"
+                animate={{ scale: [1, 1.2, 1], opacity: [0.5, 0.2, 0.5] }}
+                transition={{ duration: 2, repeat: Infinity }}
+              />
+            </div>
+            
+            <div className="text-center relative z-10">
+              <div className="text-base font-semibold text-slate-900 mb-1">AI Interviewer</div>
+              <div className="text-xs font-medium text-blue-600 bg-blue-50 px-3 py-1 rounded-full inline-block border border-blue-100">
+                Listening...
+              </div>
+            </div>
+
+            {/* Waveform */}
+            <div className="flex items-center gap-1 h-8 mt-6 justify-center opacity-50">
+              {[...Array(8)].map((_, i) => (
                 <motion.div
-                  className="absolute inset-0 rounded-2xl bg-blue-100 blur-md"
-                  animate={{ scale: [1, 1.2, 1], opacity: [0.5, 0, 0.5] }}
-                  transition={{ duration: 2, repeat: Infinity }}
+                  key={i}
+                  className="w-1 bg-blue-500 rounded-full"
+                  animate={{ height: ["20%", `${Math.random() * 80 + 20}%`, "20%"] }}
+                  transition={{ duration: 0.5, repeat: Infinity, delay: i * 0.05 }}
                 />
-              </div>
-              
-              <div className="relative z-10">
-                <div className="text-sm font-bold text-slate-800 mb-1">AI Interviewer</div>
-                <div className="text-[10px] font-medium text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full inline-block">
-                  Listening...
-                </div>
-              </div>
-
-              {/* Waveform */}
-              <div className="flex items-center gap-1 h-8 mt-4 justify-center opacity-70">
-                {[...Array(12)].map((_, i) => (
-                  <motion.div
-                    key={i}
-                    className="w-1 bg-blue-400 rounded-full"
-                    animate={{ height: ["20%", `${Math.random() * 80 + 20}%`, "20%"] }}
-                    transition={{ duration: 0.5, repeat: Infinity, delay: i * 0.05 }}
-                  />
-                ))}
-              </div>
-            </div>
-
-            {/* Stats Card */}
-            <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm flex items-center justify-between hover:shadow-md transition-all">
-              <div>
-                <div className="text-xs text-slate-500 mb-0.5">Questions</div>
-                <div className="text-xl font-bold text-slate-800">8<span className="text-slate-400 text-sm">/12</span></div>
-              </div>
-              <div className="h-10 w-10 rounded-full bg-slate-50 flex items-center justify-center text-lg">
-                💬
-              </div>
+              ))}
             </div>
           </div>
-
-          {/* CENTER COLUMN (5 cols) - Chat */}
-          <div className="md:col-span-5 flex flex-col gap-2 h-full">
-            {/* Question */}
-            <motion.div 
-              className="bg-white p-4 rounded-2xl rounded-tl-sm border border-slate-200 shadow-sm hover:shadow-md transition-all"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3 }}
-            >
-              <div className="flex gap-3">
-                <div className="h-6 w-6 rounded-full bg-slate-100 flex-shrink-0 flex items-center justify-center text-[10px] text-slate-600 font-bold border border-slate-200">AI</div>
-                <div>
-                  <div className="text-[10px] text-slate-400 mb-1">Interviewer</div>
-                  <motion.p 
-                    key={`q-${index}`}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    className="text-sm font-medium text-slate-700 leading-relaxed"
-                  >
-                    {mockData[index].question}
-                  </motion.p>
-                </div>
-              </div>
-            </motion.div>
-
-            {/* Answer */}
-            <motion.div 
-              className="bg-gradient-to-br from-blue-600 to-blue-600 p-6 rounded-2xl rounded-br-sm shadow-lg border border-blue-500/20 relative overflow-hidden flex-1 flex flex-col items-center justify-center text-center"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, delay: 0.1 }}
-            >
-              {/* Avatar - Absolute Top Left */}
-              <div className="absolute top-4 left-4 h-10 w-10 rounded-full bg-white/20 flex items-center justify-center text-xs text-white font-bold shadow-sm">
-                ME
-              </div>
-
-              {/* Label - Centered Top */}
-              <div className="text-sm text-blue-200 mb-4 font-medium tracking-wide">Candidate</div>
-              
-              {/* Answer Text - Centered */}
-              <motion.p 
-                key={`a-${index}`}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="text-lg font-medium text-white leading-relaxed max-w-[90%]"
-              >
-                {mockData[index].answer}
-              </motion.p>
-              
-              {/* Typing Dots - Absolute Bottom Left */}
-              <div className="absolute bottom-4 left-4 flex gap-1.5 opacity-60">
-                {[0, 1, 2].map((i) => (
-                  <motion.div
-                    key={i}
-                    className="h-2 w-2 rounded-full bg-white"
-                    animate={{ opacity: [0.3, 1, 0.3] }}
-                    transition={{ duration: 1.5, repeat: Infinity, delay: i * 0.2 }}
-                  />
-                ))}
-              </div>
-            </motion.div>
-          </div>
-
-          {/* RIGHT COLUMN (4 cols) - Metrics */}
-          <div className="md:col-span-4 flex flex-col gap-2 h-full">
-            <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm h-full flex flex-col hover:shadow-md transition-all">
-              <div className="flex items-center justify-between mb-6">
-                <span className="text-xs font-bold text-slate-400 tracking-wider uppercase">Live Analysis</span>
-                <span className="flex h-2 w-2 rounded-full bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.3)] animate-pulse" />
-              </div>
-
-              {/* Score Circle */}
-              <div className="flex-1 flex flex-col items-center justify-center mb-6">
-                <div className="relative h-32 w-32">
-                  <svg className="h-full w-full transform -rotate-90">
-                    <circle cx="64" cy="64" r="58" stroke="currentColor" strokeWidth="6" fill="transparent" className="text-slate-100" />
-                    <motion.circle 
-                      cx="64" cy="64" r="58" stroke="url(#score-gradient-light)" strokeWidth="6" fill="transparent" strokeLinecap="round"
-                      initial={{ strokeDasharray: "0 365" }}
-                      animate={{ strokeDasharray: "335 365" }}
-                      transition={{ duration: 1.5, ease: "easeOut" }}
-                    />
-                    <defs>
-                      <linearGradient id="score-gradient-light" x1="0%" y1="0%" x2="100%" y2="0%">
-                        <stop offset="0%" stopColor="#4F46E5" />
-                        <stop offset="100%" stopColor="#8B5CF6" />
-                      </linearGradient>
-                    </defs>
-                  </svg>
-                  <div className="absolute inset-0 flex flex-col items-center justify-center">
-                    <span className="text-4xl font-black text-slate-800 tracking-tight">92</span>
-                    <span className="text-[10px] text-slate-400 font-medium uppercase tracking-wider">Score</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Mini Metrics */}
-              <div className="space-y-3">
-                {[
-                  { label: "Clarity", val: 95, color: "bg-blue-500" },
-                  { label: "Confidence", val: 88, color: "bg-blue-500" },
-                  { label: "Technical", val: 92, color: "bg-blue-500" }
-                ].map((m, i) => (
-                  <div key={m.label} className="flex items-center gap-3">
-                    <span className="text-xs font-medium text-slate-500 w-16">{m.label}</span>
-                    <div className="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                      <motion.div 
-                        className={`h-full ${m.color} rounded-full`}
-                        initial={{ width: 0 }}
-                        animate={{ width: `${m.val}%` }}
-                        transition={{ delay: 0.5 + (i * 0.1), duration: 1 }}
-                      />
-                    </div>
-                    <span className="text-xs font-bold text-slate-700 w-6 text-right">{m.val}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
         </div>
+
+        {/* CENTER: Chat/Transcript */}
+        <div className="md:col-span-8 flex flex-col gap-4">
+          {/* Question Card */}
+          <motion.div 
+            className="bg-white border border-slate-200 p-5 rounded-xl shadow-sm"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
+            <div className="flex gap-4">
+              <div className="h-8 w-8 rounded-full bg-slate-100 flex-shrink-0 flex items-center justify-center text-xs text-slate-500 font-bold border border-slate-200">AI</div>
+              <div>
+                <motion.p 
+                  key={`q-${index}`}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="text-sm md:text-base font-medium text-slate-700 leading-relaxed"
+                >
+                  {mockData[index].question}
+                </motion.p>
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Answer Card */}
+          <motion.div 
+            className="bg-blue-50 border border-blue-100 p-6 rounded-xl flex-1 relative overflow-hidden flex flex-col justify-center shadow-sm"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+          >
+            <div className="flex gap-4">
+               <div className="h-8 w-8 rounded-full bg-blue-600 flex-shrink-0 flex items-center justify-center text-xs text-white font-bold shadow-md">ME</div>
+               <div className="relative z-10">
+                <motion.p 
+                  key={`a-${index}`}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="text-base md:text-lg font-medium text-slate-800 leading-relaxed"
+                >
+                  "{mockData[index].answer}"
+                </motion.p>
+               </div>
+            </div>
+          </motion.div>
+        </div>
+
       </div>
     </div>
   );
