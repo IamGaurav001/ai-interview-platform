@@ -59,23 +59,23 @@ const AnswerArea = ({
             </button>
           </div>
         ) : recordedAudio ? (
-          <div className="flex flex-col items-center justify-center py-12">
-            <div className="mb-6 w-16 h-16 rounded-full bg-green-100 flex items-center justify-center">
-              <CheckCircle2 className="h-8 w-8 text-green-600" />
+          <div className="flex flex-col items-center justify-center py-6">
+            <div className="mb-3 w-12 h-12 rounded-full bg-green-100 flex items-center justify-center">
+              <CheckCircle2 className="h-6 w-6 text-green-600" />
             </div>
-            <p className="text-lg font-semibold text-slate-800 mb-2">Answer Recorded Successfully!</p>
-            <p className="text-sm text-slate-500 mb-6">Review and submit your answer</p>
+            <p className="text-base font-semibold text-slate-800 mb-1">Answer Recorded Successfully!</p>
+            <p className="text-sm text-slate-500 mb-4">Review and submit your answer</p>
             <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
               <button 
                 onClick={onClearRecording}
-                className="px-6 py-3 rounded-xl border-2 border-slate-200 text-slate-700 hover:bg-slate-50 transition-colors font-semibold text-sm"
+                className="px-5 py-2.5 rounded-xl border-2 border-slate-200 text-slate-700 hover:bg-slate-50 transition-colors font-semibold text-sm"
               >
                 Re-record Answer
               </button>
               <button 
                 onClick={onSubmitVoice}
                 disabled={loading}
-                className="px-8 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all shadow-md hover:shadow-lg font-semibold text-sm flex items-center justify-center gap-2 disabled:opacity-50"
+                className="px-6 py-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all shadow-md hover:shadow-lg font-semibold text-sm flex items-center justify-center gap-2 disabled:opacity-50"
               >
                 {loading ? (
                   <>
@@ -100,7 +100,7 @@ const AnswerArea = ({
                   <Mic className="h-5 w-5 text-white" />
                 </div>
                 <div className="flex-1">
-                  <h3 className="font-semibold text-slate-800">Voice Answer (Recommended)</h3>
+                  <h3 className="font-semibold text-slate-800">Voice Answer</h3>
                   <p className="text-xs text-slate-600">Quick and natural way to respond</p>
                 </div>
               </div>
