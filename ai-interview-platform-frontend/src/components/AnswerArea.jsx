@@ -114,53 +114,6 @@ const AnswerArea = ({
                 Start Recording Answer
               </button>
             </div>
-
-            {/* Divider */}
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-slate-200"></div>
-              </div>
-              <div className="relative flex justify-center text-xs">
-                <span className="bg-white px-3 text-slate-500 font-medium">OR TYPE YOUR ANSWER</span>
-              </div>
-            </div>
-
-            {/* Secondary Option - Text Input */}
-            <div className="space-y-3">
-              <textarea
-                value={currentAnswer}
-                onChange={(e) => onAnswerChange(e.target.value)}
-                placeholder="Type your detailed answer here..."
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl p-4 text-base text-slate-700 placeholder:text-slate-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none transition-all"
-                rows={6}
-              />
-              {currentAnswer && (
-                <>
-                  <div className="flex justify-between items-center">
-                    <p className="text-xs text-slate-500">
-                      {currentAnswer.length} characters
-                    </p>
-                    <button 
-                      onClick={onSubmitText}
-                      disabled={loading}
-                      className="flex items-center justify-center gap-2 px-8 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all shadow-md hover:shadow-lg font-semibold text-sm disabled:opacity-50"
-                    >
-                      {loading ? (
-                        <>
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                          Submitting...
-                        </>
-                      ) : (
-                        <>
-                          <Send className="h-4 w-4" />
-                          Submit Answer
-                        </>
-                      )}
-                    </button>
-                  </div>
-                </>
-              )}
-            </div>
           </div>
         )}
       </div>
