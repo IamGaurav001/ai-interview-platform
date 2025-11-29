@@ -123,7 +123,6 @@ const History = () => {
       const res = await getHistory();
       setHistory(res.data);
     } catch (err) {
-      console.error("History error:", err);
       setError("Failed to load interview history");
     } finally {
       setLoading(false);
@@ -327,7 +326,6 @@ const History = () => {
 
 const SummaryCard = ({ title, value, subValue, icon: Icon, color, delay }) => {
   const colors = {
-    blue: "bg-blue-50 text-blue-600 border-blue-100",
     blue: "bg-blue-50 text-blue-600 border-blue-100",
     yellow: "bg-amber-50 text-amber-600 border-amber-100",
   };

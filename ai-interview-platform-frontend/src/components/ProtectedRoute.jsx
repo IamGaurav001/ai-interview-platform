@@ -3,7 +3,7 @@ import { Navigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import Loader from "./Loader";
 
-const ProtectedRoute = ({ children }) => {
+const ProtectedRoute = ({ children, requireVerification = true }) => {
   const { user, loading } = useAuth();
 
   if (loading) {
@@ -14,7 +14,15 @@ const ProtectedRoute = ({ children }) => {
     );
   }
 
-  return user ? children : <Navigate to="/login" />;
+  if (!user) {
+    return <Navigate to="/login" />;
+  }
+
+  if (requireVerification && !user.emailVerified) {
+    return <Navigate to="/verify-email" />;
+  }
+
+  return children;
 };
 
 export default ProtectedRoute;

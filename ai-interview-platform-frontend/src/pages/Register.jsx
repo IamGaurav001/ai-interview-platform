@@ -54,10 +54,9 @@ const Register = () => {
       try {
         await syncUser();
       } catch (syncError) {
-        console.error("User sync error (non-critical):", syncError);
         // Continue even if sync fails - middleware will handle it on first API call
       }
-      navigate("/dashboard");
+      navigate("/verify-email");
     } catch (err) {
       console.error("Registration error:", err);
       switch (err.code) {
@@ -87,9 +86,9 @@ const Register = () => {
         try {
           await syncUser();
         } catch (syncError) {
-          console.error("User sync error (non-critical):", syncError);
+          // User sync error (non-critical)
         }
-        navigate("/dashboard");
+        navigate("/verify-email");
       }
     } catch (err) {
       console.error("Google signup error:", err);

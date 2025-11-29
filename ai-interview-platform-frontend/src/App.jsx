@@ -21,10 +21,11 @@ import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
 import Features from "./pages/Features";
 import Pricing from "./pages/Pricing";
+import VerifyEmail from "./pages/VerifyEmail";
 
 const Layout = ({ children }) => {
   const location = useLocation();
-  const hideNavbarRoutes = ["/login", "/register", "/interview-flow", "/sequential-interview", "/forgot-password"];
+  const hideNavbarRoutes = ["/login", "/register", "/interview-flow", "/sequential-interview", "/forgot-password", "/verify-email"];
   const showNavbar = !hideNavbarRoutes.includes(location.pathname);
 
   return (
@@ -103,6 +104,14 @@ function App() {
               element={
                 <ProtectedRoute>
                   <Settings />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/verify-email"
+              element={
+                <ProtectedRoute requireVerification={false}>
+                  <VerifyEmail />
                 </ProtectedRoute>
               }
             />

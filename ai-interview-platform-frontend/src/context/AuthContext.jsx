@@ -9,9 +9,12 @@ import {
   GoogleAuthProvider,
   signInWithPopup,
   signInWithRedirect,
-  getRedirectResult,
-  sendPasswordResetEmail
+  getRedirectResult
 } from "firebase/auth";
+import { 
+  sendVerificationEmail as sendVerificationEmailAPI,
+  sendPasswordResetEmail as sendPasswordResetEmailAPI
+} from "../api/authAPI";
 
 export const AuthContext = createContext(null);
 
@@ -32,13 +35,7 @@ export const AuthProvider = ({ children }) => {
     } else {
       localStorage.removeItem("firebaseToken");
     }
-  };
-
-
-
-
-
-  useEffect(() => {
+  };  useEffect(() => {
     const unsub = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
         await updateToken(firebaseUser);
@@ -62,12 +59,8 @@ export const AuthProvider = ({ children }) => {
         }
       }
     }, 50 * 60 * 1000); 
-
-
-
     return () => {
       unsub();
-      clearInterval(tokenRefreshInterval);
       clearInterval(tokenRefreshInterval);
     };
   }, []);
@@ -85,11 +78,27 @@ export const AuthProvider = ({ children }) => {
 
     await updateToken(userCredential.user);
     
-
+    // Send verification email
+    try {
+      await sendVerificationEmailAPI();
+    } catch (error) {
+      console.error("Error sending verification email:", error);
+    }
     
     setUser(userCredential.user);
 
     return userCredential.user;
+  };
+
+  const sendVerificationEmail = async (user) => {
+    if (user) {
+      // Send verification email
+      try {
+        await sendVerificationEmailAPI();
+      } catch (error) {
+        console.error("Error sending verification email:", error);
+      }
+    }
   };
 
   const login = async (email, password) => {
@@ -100,8 +109,6 @@ export const AuthProvider = ({ children }) => {
     );
     
     await updateToken(userCredential.user);
-    
-
     
     setUser(userCredential.user);
     
@@ -122,9 +129,7 @@ export const AuthProvider = ({ children }) => {
     try {
       const result = await signInWithPopup(auth, provider);
       await updateToken(result.user);
-      
 
-      
       setUser(result.user);
       return result.user;
     } catch (error) {
@@ -146,12 +151,20 @@ export const AuthProvider = ({ children }) => {
     return null;
   };
 
-  const resetPassword = (email) => {
-    return sendPasswordResetEmail(auth, email);
+  const resetPassword = async (email) => {
+    try {
+      await sendPasswordResetEmailAPI(email);
+    } catch (error) {
+      console.error("Error sending password reset email:", error);
+      if (error.response) {
+        console.error("Backend Error Details:", error.response.data);
+      }
+      throw error;
+    }
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, signup, logout, googleLogin, updateUser, resetPassword }}>
+    <AuthContext.Provider value={{ user, loading, login, signup, logout, googleLogin, updateUser, resetPassword, sendVerificationEmail }}>
       {children}
     </AuthContext.Provider>
   );
