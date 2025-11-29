@@ -12,9 +12,18 @@ const QuestionCard = ({
       data-tour="question-display"
     >
       <div className="flex items-start gap-2 sm:gap-3">
-        <div className="flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold text-xs shadow-md">
-          <Bot className="h-4 w-4 sm:h-5 sm:w-5" />
+          
+        <div className="flex-shrink-0 w-10 h-10 sm:w-12 sm:h-12 relative">
+          <div className="relative w-full h-full rounded-full bg-gradient-to-br from-blue-500 to-blue-600 shadow-md flex items-center justify-center overflow-hidden">
+            <div className="absolute inset-1 rounded-full bg-gradient-to-br from-white/30 to-transparent"></div>
+            <svg className="w-5 h-5 sm:w-6 sm:h-6 text-white relative z-10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M12 2L2 7L12 12L22 7L12 2Z" strokeLinecap="round" strokeLinejoin="round" fill="currentColor" fillOpacity="0.2"/>
+              <path d="M2 17L12 22L22 17" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M2 12L12 17L22 12" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </div>
         </div>
+          
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1.5">
             <span className="text-[10px] font-bold text-blue-600 uppercase tracking-wider">Question</span>

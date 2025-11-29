@@ -28,7 +28,6 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import AudioVisualizer from "../components/AudioVisualizer";
 import ConfirmModal from "../components/ConfirmModal";
-import SpeakingAvatar from "../components/SpeakingAvatar";
 import PageLayout from "../components/PageLayout";
 import InterviewTour from "../components/InterviewTour";
 import QuestionCard from "../components/QuestionCard";
@@ -738,24 +737,37 @@ const InterviewFlow = () => {
         </header>
 
         <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 lg:h-[calc(100vh-120px)]">
-          {/* Left Column - AI Interviewer */}
           <div className="lg:col-span-3 bg-white rounded-2xl sm:rounded-3xl shadow-sm border border-slate-100 p-4 sm:p-6 lg:p-8 flex flex-col relative overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-b from-transparent to-slate-50/50 pointer-events-none"></div>
             
             <div className="relative z-10 flex flex-col items-center">
               <div className="mb-4 sm:mb-6 lg:mb-8 relative">
-                <SpeakingAvatar 
-                  isSpeaking={isPlayingQuestion || isPlayingFeedback} 
-                  size="large" 
-                />
-                {(isPlayingQuestion || isPlayingFeedback) && (
-                  <div className="absolute -bottom-2 -right-2 bg-green-500 border-4 border-white w-6 h-6 rounded-full flex items-center justify-center">
-                    <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
+                <div className="relative w-24 h-24 sm:w-28 sm:h-28 lg:w-32 lg:h-32">
+                  <div className="absolute inset-0 rounded-full bg-blue-400 opacity-20 blur-xl animate-pulse"></div>
+                  
+                  <div className="relative w-full h-full rounded-full bg-gradient-to-br from-blue-500 to-blue-600 shadow-xl flex items-center justify-center">
+                    <div className="absolute inset-2 rounded-full bg-gradient-to-br from-white/30 to-transparent"></div>
+                    
+                    <svg className="w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 text-white relative z-10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                      <path d="M12 2L2 7L12 12L22 7L12 2Z" strokeLinecap="round" strokeLinejoin="round" fill="currentColor" fillOpacity="0.3"/>
+                      <path d="M2 17L12 22L22 17" strokeLinecap="round" strokeLinejoin="round"/>
+                      <path d="M2 12L12 17L22 12" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
                   </div>
-                )}
+                  
+                  {/* Speaking indicator */}
+                  {(isPlayingQuestion || isPlayingFeedback) && (
+                    <div className="absolute -bottom-2 -right-2 bg-green-500 border-4 border-white w-7 h-7 rounded-full flex items-center justify-center shadow-lg">
+                      <div className="w-2.5 h-2.5 bg-white rounded-full animate-pulse"></div>
+                    </div>
+                  )}
+                </div>
               </div>
 
-              <h2 className="text-xl sm:text-2xl font-bold text-slate-900 mb-2">PrepHire</h2>
+              <h2 className="text-xl sm:text-2xl font-bold text-slate-900 mb-1">Prism AI</h2>
+              <p className="text-xs sm:text-sm text-slate-500 font-medium text-center max-w-[240px] mb-4 italic">
+                "I'm Prism, seeing your potential from every angle"
+              </p>
               
               <div className="flex items-center gap-2 mb-4 sm:mb-6 lg:mb-8">
                 <div className={`px-4 py-1.5 rounded-full text-sm font-medium flex items-center gap-2 ${
@@ -807,6 +819,20 @@ const InterviewFlow = () => {
                 )}
               </div>
             </div>
+
+            {/* First Question Indicator */}
+            {questionCount === 1 && !feedback && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="relative z-10 mt-auto pt-6 border-t border-slate-100"
+              >
+                <div className="text-center px-4">
+                  <p className="text-base sm:text-lg font-semibold text-slate-700 mb-3">👋 Welcome to your AI Interview</p>
+                  <p className="text-sm sm:text-base text-slate-500 leading-relaxed">Listen to the question or read it on the right, then answer using voice or text</p>
+                </div>
+              </motion.div>
+            )}
 
             {/* Feedback Section */}
             {feedback && (
