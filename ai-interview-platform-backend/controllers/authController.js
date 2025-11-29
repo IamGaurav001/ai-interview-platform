@@ -1,6 +1,6 @@
 import User from "../models/User.js";
-import nodemailer from "nodemailer";
 import admin from "../config/firebaseAdmin.js";
+import { sendEmail } from "../utils/emailTransporter.js";
 
 export const syncUser = async (req, res) => {
   try {
@@ -50,31 +50,8 @@ export const sendVerificationEmail = async (req, res) => {
       link = link.replace(url.hostname, process.env.AUTH_DOMAIN);
     }
 
-    // Configure Nodemailer
-    const transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST,
-      port: process.env.SMTP_PORT,
-      secure: process.env.SMTP_PORT == 465, // true for 465, false for other ports
-      auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS,
-      },
-    });
-
-    // Verify transporter connection
-    try {
-      await transporter.verify();
-    } catch (verifyError) {
-      console.error("SMTP Connection Error:", verifyError);
-      return res.status(500).json({ success: false, message: "SMTP Connection failed", error: verifyError.message });
-    }
-
     // Email Template
-    const mailOptions = {
-      from: `"PrepHire Support" <${process.env.SMTP_USER}>`,
-      to: email,
-      subject: "Verify your email for PrepHire",
-      html: `
+    const html = `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 10px;">
           <div style="text-align: center; margin-bottom: 20px;">
             <h1 style="color: #2563eb;">PrepHire</h1>
@@ -100,11 +77,10 @@ export const sendVerificationEmail = async (req, res) => {
             &copy; ${new Date().getFullYear()} PrepHire. All rights reserved.
           </div>
         </div>
-      `,
-    };
+      `;
 
     // Send Email
-    await transporter.sendMail(mailOptions);
+    await sendEmail(email, "Verify your email for PrepHire", html);
 
     res.json({ success: true, message: "Verification email sent successfully" });
   } catch (error) {
@@ -134,23 +110,8 @@ export const sendPasswordResetEmail = async (req, res) => {
       link = link.replace(url.hostname, process.env.AUTH_DOMAIN);
     }
     
-    // Configure Nodemailer
-    const transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST,
-      port: process.env.SMTP_PORT,
-      secure: process.env.SMTP_PORT == 465,
-      auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS,
-      },
-    });
-
     // Email Template
-    const mailOptions = {
-      from: `"PrepHire Support" <${process.env.SMTP_USER}>`,
-      to: email,
-      subject: "Reset your password for PrepHire",
-      html: `
+    const html = `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 10px;">
           <div style="text-align: center; margin-bottom: 20px;">
             <h1 style="color: #2563eb;">PrepHire</h1>
@@ -179,11 +140,10 @@ export const sendPasswordResetEmail = async (req, res) => {
             &copy; ${new Date().getFullYear()} PrepHire. All rights reserved.
           </div>
         </div>
-      `,
-    };
+      `;
 
     // Send Email
-    await transporter.sendMail(mailOptions);
+    await sendEmail(email, "Reset your password for PrepHire", html);
 
     res.json({ success: true, message: "Password reset email sent successfully" });
   } catch (error) {

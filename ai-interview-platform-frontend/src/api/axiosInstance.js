@@ -5,8 +5,6 @@ const baseURL = import.meta.env.VITE_API_BASE_URL
   ? `${import.meta.env.VITE_API_BASE_URL}/api`
   : "/api";
 
-console.log("🚀 API Base URL:", baseURL);
-
 if (import.meta.env.PROD && !import.meta.env.VITE_API_BASE_URL) {
   console.warn("⚠️  VITE_API_BASE_URL is not set! API calls may fail in production.");
 }
