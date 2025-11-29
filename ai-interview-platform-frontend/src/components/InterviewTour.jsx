@@ -54,7 +54,7 @@ const InterviewTour = ({ start, onFinish, type = 'sequential' }) => {
     const flowSteps = [
       {
         target: '[data-tour="question-display"]',
-        title: 'AI Interviewer',
+        title: 'PrepHire',
         content: 'The AI will present questions here. It adapts based on your responses!',
         placement: 'bottom',
         disableBeacon: true,
