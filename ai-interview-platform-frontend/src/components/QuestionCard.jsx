@@ -31,7 +31,7 @@ const QuestionCard = ({
         </div>
 
         {/* Question Text */}
-        <p className="text-xl sm:text-2xl text-slate-800 font-semibold leading-relaxed pl-1">
+        <p className="text-lg sm:text-xl text-slate-800 font-semibold leading-relaxed pl-1">
           {question}
         </p>
 

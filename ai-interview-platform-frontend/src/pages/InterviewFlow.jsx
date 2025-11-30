@@ -23,7 +23,9 @@ import {
   RefreshCw,
   Sparkles,
   Clock,
-  MicOff
+  MicOff,
+  Settings,
+  X
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import AudioVisualizer from "../components/AudioVisualizer";
@@ -69,6 +71,115 @@ const InterviewFlow = () => {
   const [startTour, setStartTour] = useState(false);
   const [showScrollIndicator, setShowScrollIndicator] = useState(false);
   const feedbackContentRef = useRef(null);
+
+  // Voice Settings State
+  const [voices, setVoices] = useState([]);
+  const [selectedVoice, setSelectedVoice] = useState(null);
+  const [showVoiceSettings, setShowVoiceSettings] = useState(false);
+
+  useEffect(() => {
+    const loadVoices = () => {
+      const availableVoices = window.speechSynthesis.getVoices();
+      const englishVoices = availableVoices.filter(v => v.lang.startsWith('en'));
+      
+      if (englishVoices.length === 0) {
+        setVoices([]);
+        return;
+      }
+
+      // Smart Mapping Logic
+      let femaleVoice = englishVoices.find(v => v.name === "Google UK English Female");
+      let maleVoice = englishVoices.find(v => v.name === "Google UK English Male");
+
+      if (!femaleVoice) {
+        femaleVoice = englishVoices.find(v => 
+          v.name.includes("Female") || 
+          v.name.includes("Samantha") || 
+          v.name.includes("Victoria") || 
+          v.name.includes("Karen") ||
+          v.name.includes("Zira")
+        );
+      }
+
+      if (!maleVoice) {
+        maleVoice = englishVoices.find(v => 
+          v.name.includes("Male") || 
+          v.name.includes("Daniel") || 
+          v.name.includes("Alex") || 
+          v.name.includes("David") ||
+          v.name.includes("Fred")
+        );
+      }
+
+      // Fallbacks if specific genders not found
+      if (!femaleVoice && englishVoices.length > 0) femaleVoice = englishVoices[0];
+      if (!maleVoice && englishVoices.length > 1) maleVoice = englishVoices[1];
+      
+      // Create simplified options
+      const simplifiedOptions = [];
+      
+      if (femaleVoice) {
+        simplifiedOptions.push({
+          name: "Voice 1 (Female)",
+          originalName: femaleVoice.name,
+          voice: femaleVoice,
+          lang: femaleVoice.lang
+        });
+      }
+      
+      if (maleVoice && maleVoice.name !== femaleVoice?.name) {
+        simplifiedOptions.push({
+          name: "Voice 2 (Male)",
+          originalName: maleVoice.name,
+          voice: maleVoice,
+          lang: maleVoice.lang
+        });
+      }
+
+      setVoices(simplifiedOptions);
+      
+      // Restore selection or set default
+      const savedVoiceName = localStorage.getItem('preferredVoice');
+      // We store the *original* name in localStorage to persist the actual voice choice
+      
+      if (savedVoiceName) {
+        const savedOption = simplifiedOptions.find(opt => opt.originalName === savedVoiceName);
+        if (savedOption) {
+          setSelectedVoice(savedOption);
+          return;
+        }
+      }
+
+      // Default to Female (Voice 1)
+      if (simplifiedOptions.length > 0) {
+        setSelectedVoice(simplifiedOptions[0]);
+      }
+    };
+
+    loadVoices();
+    
+    // Chrome loads voices asynchronously
+    if (window.speechSynthesis.onvoiceschanged !== undefined) {
+      window.speechSynthesis.onvoiceschanged = loadVoices;
+    }
+
+    return () => {
+      if (window.speechSynthesis.onvoiceschanged !== undefined) {
+        window.speechSynthesis.onvoiceschanged = null;
+      }
+    };
+  }, []);
+
+  const handleVoiceChange = (voiceOption) => {
+    setSelectedVoice(voiceOption);
+    localStorage.setItem('preferredVoice', voiceOption.originalName);
+    
+    // Preview the voice
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance("Hello, I am your AI interviewer.");
+    utterance.voice = voiceOption.voice;
+    window.speechSynthesis.speak(utterance);
+  };
 
   useEffect(() => {
     if (feedback && feedbackContentRef.current) {
@@ -288,16 +399,22 @@ const InterviewFlow = () => {
 
 
     const voices = window.speechSynthesis.getVoices();
-    const preferredVoice = voices.find(
-      (voice) =>
-        voice.lang.includes("en") &&
-        (voice.name.includes("Samantha") ||
-          voice.name.includes("Karen") ||
-          voice.name.includes("Victoria") ||
-          voice.voiceURI.includes("Neural"))
-    );
-    if (preferredVoice) {
-      utterance.voice = preferredVoice;
+    
+    if (selectedVoice) {
+      utterance.voice = selectedVoice.voice;
+    } else {
+      // Fallback if no selected voice (shouldn't happen often due to useEffect default)
+      const preferredVoice = voices.find(
+        (voice) =>
+          voice.lang.includes("en") &&
+          (voice.name.includes("Samantha") ||
+            voice.name.includes("Karen") ||
+            voice.name.includes("Victoria") ||
+            voice.voiceURI.includes("Neural"))
+      );
+      if (preferredVoice) {
+        utterance.voice = preferredVoice;
+      }
     }
 
     if (type === "question") {
@@ -731,6 +848,14 @@ const InterviewFlow = () => {
               <span className="hidden sm:inline">Tour</span>
             </button>
             <button
+              onClick={() => setShowVoiceSettings(true)}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-slate-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors text-xs sm:text-sm font-medium"
+              title="Voice Settings"
+            >
+              <Settings className="h-4 w-4" />
+              <span className="hidden sm:inline">Voice</span>
+            </button>
+            <button
               onClick={() => setShowResetModal(true)}
               className="flex items-center gap-1.5 px-3 py-1.5 text-slate-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors text-xs sm:text-sm font-medium"
               title="Reset Interview"
@@ -1036,6 +1161,76 @@ const InterviewFlow = () => {
       )}
       
       <InterviewTour start={startTour} onFinish={handleTourFinish} type="flow" />
+      {/* Voice Settings Modal */}
+      <AnimatePresence>
+        {showVoiceSettings && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden"
+            >
+              <div className="p-6 border-b border-slate-100 flex justify-between items-center">
+                <h3 className="text-xl font-bold text-slate-900">Voice Settings</h3>
+                <button
+                  onClick={() => setShowVoiceSettings(false)}
+                  className="text-slate-400 hover:text-slate-600 transition-colors"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+              
+              <div className="p-6 max-h-[60vh] overflow-y-auto">
+                <p className="text-sm text-slate-500 mb-4">
+                  Select a voice for your AI interviewer. The available voices depend on your browser and operating system.
+                </p>
+                
+                <div className="space-y-2">
+                  {voices.map((option) => (
+                    <button
+                      key={option.name}
+                      onClick={() => handleVoiceChange(option)}
+                      className={`w-full text-left px-4 py-3 rounded-xl border transition-all flex items-center justify-between ${
+                        selectedVoice?.name === option.name
+                          ? "bg-blue-50 border-blue-200 shadow-sm"
+                          : "bg-white border-slate-200 hover:border-blue-200 hover:bg-slate-50"
+                      }`}
+                    >
+                      <div>
+                        <div className={`font-medium ${selectedVoice?.name === option.name ? "text-blue-700" : "text-slate-700"}`}>
+                          {option.name}
+                        </div>
+                        <div className="text-xs text-slate-500 mt-0.5">
+                          {option.lang}
+                        </div>
+                      </div>
+                      {selectedVoice?.name === option.name && (
+                        <div className="h-2 w-2 rounded-full bg-blue-500"></div>
+                      )}
+                    </button>
+                  ))}
+                  
+                  {voices.length === 0 && (
+                    <div className="text-center py-8 text-slate-500">
+                      No voices detected. Please check your browser settings.
+                    </div>
+                  )}
+                </div>
+              </div>
+              
+              <div className="p-6 bg-slate-50 border-t border-slate-100 flex justify-end">
+                <button
+                  onClick={() => setShowVoiceSettings(false)}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
+                >
+                  Done
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </PageLayout>
   );
 };
