@@ -6,10 +6,10 @@ dotenv.config();
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
+// Configuration constants
 const DEFAULT_MODEL = "gemini-2.0-flash";
-const FALLBACK_MODEL = "gemini-1.5-flash";
-const MAX_RETRIES = 5;
-const INITIAL_DELAY_MS = 1000;
+const MAX_RETRIES = 7;
+const INITIAL_DELAY_MS = 2000;
 
 /**
  * Transcribe audio to text using Gemini
@@ -28,12 +28,14 @@ export async function geminiSpeechToText(audioFilePath, mimeType = "audio/webm")
 
   let currentModel = DEFAULT_MODEL;
   let lastError = null;
+  const maxRetries = MAX_RETRIES;
+  const initialDelay = INITIAL_DELAY_MS;
 
   // Prepare the prompt
   const prompt =
     "Transcribe this audio into clean, accurate English text. Return only the transcribed text, no additional commentary or formatting.";
 
-  for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
       const model = genAI.getGenerativeModel({ model: currentModel });
 
@@ -83,27 +85,44 @@ export async function geminiSpeechToText(audioFilePath, mimeType = "audio/webm")
         message.includes("not found") ||
         message.includes("unsupported");
 
-      if (isModelNotFound && currentModel === DEFAULT_MODEL) {
-        console.warn(
-          `⚠️ Model ${DEFAULT_MODEL} unavailable. Switching to ${FALLBACK_MODEL}...`
-        );
-        currentModel = FALLBACK_MODEL;
-        continue;
+      // Handle Rate Limits with Fallback
+      if (isRateLimit) {
+         console.warn(`⚠️ Rate limit error (429) on attempt ${attempt}/${maxRetries} with model ${currentModel}`);
+         
+         if (currentModel === "gemini-2.0-flash") {
+             console.log("🔄 gemini-2.0-flash rate limited, switching to gemini-2.0-flash-lite for next attempt...");
+             currentModel = "gemini-2.0-flash-lite";
+             await new Promise((resolve) => setTimeout(resolve, 1000));
+             continue;
+         }
       }
 
-      if (isRetryable && attempt < MAX_RETRIES) {
+      // Handle Model Not Found with Fallback
+      if (isModelNotFound && attempt === 1) {
+        if (currentModel === "gemini-2.0-flash") {
+          console.log("🔄 gemini-2.0-flash not available, trying gemini-2.0-flash-lite as fallback...");
+          currentModel = "gemini-2.0-flash-lite";
+          continue;
+        } else if (currentModel === "gemini-2.0-flash-lite") {
+           console.log("🔄 gemini-2.0-flash-lite not available, trying gemini-pro-latest as fallback...");
+           currentModel = "gemini-pro-latest";
+           continue;
+        }
+      }
+
+      if (isRetryable && attempt < maxRetries) {
         const delay =
-          INITIAL_DELAY_MS * Math.pow(2, attempt - 1) + Math.random() * 1000;
+          initialDelay * Math.pow(2, attempt - 1) + Math.random() * 1000;
         console.warn(
-          `⚠️ Gemini STT error (${message || err}). Retrying in ${Math.round(
+          `⚠️ Gemini STT error (${message}). Retrying in ${Math.round(
             delay
-          )}ms (attempt ${attempt}/${MAX_RETRIES})`
+          )}ms (attempt ${attempt}/${maxRetries})`
         );
         await new Promise((resolve) => setTimeout(resolve, delay));
         continue;
       }
 
-      if (isRateLimit && attempt === MAX_RETRIES) {
+      if (isRateLimit && attempt === maxRetries) {
         throw new Error(
           "Gemini speech-to-text rate limit reached. Please wait a moment and try again."
         );

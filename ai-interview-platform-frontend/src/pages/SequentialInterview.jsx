@@ -1,5 +1,4 @@
-
-
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { evaluateAnswer, saveCompleteSession, evaluateVoiceAnswer, cancelInterview } from "../api/interviewAPI";
 import {
@@ -26,6 +25,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import AudioVisualizer from "../components/AudioVisualizer";
 import SpeakingAvatar from "../components/SpeakingAvatar";
+import ConfirmModal from "../components/ConfirmModal";
 import PageLayout from "../components/PageLayout";
 import InterviewTour from "../components/InterviewTour";
 import logo from "../assets/prephire-icon-circle.png";
@@ -50,11 +50,11 @@ const SequentialInterview = () => {
       const lines = initialQuestions.split("\n").filter((line) => line.trim());
       return lines
         .map((line) => {
-
+          // Remove leading numbers and clean up
           const cleaned = line.replace(/^\d+[\.\)]\s*/, "").trim();
           return cleaned;
         })
-
+        .filter((q) => q && q.length > 10);
     }
     
     return [];
@@ -68,6 +68,7 @@ const SequentialInterview = () => {
   const { error: toastError, success: toastSuccess } = useToast();
   const [showSummary, setShowSummary] = useState(false);
   const [showExitModal, setShowExitModal] = useState(false);
+  const [showEndModal, setShowEndModal] = useState(false);
   const [saving, setSaving] = useState(false);
   const [questionAudioUrls, setQuestionAudioUrls] = useState({});
   const [feedbackAudioUrls, setFeedbackAudioUrls] = useState({});
@@ -165,11 +166,18 @@ const SequentialInterview = () => {
       };
 
       recorder.onstop = () => {
-        const blob = new Blob(chunks, { type: "audio/webm" });
-        const audioUrl = URL.createObjectURL(blob);
-        setRecordedAudio(blob);
-
-        stream.getTracks().forEach((track) => track.stop());
+        try {
+          const blob = new Blob(chunks, { type: "audio/webm" });
+          const audioUrl = URL.createObjectURL(blob);
+          setRecordedAudio(blob);
+          stream.getTracks().forEach((track) => track.stop());
+        } catch (err) {
+          console.error("Error processing recorded audio:", err);
+          toastError("Failed to process recording. Please try again.");
+          setRecordedAudio(null);
+          setIsRecording(false);
+          stream.getTracks().forEach((track) => track.stop());
+        }
       };
 
       recorder.start();
@@ -327,6 +335,15 @@ const SequentialInterview = () => {
   };
 
 
+
+  const handleEndInterview = () => {
+    setShowEndModal(true);
+  };
+
+  const confirmEndInterview = () => {
+    setShowEndModal(false);
+    handleShowSummary(answers, feedbacks);
+  };
 
   const handleExitInterview = async () => {
     try {
@@ -667,21 +684,31 @@ const SequentialInterview = () => {
             </div>
             <button
               onClick={() => setShowExitModal(true)}
-              className="p-2 text-slate-400 hover:text-slate-600 transition-colors"
-              title="Exit Interview"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-slate-600 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-colors text-xs sm:text-sm font-medium"
+              title="Exit without completing"
             >
-              <LogOut className="h-5 w-5" />
+              <LogOut className="h-4 w-4" />
+              <span className="hidden sm:inline">Exit</span>
+            </button>
+            <div className="h-4 w-px bg-slate-300 mx-1"></div>
+            <button
+              onClick={handleEndInterview}
+              className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white hover:bg-red-700 rounded-lg transition-all shadow-sm hover:shadow-md font-semibold text-xs sm:text-sm"
+              title="End Interview"
+            >
+              <StopCircle className="h-4 w-4" />
+              <span>End</span>
             </button>
           </div>
         </header>
 
-        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-6 h-[calc(100vh-140px)]">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 h-[calc(100vh-140px)]">
           {/* Left Column - AI Interviewer */}
-          <div className="lg:col-span-4 bg-white rounded-3xl shadow-sm border border-slate-100 p-8 flex flex-col items-center justify-center relative overflow-hidden">
+          <div className="lg:col-span-4 bg-white rounded-3xl shadow-sm border border-slate-100 p-10 flex flex-col items-center justify-center relative overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-b from-transparent to-slate-50/50 pointer-events-none"></div>
             
             <div className="relative z-10 flex flex-col items-center">
-              <div className="mb-8 relative">
+              <div className="mb-10 relative">
                 <SpeakingAvatar 
                   isSpeaking={
                     playingAudio[`question_${currentQuestionIndex}`] || 
@@ -696,10 +723,10 @@ const SequentialInterview = () => {
                 )}
               </div>
 
-              <h2 className="text-2xl font-bold text-slate-900 mb-2">AI Interviewer</h2>
+              <h2 className="text-2xl font-bold text-slate-900 mb-3">AI Interviewer</h2>
               
-              <div className="flex items-center gap-2 mb-8">
-                <div className={`px-4 py-1.5 rounded-full text-sm font-medium flex items-center gap-2 ${
+              <div className="flex items-center gap-2 mb-10">
+                <div className={`px-5 py-2 rounded-full text-sm font-medium flex items-center gap-2 ${
                   loading 
                     ? "bg-amber-50 text-amber-600 border border-amber-100"
                     : isRecording
@@ -710,7 +737,7 @@ const SequentialInterview = () => {
                 }`}>
                   {loading ? (
                     <>
-                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      <Loader2 className="h-4 w-4 animate-spin" />
                       Processing...
                     </>
                   ) : isRecording ? (
@@ -723,7 +750,7 @@ const SequentialInterview = () => {
                     </>
                   ) : (playingAudio[`question_${currentQuestionIndex}`] || playingAudio[`feedback_${currentQuestionIndex}`]) ? (
                     <>
-                      <Volume2 className="h-3.5 w-3.5" />
+                      <Volume2 className="h-4 w-4" />
                       Speaking...
                     </>
                   ) : (
@@ -732,7 +759,7 @@ const SequentialInterview = () => {
                 </div>
               </div>
 
-              <div className="h-16 flex items-center justify-center w-full max-w-[200px]">
+              <div className="h-20 flex items-center justify-center w-full max-w-[240px]">
                 {(playingAudio[`question_${currentQuestionIndex}`] || playingAudio[`feedback_${currentQuestionIndex}`] || isRecording) ? (
                   <AudioVisualizer 
                     isPlaying={playingAudio[`question_${currentQuestionIndex}`] || playingAudio[`feedback_${currentQuestionIndex}`]}
@@ -740,9 +767,9 @@ const SequentialInterview = () => {
                     mode={isRecording ? "speaking" : "listening"}
                   />
                 ) : (
-                  <div className="flex gap-1">
+                  <div className="flex gap-1.5">
                      {[1,2,3,4,5].map(i => (
-                       <div key={i} className="w-1.5 h-1.5 rounded-full bg-slate-200"></div>
+                       <div key={i} className="w-2 h-2 rounded-full bg-slate-200"></div>
                      ))}
                   </div>
                 )}
@@ -751,16 +778,17 @@ const SequentialInterview = () => {
           </div>
 
           {/* Right Column - Interaction Area */}
-          <div className="lg:col-span-8 flex flex-col gap-6">
+          <div className="lg:col-span-8 flex flex-col gap-8 h-full overflow-hidden">
+            <div className="flex-1 overflow-y-auto space-y-8 pr-2">
             {/* Question Card */}
-            <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-8 relative overflow-hidden group">
-              <div className="absolute top-0 left-0 w-1.5 h-full bg-blue-500"></div>
-              <div className="flex items-start gap-4">
-                <div className="flex-shrink-0 w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 font-bold text-sm">
+            <div className="bg-white rounded-3xl shadow-sm border border-slate-100 p-10 relative overflow-hidden group">
+              <div className="absolute top-0 left-0 w-2 h-full bg-blue-500"></div>
+              <div className="flex items-start gap-6">
+                <div className="flex-shrink-0 w-12 h-12 rounded-2xl bg-blue-50 flex items-center justify-center text-blue-600 font-bold text-base">
                   AI
                 </div>
                 <div className="flex-1">
-                  <p className="text-xl text-slate-800 font-medium leading-relaxed">
+                  <p className="text-2xl text-slate-800 font-medium leading-relaxed">
                     {currentQuestion}
                   </p>
                 </div>
@@ -774,12 +802,12 @@ const SequentialInterview = () => {
                         playAudio(questionAudioUrls[currentQuestionIndex], "question", currentQuestionIndex);
                       }
                     }}
-                    className="text-slate-400 hover:text-blue-600 transition-colors p-2"
+                    className="text-slate-400 hover:text-blue-600 transition-colors p-2 hover:bg-blue-50 rounded-full"
                   >
                     {playingAudio[`question_${currentQuestionIndex}`] ? (
-                      <Pause className="h-5 w-5" />
+                      <Pause className="h-6 w-6" />
                     ) : (
-                      <Volume2 className="h-5 w-5" />
+                      <Volume2 className="h-6 w-6" />
                     )}
                   </button>
                 )}
@@ -867,9 +895,21 @@ const SequentialInterview = () => {
                 )}
               </div>
             </div>
+            </div>
           </div>
         </div>
       </div>
+
+      <ConfirmModal
+        isOpen={showEndModal}
+        onClose={() => setShowEndModal(false)}
+        onConfirm={confirmEndInterview}
+        title="End Interview?"
+        message={`Are you sure you want to end the interview? You've answered ${answers.length} questions. This action cannot be undone.`}
+        confirmText="End Interview"
+        cancelText="Continue Interview"
+        type="warning"
+      />
 
       {/* Exit Confirmation Modal */}
       <ConfirmModal

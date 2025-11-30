@@ -67,6 +67,21 @@ const InterviewFlow = () => {
   const [showLimitModal, setShowLimitModal] = useState(false);
   const [showTips, setShowTips] = useState(false);
   const [startTour, setStartTour] = useState(false);
+  const [showScrollIndicator, setShowScrollIndicator] = useState(false);
+  const feedbackContentRef = useRef(null);
+
+  useEffect(() => {
+    if (feedback && feedbackContentRef.current) {
+      const { scrollHeight, clientHeight } = feedbackContentRef.current;
+      setShowScrollIndicator(scrollHeight > clientHeight);
+    }
+  }, [feedback]);
+
+  const handleFeedbackScroll = (e) => {
+    const { scrollTop, scrollHeight, clientHeight } = e.target;
+    const isBottom = scrollHeight - scrollTop - clientHeight < 10;
+    setShowScrollIndicator(!isBottom);
+  };
 
   useEffect(() => {
     const hasSeenTour = localStorage.getItem('hasSeenFlowTour');
@@ -195,9 +210,11 @@ const InterviewFlow = () => {
     }
   };
 
+
+
   const handleSubmitAnswer = async () => {
-    if (!currentAnswer.trim() || currentAnswer.trim().length < 10) {
-      toastError("Please provide a detailed answer (at least 10 characters)");
+    if (!currentAnswer.trim() || currentAnswer.trim().length < 2) {
+      toastError("Please provide an answer");
       return;
     }
 
@@ -208,41 +225,39 @@ const InterviewFlow = () => {
       const res = await nextInterviewStep(currentAnswer.trim());
       
       if (res.data.success) {
-
+        const result = res.data;
+        
         const updatedHistory = [
           ...conversationHistory,
           { role: "user", text: currentAnswer.trim(), timestamp: new Date().toISOString() }
         ];
-
         setConversationHistory(updatedHistory);
 
-
-        if (res.data.feedback) {
-          setFeedback(res.data.feedback);
-
+        if (result.feedback) {
+          setFeedback(result.feedback);
         }
 
-        if (res.data.isComplete) {
-
-          const finalCount = res.data.questionCount ?? questionCount;
+        if (result.isComplete) {
+          const finalCount = result.questionCount ?? questionCount;
           setQuestionCount(finalCount);
           setIsComplete(true);
           handleEndInterview(true);
-        } else if (res.data.question) {
-
+        } else if (result.question) {
           const finalHistory = [
             ...updatedHistory,
-            { role: "interviewer", text: res.data.question, timestamp: new Date().toISOString() }
+            { role: "interviewer", text: result.question, timestamp: new Date().toISOString() }
           ];
           setConversationHistory(finalHistory);
-          setCurrentQuestion(res.data.question);
-          setQuestionCount(res.data.questionCount || questionCount + 1);
+          setCurrentQuestion(result.question);
+          setQuestionCount(questionCount + 1);
           setCurrentAnswer("");
           setRecordedAudio(null);
           setTranscribedText("");
         }
+        setLoading(false);
       } else {
         toastError(res.data.message || "Failed to process answer");
+        setLoading(false);
       }
     } catch (err) {
       console.error("Next step error:", err);
@@ -251,7 +266,6 @@ const InterviewFlow = () => {
       } else {
         toastError(err.response?.data?.message || err.message || "Failed to process answer");
       }
-    } finally {
       setLoading(false);
     }
   };
@@ -338,10 +352,17 @@ const InterviewFlow = () => {
       };
 
       recorder.onstop = () => {
-        const blob = new Blob(chunks, { type: "audio/webm" });
-        setRecordedAudio(blob);
-
-        stream.getTracks().forEach((track) => track.stop());
+        try {
+          const blob = new Blob(chunks, { type: "audio/webm" });
+          setRecordedAudio(blob);
+          stream.getTracks().forEach((track) => track.stop());
+        } catch (err) {
+          console.error("Error processing recorded audio:", err);
+          toastError("Failed to process recording. Please try again.");
+          setRecordedAudio(null);
+          setIsRecording(false);
+          stream.getTracks().forEach((track) => track.stop());
+        }
       };
 
       recorder.start();
@@ -382,70 +403,65 @@ const InterviewFlow = () => {
       formData.append("domain", "Resume-Based");
       formData.append("question", currentQuestion);
 
+      // Note: evaluateVoiceAnswer still returns synchronous result for transcription
+      // But we need to use nextInterviewStep (which is now async) for the flow
       const res = await evaluateVoiceAnswer(formData);
 
       if (res.data && res.data.success) {
         const transcribed = res.data.transcribedText || "";
         setTranscribedText(transcribed);
         setCurrentAnswer(transcribed);
-
-
         setRecordedAudio(null);
-
 
         try {
           const nextRes = await nextInterviewStep(transcribed.trim());
           
           if (nextRes.data.success) {
-
+            const result = nextRes.data;
+            
             const updatedHistory = [
               ...conversationHistory,
               { role: "user", text: transcribed.trim(), timestamp: new Date().toISOString() }
             ];
-
             setConversationHistory(updatedHistory);
 
-
-            if (nextRes.data.feedback) {
-              setFeedback(nextRes.data.feedback);
-              
+            if (result.feedback) {
+              setFeedback(result.feedback);
               // Auto-scroll to feedback after submission
               setTimeout(() => {
                 feedbackRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
               }, 300);
             }
 
-            if (nextRes.data.isComplete) {
-
-              const finalCount = nextRes.data.questionCount ?? questionCount;
+            if (result.isComplete) {
+              const finalCount = result.questionCount ?? questionCount;
               setQuestionCount(finalCount);
               setIsComplete(true);
               handleEndInterview(true);
-            } else if (nextRes.data.question) {
-
+            } else if (result.question) {
               const finalHistory = [
                 ...updatedHistory,
-                { role: "interviewer", text: nextRes.data.question, timestamp: new Date().toISOString() }
+                { role: "interviewer", text: result.question, timestamp: new Date().toISOString() }
               ];
               setConversationHistory(finalHistory);
-              setCurrentQuestion(nextRes.data.question);
-              setQuestionCount(nextRes.data.questionCount || questionCount + 1);
+              setCurrentQuestion(result.question);
+              setQuestionCount(questionCount + 1);
               setCurrentAnswer("");
               setTranscribedText("");
             }
+            setLoading(false);
           } else {
             toastError(nextRes.data.message || "Failed to process answer");
+            setLoading(false);
           }
         } catch (nextErr) {
           console.error("Next step error after voice answer:", nextErr);
-
-          if (res.data.feedback) {
-            setFeedback(res.data.feedback.overall_feedback || res.data.feedback);
-          }
           toastError("Voice transcribed successfully, but failed to continue interview. Please try submitting again.");
+          setLoading(false);
         }
       } else {
         toastError(res.data?.error || "Invalid response from server");
+        setLoading(false);
       }
     } catch (err) {
       console.error("Evaluate voice error:", err);
@@ -454,7 +470,6 @@ const InterviewFlow = () => {
       } else {
         toastError(err.response?.data?.error || err.message || "Failed to evaluate voice answer");
       }
-    } finally {
       setLoading(false);
     }
   };
@@ -697,58 +712,68 @@ const InterviewFlow = () => {
     <PageLayout showNavbar={false}>
       <div className="min-h-screen bg-slate-50 p-4 sm:p-6 lg:p-8 font-sans">
         {/* Header */}
-        <header className="max-w-7xl mx-auto mb-3 sm:mb-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
-          <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
-            <h1 className="text-slate-500 font-medium text-xs sm:text-sm">{user?.displayName || 'User'}</h1>
+        <header className="max-w-7xl mx-auto mb-6 sm:mb-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-3 sm:gap-4 flex-wrap">
+            <h1 className="text-slate-600 font-medium text-sm sm:text-base">{user?.displayName || 'User'}</h1>
             <span className="text-slate-300 mx-1">/</span>
-            <span className="text-blue-600 font-semibold text-[10px] sm:text-xs bg-blue-50 px-2 py-0.5 sm:py-1 rounded-full border border-blue-100">
+            <span className="text-blue-600 font-semibold text-xs sm:text-sm bg-blue-50 px-3 py-1 rounded-full border border-blue-100">
               Q {questionCount} / ~25
             </span>
           </div>
-          <div className="flex items-center gap-1.5 sm:gap-2">
+
+          <div className="flex items-center gap-2 sm:gap-3">
             <button
               onClick={() => setStartTour(true)}
-              className="flex items-center gap-1 px-2 py-1 text-slate-600 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors text-[10px] sm:text-xs font-medium"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-slate-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors text-xs sm:text-sm font-medium"
               title="Start Tour"
             >
-              <Sparkles className="h-3 w-3" />
+              <Sparkles className="h-4 w-4" />
               <span className="hidden sm:inline">Tour</span>
             </button>
             <button
               onClick={() => setShowResetModal(true)}
-              className="flex items-center gap-1 px-2 py-1 text-slate-600 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors text-[10px] sm:text-xs font-medium"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-slate-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors text-xs sm:text-sm font-medium"
               title="Reset Interview"
               data-tour="reset-interview"
             >
-              <RefreshCw className="h-3 w-3" />
+              <RefreshCw className="h-4 w-4" />
               <span className="hidden sm:inline">Reset</span>
             </button>
-            <div className="h-3 w-px bg-slate-300"></div>
             <button
               onClick={() => setShowExitModal(true)}
-              className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-4 py-1 sm:py-2 bg-red-500 text-white hover:bg-red-600 rounded-md sm:rounded-lg transition-all shadow-sm hover:shadow-md font-semibold text-[10px] sm:text-xs"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-slate-600 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-colors text-xs sm:text-sm font-medium"
               title="Exit without completing"
               data-tour="exit-interview"
             >
-              <LogOut className="h-3 w-3" />
-              <span>Exit</span>
+              <LogOut className="h-4 w-4" />
+              <span className="hidden sm:inline">Exit</span>
+            </button>
+            <div className="h-4 w-px bg-slate-300 mx-1"></div>
+            <button
+              onClick={() => handleEndInterview()}
+              className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white hover:bg-red-700 rounded-lg transition-all shadow-sm hover:shadow-md font-semibold text-xs sm:text-sm"
+              title="End Interview"
+              data-tour="end-interview"
+            >
+              <StopCircle className="h-4 w-4" />
+              <span>End</span>
             </button>
           </div>
         </header>
 
-        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 lg:h-[calc(100vh-120px)]">
-          <div className="lg:col-span-3 bg-white rounded-2xl sm:rounded-3xl shadow-sm border border-slate-100 p-4 sm:p-6 lg:p-8 flex flex-col relative overflow-hidden">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 lg:h-[calc(100vh-120px)]">
+          <div className="lg:col-span-4 bg-white rounded-2xl shadow-sm border border-slate-100 p-6 flex flex-col relative overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-b from-transparent to-slate-50/50 pointer-events-none"></div>
             
             <div className="relative z-10 flex flex-col items-center">
-              <div className="mb-4 sm:mb-6 lg:mb-8 relative">
-                <div className="relative w-24 h-24 sm:w-28 sm:h-28 lg:w-32 lg:h-32">
+              <div className="mb-6 relative">
+                <div className="relative w-20 h-20 sm:w-24 sm:h-24 lg:w-28 lg:h-28">
                   <div className="absolute inset-0 rounded-full bg-blue-400 opacity-20 blur-xl animate-pulse"></div>
                   
                   <div className="relative w-full h-full rounded-full bg-gradient-to-br from-blue-500 to-blue-600 shadow-xl flex items-center justify-center">
                     <div className="absolute inset-2 rounded-full bg-gradient-to-br from-white/30 to-transparent"></div>
                     
-                    <svg className="w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 text-white relative z-10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                    <svg className="w-10 h-10 sm:w-12 sm:h-12 lg:w-14 lg:h-14 text-white relative z-10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                       <path d="M12 2L2 7L12 12L22 7L12 2Z" strokeLinecap="round" strokeLinejoin="round" fill="currentColor" fillOpacity="0.3"/>
                       <path d="M2 17L12 22L22 17" strokeLinecap="round" strokeLinejoin="round"/>
                       <path d="M2 12L12 17L22 12" strokeLinecap="round" strokeLinejoin="round"/>
@@ -757,20 +782,20 @@ const InterviewFlow = () => {
                   
                   {/* Speaking indicator */}
                   {(isPlayingQuestion || isPlayingFeedback) && (
-                    <div className="absolute -bottom-2 -right-2 bg-green-500 border-4 border-white w-7 h-7 rounded-full flex items-center justify-center shadow-lg">
-                      <div className="w-2.5 h-2.5 bg-white rounded-full animate-pulse"></div>
+                    <div className="absolute -bottom-1 -right-1 bg-green-500 border-4 border-white w-6 h-6 rounded-full flex items-center justify-center shadow-lg">
+                      <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
                     </div>
                   )}
                 </div>
               </div>
 
               <h2 className="text-xl sm:text-2xl font-bold text-slate-900 mb-1">Prism AI</h2>
-              <p className="text-xs sm:text-sm text-slate-500 font-medium text-center max-w-[240px] mb-4 italic">
+              <p className="text-xs sm:text-sm text-slate-500 font-medium text-center max-w-[240px] mb-6 italic">
                 "I'm Prism, seeing your potential from every angle"
               </p>
               
-              <div className="flex items-center gap-2 mb-4 sm:mb-6 lg:mb-8">
-                <div className={`px-4 py-1.5 rounded-full text-sm font-medium flex items-center gap-2 ${
+              <div className="flex items-center gap-2 mb-6">
+                <div className={`px-4 py-1.5 rounded-full text-xs sm:text-sm font-medium flex items-center gap-2 ${
                   loading 
                     ? "bg-amber-50 text-amber-600 border border-amber-100"
                     : isRecording
@@ -782,13 +807,13 @@ const InterviewFlow = () => {
                   {loading ? (
                     <>
                       <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                      Processing...
+                      Thinking...
                     </>
                   ) : isRecording ? (
                     <>
-                      <span className="relative flex h-2.5 w-2.5">
+                      <span className="relative flex h-2 w-2">
                         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                        <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500"></span>
+                        <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
                       </span>
                       Listening...
                     </>
@@ -803,7 +828,7 @@ const InterviewFlow = () => {
                 </div>
               </div>
 
-              <div className="h-16 flex items-center justify-center w-full max-w-[200px] mb-6">
+              <div className="h-16 flex items-center justify-center w-full max-w-[200px] mb-4">
                 {(isPlayingQuestion || isPlayingFeedback || isRecording) ? (
                   <AudioVisualizer 
                     isPlaying={isPlayingQuestion || isPlayingFeedback}
@@ -828,8 +853,8 @@ const InterviewFlow = () => {
                 className="relative z-10 mt-auto pt-6 border-t border-slate-100"
               >
                 <div className="text-center px-4">
-                  <p className="text-base sm:text-lg font-semibold text-slate-700 mb-3">👋 Welcome to your AI Interview</p>
-                  <p className="text-sm sm:text-base text-slate-500 leading-relaxed">Listen to the question or read it on the right, then answer using voice or text</p>
+                  <p className="text-lg font-semibold text-slate-700 mb-3">👋 Welcome to your AI Interview</p>
+                  <p className="text-slate-500 leading-relaxed">Listen to the question or read it on the right, then answer using voice or text</p>
                 </div>
               </motion.div>
             )}
@@ -840,11 +865,13 @@ const InterviewFlow = () => {
                 ref={feedbackRef}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="relative z-10 mt-auto pt-6 border-t border-slate-100"
+                className="relative z-10 mt-auto pt-4 border-t border-slate-100"
               >
                 <div className="relative">
                   <div 
-                    className="max-h-[200px] overflow-y-auto pr-2 touch-pan-y"
+                    ref={feedbackContentRef}
+                    onScroll={handleFeedbackScroll}
+                    className="max-h-[150px] overflow-y-auto pr-2 touch-pan-y"
                     style={{
                       scrollbarWidth: 'thin',
                       scrollbarColor: '#86efac #f0fdf4',
@@ -852,13 +879,13 @@ const InterviewFlow = () => {
                       overscrollBehavior: 'contain'
                     }}
                   >
-                    <div className="flex items-start gap-3 mb-3">
+                    <div className="flex items-start gap-3 mb-2">
                       <div className="flex-shrink-0 w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center">
                         <CheckCircle2 className="h-4 w-4 text-emerald-600" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between mb-2">
-                          <h3 className="text-xs font-bold text-emerald-900 uppercase tracking-wide">Feedback</h3>
+                        <div className="flex items-center justify-between mb-1.5">
+                          <h3 className="text-[10px] font-bold text-emerald-900 uppercase tracking-wide">Feedback</h3>
                           <button
                             onClick={() => {
                               if (isPlayingFeedback) {
@@ -867,7 +894,7 @@ const InterviewFlow = () => {
                                 playBrowserTTS(feedback, "feedback");
                               }
                             }}
-                            className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-100 font-medium text-xs transition-colors flex-shrink-0"
+                            className="flex items-center gap-1 px-2 py-1 rounded-md bg-emerald-50 text-emerald-700 hover:bg-emerald-100 font-medium text-[10px] transition-colors flex-shrink-0"
                             title={isPlayingFeedback ? "Stop audio" : "Listen to feedback"}
                           >
                             {isPlayingFeedback ? (
@@ -889,22 +916,32 @@ const InterviewFlow = () => {
                   </div>
                   
                   {/* Scroll indicator - gradient fade */}
-                  {feedback.length > 150 && (
-                    <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-white via-white/95 to-transparent pointer-events-none">
-                      <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex flex-col items-center">
-                        <span className="text-[10px] text-emerald-600 font-semibold mb-1">Scroll for more</span>
-                        <ChevronDown className="h-3 w-3 text-emerald-600 animate-bounce" />
-                      </div>
-                    </div>
-                  )}
+                  <AnimatePresence>
+                    {showScrollIndicator && (
+                      <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-white via-white/95 to-transparent cursor-pointer flex items-end justify-center pb-1"
+                        onClick={() => {
+                          feedbackContentRef.current?.scrollBy({ top: 50, behavior: 'smooth' });
+                        }}
+                      >
+                        <div className="flex flex-col items-center animate-bounce">
+                          <span className="text-[10px] text-emerald-600 font-semibold mb-0.5">Scroll</span>
+                          <ChevronDown className="h-3 w-3 text-emerald-600" />
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
               </motion.div>
             )}
           </div>
 
           {/* Right Column - Interaction Area */}
-          <div className="lg:col-span-9 flex flex-col gap-6 h-full overflow-hidden">
-             <div className="flex-1 overflow-y-auto space-y-6 pr-2">
+          <div className="lg:col-span-8 flex flex-col gap-8 h-full overflow-hidden">
+             <div className="flex-1 overflow-y-auto space-y-8 pr-2">
                 {/* Question Card */}
                 <QuestionCard
                   question={currentQuestion}
@@ -924,6 +961,7 @@ const InterviewFlow = () => {
                     isRecording={isRecording}
                     recordedAudio={recordedAudio}
                     currentAnswer={currentAnswer}
+                    transcribedText={transcribedText}
                     loading={loading}
                     isPlayingQuestion={isPlayingQuestion}
                     isPlayingFeedback={isPlayingFeedback}
@@ -936,20 +974,8 @@ const InterviewFlow = () => {
                   />
                 </div>
              </div>
-             
-             {/* End Interview Button */}
-             <div className="flex justify-end pt-4 border-t border-slate-100">
-                <button
-                  onClick={() => handleEndInterview()}
-                  className="flex items-center gap-2 px-6 py-3 bg-red-500 text-white hover:bg-red-600 rounded-xl transition-all shadow-md hover:shadow-lg font-semibold text-sm"
-                  data-tour="end-interview"
-                >
-                  <StopCircle className="h-4 w-4" />
-                  End Interview
-                </button>
-             </div>
           </div>
-        </div>
+         </div>
       </div>
 
       {/* Modals */}
