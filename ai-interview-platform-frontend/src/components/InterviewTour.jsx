@@ -66,6 +66,12 @@ const InterviewTour = ({ start, onFinish, type = 'sequential' }) => {
         placement: 'bottom',
       },
       {
+        target: '[data-tour="voice-settings"]',
+        title: 'Voice Settings',
+        content: 'Customize your interviewer! Click here to choose between different AI voices.',
+        placement: 'bottom',
+      },
+      {
         target: '[data-tour="answer-area"]',
         title: 'Answer Area',
         content: 'Type your answer here. The AI looks for clarity, confidence, and correctness.',

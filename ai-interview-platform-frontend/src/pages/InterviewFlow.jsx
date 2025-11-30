@@ -851,6 +851,7 @@ const InterviewFlow = () => {
               onClick={() => setShowVoiceSettings(true)}
               className="flex items-center gap-1.5 px-3 py-1.5 text-slate-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors text-xs sm:text-sm font-medium"
               title="Voice Settings"
+              data-tour="voice-settings"
             >
               <Settings className="h-4 w-4" />
               <span className="hidden sm:inline">Voice</span>
