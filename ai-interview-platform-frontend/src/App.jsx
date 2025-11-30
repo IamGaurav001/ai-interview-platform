@@ -22,6 +22,8 @@ import TermsOfService from "./pages/TermsOfService";
 import Features from "./pages/Features";
 import Pricing from "./pages/Pricing";
 import VerifyEmail from "./pages/VerifyEmail";
+import Refund from "./pages/Refund";
+import Shipping from "./pages/Shipping";
 
 const Layout = ({ children }) => {
   const location = useLocation();
@@ -57,6 +59,8 @@ function App() {
             <Route path="/terms" element={<TermsOfService />} />
             <Route path="/features" element={<Features />} />
             <Route path="/pricing" element={<Pricing />} />
+            <Route path="/refund" element={<Refund />} />
+            <Route path="/shipping" element={<Shipping />} />
 
             {/* Protected Routes */}
             <Route
