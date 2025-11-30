@@ -137,7 +137,7 @@ export const analyzeResume = async (req, res) => {
     try {
       responseText = await callGeminiWithRetry(prompt, {
         model: "gemini-2.0-flash",
-        maxRetries: 5,
+        maxRetries: 10, // Increased from 5 to 10 for better rate limit handling
         initialDelay: 2000,
         generationConfig,
       });
@@ -145,10 +145,17 @@ export const analyzeResume = async (req, res) => {
     } catch (apiError) {
       console.error("❌ Error calling Gemini API:", apiError.message);
       
+      // Check if it's a rate limit error
+      if (apiError.message && apiError.message.includes("Rate limit exceeded")) {
+        throw new Error(
+          "The AI service is experiencing high demand and rate limits. Please wait 2-3 minutes and try uploading your resume again. " +
+          "We apologize for the inconvenience."
+        );
+      }
+      
       if (apiError.message && (apiError.message.includes("404") || apiError.message.includes("not found"))) {
         throw new Error(
-          "Gemini model not available. Please check your API key and ensure you have access to Gemini models. " +
-          "The system will try to use gemini-pro as a fallback, but if that also fails, please verify your API configuration."
+          "Gemini model not available. Please check your API key and ensure you have access to Gemini models."
         );
       }
       

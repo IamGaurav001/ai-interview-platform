@@ -15,7 +15,7 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 export const callGeminiWithRetry = async (prompt, options = {}) => {
   const {
     model = "gemini-2.0-flash",
-    maxRetries = 7,
+    maxRetries = 10, // Increased from 7 to 10 for better rate limit handling
     initialDelay = 2000,
     generationConfig = {
       temperature: 0.7,
@@ -27,9 +27,11 @@ export const callGeminiWithRetry = async (prompt, options = {}) => {
 
   let currentModel = model;
   let lastError = null;
+  let hasTriedFallback = false; // Track if we've already switched models
 
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
+      console.log(`🔄 Attempt ${attempt}/${maxRetries} with model: ${currentModel}`);
       const geminiModel = genAI.getGenerativeModel({ model: currentModel });
       const result = await geminiModel.generateContent({
         contents: [{ role: "user", parts: [{ text: prompt }] }],
@@ -55,19 +57,20 @@ export const callGeminiWithRetry = async (prompt, options = {}) => {
       if (isRateLimit) {
         console.warn(`⚠️ Rate limit error (429) on attempt ${attempt}/${maxRetries} with model ${currentModel}`);
 
-        // Strategy: If 2.0-flash is rate limited, try 2.0-flash-lite as it might have a separate quota/limit
-        if (currentModel === "gemini-2.0-flash") {
-             console.log("🔄 gemini-2.0-flash rate limited, switching to gemini-2.0-flash-lite for next attempt...");
+        // Strategy: Switch to fallback model immediately on first rate limit
+        if (!hasTriedFallback && currentModel === "gemini-2.0-flash") {
+             console.log("🔄 gemini-2.0-flash rate limited, switching to gemini-2.0-flash-lite...");
              currentModel = "gemini-2.0-flash-lite";
-             // Don't wait as long if we are switching models, just a small backoff
-             await new Promise((resolve) => setTimeout(resolve, 1000));
+             hasTriedFallback = true;
+             // Small delay before trying new model
+             await new Promise((resolve) => setTimeout(resolve, 1500));
              continue;
         }
 
-        // Calculate exponential backoff delay
-        const delay = initialDelay * Math.pow(2, attempt - 1);
+        // If we're already on fallback model or have tried it, use exponential backoff
+        const delay = initialDelay * Math.pow(2, Math.min(attempt - 1, 6)); // Cap at 2^6 to avoid too long delays
         const jitter = Math.random() * 1000; // Add random jitter (0-1s)
-        const totalDelay = delay + jitter;
+        const totalDelay = Math.min(delay + jitter, 60000); // Cap at 60 seconds
 
         if (attempt < maxRetries) {
           console.log(`⏳ Waiting ${Math.round(totalDelay)}ms before retry ${attempt + 1}...`);
@@ -75,7 +78,7 @@ export const callGeminiWithRetry = async (prompt, options = {}) => {
           continue;
         } else {
           throw new Error(
-            `Rate limit exceeded after ${maxRetries} attempts. Please wait a few minutes and try again.`
+            `Rate limit exceeded after ${maxRetries} attempts. The Gemini API is currently overloaded. Please wait a few minutes and try again.`
           );
         }
       }
@@ -85,14 +88,15 @@ export const callGeminiWithRetry = async (prompt, options = {}) => {
         if (currentModel === "gemini-2.0-flash") {
           console.log("🔄 gemini-2.0-flash not available, trying gemini-2.0-flash-lite as fallback...");
           currentModel = "gemini-2.0-flash-lite";
+          hasTriedFallback = true;
           continue;
         } else if (currentModel === "gemini-2.0-flash-lite") {
-           console.log("🔄 gemini-2.0-flash-lite not available, trying gemini-pro-latest as fallback...");
-           currentModel = "gemini-pro-latest";
+           console.log("🔄 gemini-2.0-flash-lite not available, trying gemini-1.5-flash as fallback...");
+           currentModel = "gemini-1.5-flash";
            continue;
         } else if (currentModel === "gemini-1.5-pro") {
-          console.log("🔄 gemini-1.5-pro not available, trying gemini-pro-latest as fallback...");
-          currentModel = "gemini-pro-latest";
+          console.log("🔄 gemini-1.5-pro not available, trying gemini-1.5-flash as fallback...");
+          currentModel = "gemini-1.5-flash";
           continue;
         }
       }
@@ -104,16 +108,16 @@ export const callGeminiWithRetry = async (prompt, options = {}) => {
                          errorMessage.includes("timeout");
 
       if (isRetryable && attempt < maxRetries) {
-        const delay = initialDelay * Math.pow(2, attempt - 1);
+        const delay = initialDelay * Math.pow(2, Math.min(attempt - 1, 5));
         console.warn(`⚠️ Retryable error on attempt ${attempt}, retrying in ${delay}ms...`);
         await new Promise((resolve) => setTimeout(resolve, delay));
         continue;
       }
 
       // If model not found and we've already tried all fallbacks, throw a clear error
-      if (isModelNotFound && currentModel === "gemini-pro-latest") {
+      if (isModelNotFound) {
         throw new Error(
-          `None of the Gemini models are available. Please check your API key and ensure you have access to at least one Gemini model (gemini-2.0-flash, gemini-2.0-flash-lite, or gemini-pro-latest).`
+          `Gemini model "${currentModel}" is not available. Please check your API key and ensure you have access to Gemini models.`
         );
       }
 

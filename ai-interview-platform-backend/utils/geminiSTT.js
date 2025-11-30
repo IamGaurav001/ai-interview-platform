@@ -8,7 +8,7 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 // Configuration constants
 const DEFAULT_MODEL = "gemini-2.0-flash";
-const MAX_RETRIES = 7;
+const MAX_RETRIES = 10; // Increased from 7 to 10 for better rate limit handling
 const INITIAL_DELAY_MS = 2000;
 
 /**
@@ -28,6 +28,7 @@ export async function geminiSpeechToText(audioFilePath, mimeType = "audio/webm")
 
   let currentModel = DEFAULT_MODEL;
   let lastError = null;
+  let hasTriedFallback = false; // Track if we've already switched models
   const maxRetries = MAX_RETRIES;
   const initialDelay = INITIAL_DELAY_MS;
 
@@ -37,6 +38,7 @@ export async function geminiSpeechToText(audioFilePath, mimeType = "audio/webm")
 
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
+      console.log(`🔄 STT Attempt ${attempt}/${maxRetries} with model: ${currentModel}`);
       const model = genAI.getGenerativeModel({ model: currentModel });
 
       // Send audio to Gemini for transcription
@@ -89,11 +91,28 @@ export async function geminiSpeechToText(audioFilePath, mimeType = "audio/webm")
       if (isRateLimit) {
          console.warn(`⚠️ Rate limit error (429) on attempt ${attempt}/${maxRetries} with model ${currentModel}`);
          
-         if (currentModel === "gemini-2.0-flash") {
-             console.log("🔄 gemini-2.0-flash rate limited, switching to gemini-2.0-flash-lite for next attempt...");
+         // Switch to fallback model immediately on first rate limit
+         if (!hasTriedFallback && currentModel === "gemini-2.0-flash") {
+             console.log("🔄 gemini-2.0-flash rate limited, switching to gemini-2.0-flash-lite...");
              currentModel = "gemini-2.0-flash-lite";
-             await new Promise((resolve) => setTimeout(resolve, 1000));
+             hasTriedFallback = true;
+             await new Promise((resolve) => setTimeout(resolve, 1500));
              continue;
+         }
+
+         // Use exponential backoff with cap
+         if (attempt < maxRetries) {
+           const delay = Math.min(
+             initialDelay * Math.pow(2, Math.min(attempt - 1, 6)) + Math.random() * 1000,
+             60000 // Cap at 60 seconds
+           );
+           console.log(`⏳ Waiting ${Math.round(delay)}ms before retry ${attempt + 1}...`);
+           await new Promise((resolve) => setTimeout(resolve, delay));
+           continue;
+         } else {
+           throw new Error(
+             "Gemini speech-to-text rate limit reached. The AI service is experiencing high demand. Please wait 2-3 minutes and try again."
+           );
          }
       }
 
@@ -102,17 +121,20 @@ export async function geminiSpeechToText(audioFilePath, mimeType = "audio/webm")
         if (currentModel === "gemini-2.0-flash") {
           console.log("🔄 gemini-2.0-flash not available, trying gemini-2.0-flash-lite as fallback...");
           currentModel = "gemini-2.0-flash-lite";
+          hasTriedFallback = true;
           continue;
         } else if (currentModel === "gemini-2.0-flash-lite") {
-           console.log("🔄 gemini-2.0-flash-lite not available, trying gemini-pro-latest as fallback...");
-           currentModel = "gemini-pro-latest";
+           console.log("🔄 gemini-2.0-flash-lite not available, trying gemini-1.5-flash as fallback...");
+           currentModel = "gemini-1.5-flash";
            continue;
         }
       }
 
       if (isRetryable && attempt < maxRetries) {
-        const delay =
-          initialDelay * Math.pow(2, attempt - 1) + Math.random() * 1000;
+        const delay = Math.min(
+          initialDelay * Math.pow(2, Math.min(attempt - 1, 5)) + Math.random() * 1000,
+          60000
+        );
         console.warn(
           `⚠️ Gemini STT error (${message}). Retrying in ${Math.round(
             delay
@@ -120,12 +142,6 @@ export async function geminiSpeechToText(audioFilePath, mimeType = "audio/webm")
         );
         await new Promise((resolve) => setTimeout(resolve, delay));
         continue;
-      }
-
-      if (isRateLimit && attempt === maxRetries) {
-        throw new Error(
-          "Gemini speech-to-text rate limit reached. Please wait a moment and try again."
-        );
       }
 
       console.error("❌ Gemini STT Error:", message);
