@@ -7,7 +7,8 @@ dotenv.config();
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 // Configuration constants
-const DEFAULT_MODEL = "gemini-2.0-flash";
+const DEFAULT_MODEL = "gemini-2.0-flash-lite"; // Switched to lite version for better quota management
+const FALLBACK_MODEL = "gemini-2.0-flash"; // Fallback to regular flash if lite fails
 const MAX_RETRIES = 10; // Increased from 7 to 10 for better rate limit handling
 const INITIAL_DELAY_MS = 2000;
 
@@ -92,9 +93,9 @@ export async function geminiSpeechToText(audioFilePath, mimeType = "audio/webm")
          console.warn(`⚠️ Rate limit error (429) on attempt ${attempt}/${maxRetries} with model ${currentModel}`);
          
          // Switch to fallback model immediately on first rate limit
-         if (!hasTriedFallback && currentModel === "gemini-2.0-flash") {
-             console.log("🔄 gemini-2.0-flash rate limited, switching to gemini-2.0-flash-lite...");
-             currentModel = "gemini-2.0-flash-lite";
+         if (!hasTriedFallback && currentModel === "gemini-2.0-flash-lite") {
+             console.log("🔄 gemini-2.0-flash-lite rate limited, switching to gemini-2.0-flash...");
+             currentModel = "gemini-2.0-flash";
              hasTriedFallback = true;
              await new Promise((resolve) => setTimeout(resolve, 1500));
              continue;
@@ -118,13 +119,13 @@ export async function geminiSpeechToText(audioFilePath, mimeType = "audio/webm")
 
       // Handle Model Not Found with Fallback
       if (isModelNotFound && attempt === 1) {
-        if (currentModel === "gemini-2.0-flash") {
-          console.log("🔄 gemini-2.0-flash not available, trying gemini-2.0-flash-lite as fallback...");
-          currentModel = "gemini-2.0-flash-lite";
+        if (currentModel === "gemini-2.0-flash-lite") {
+          console.log("🔄 gemini-2.0-flash-lite not available, trying gemini-2.0-flash as fallback...");
+          currentModel = "gemini-2.0-flash";
           hasTriedFallback = true;
           continue;
-        } else if (currentModel === "gemini-2.0-flash-lite") {
-           console.log("🔄 gemini-2.0-flash-lite not available, trying gemini-1.5-flash as fallback...");
+        } else if (currentModel === "gemini-2.0-flash") {
+           console.log("🔄 gemini-2.0-flash not available, trying gemini-1.5-flash as fallback...");
            currentModel = "gemini-1.5-flash";
            continue;
         }

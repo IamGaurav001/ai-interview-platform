@@ -136,7 +136,7 @@ export const analyzeResume = async (req, res) => {
     let responseText;
     try {
       responseText = await callGeminiWithRetry(prompt, {
-        model: "gemini-2.0-flash",
+        model: "gemini-2.0-flash-lite", // Using lite version for better quota management
         maxRetries: 10, // Increased from 5 to 10 for better rate limit handling
         initialDelay: 2000,
         generationConfig,

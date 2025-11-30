@@ -6,7 +6,7 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
  * Call Gemini API with automatic retry, exponential backoff, and model fallback
  * @param {string} prompt - The prompt to send to Gemini
  * @param {Object} options - Configuration options
- * @param {string} options.model - Primary model to use (default: "gemini-2.0-flash")
+ * @param {string} options.model - Primary model to use (default: "gemini-2.0-flash-lite")
  * @param {number} options.maxRetries - Maximum retry attempts (default: 5)
  * @param {number} options.initialDelay - Initial delay in ms (default: 1000)
  * @param {Object} options.generationConfig - Generation configuration
@@ -14,7 +14,7 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
  */
 export const callGeminiWithRetry = async (prompt, options = {}) => {
   const {
-    model = "gemini-2.0-flash",
+    model = "gemini-2.0-flash-lite", // Switched to lite version for better quota management
     maxRetries = 10, // Increased from 7 to 10 for better rate limit handling
     initialDelay = 2000,
     generationConfig = {
@@ -58,9 +58,9 @@ export const callGeminiWithRetry = async (prompt, options = {}) => {
         console.warn(`⚠️ Rate limit error (429) on attempt ${attempt}/${maxRetries} with model ${currentModel}`);
 
         // Strategy: Switch to fallback model immediately on first rate limit
-        if (!hasTriedFallback && currentModel === "gemini-2.0-flash") {
-             console.log("🔄 gemini-2.0-flash rate limited, switching to gemini-2.0-flash-lite...");
-             currentModel = "gemini-2.0-flash-lite";
+        if (!hasTriedFallback && currentModel === "gemini-2.0-flash-lite") {
+             console.log("🔄 gemini-2.0-flash-lite rate limited, switching to gemini-2.0-flash...");
+             currentModel = "gemini-2.0-flash";
              hasTriedFallback = true;
              // Small delay before trying new model
              await new Promise((resolve) => setTimeout(resolve, 1500));
@@ -85,13 +85,13 @@ export const callGeminiWithRetry = async (prompt, options = {}) => {
 
       // If model not found, try fallback model (only once)
       if (isModelNotFound && attempt === 1) {
-        if (currentModel === "gemini-2.0-flash") {
-          console.log("🔄 gemini-2.0-flash not available, trying gemini-2.0-flash-lite as fallback...");
-          currentModel = "gemini-2.0-flash-lite";
+        if (currentModel === "gemini-2.0-flash-lite") {
+          console.log("🔄 gemini-2.0-flash-lite not available, trying gemini-2.0-flash as fallback...");
+          currentModel = "gemini-2.0-flash";
           hasTriedFallback = true;
           continue;
-        } else if (currentModel === "gemini-2.0-flash-lite") {
-           console.log("🔄 gemini-2.0-flash-lite not available, trying gemini-1.5-flash as fallback...");
+        } else if (currentModel === "gemini-2.0-flash") {
+           console.log("🔄 gemini-2.0-flash not available, trying gemini-1.5-flash as fallback...");
            currentModel = "gemini-1.5-flash";
            continue;
         } else if (currentModel === "gemini-1.5-pro") {
@@ -135,7 +135,7 @@ export const callGeminiWithRetry = async (prompt, options = {}) => {
  * @param {string} preferredModel - Preferred model name
  * @returns {Object} Gemini model instance
  */
-export const getGeminiModel = (preferredModel = "gemini-2.0-flash") => {
+export const getGeminiModel = (preferredModel = "gemini-2.0-flash-lite") => {
   return genAI.getGenerativeModel({ model: preferredModel });
 };
 
