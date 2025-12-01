@@ -34,7 +34,8 @@ app.use(limiter);
 const allowedOrigins = [
   "http://localhost:5173",
   "http://localhost:3000",
-  "http://13.60.25.27",
+  "https://prephire.co",
+  "https://www.prephire.co",
   process.env.FRONTEND_URL
 ].filter(Boolean);
 
