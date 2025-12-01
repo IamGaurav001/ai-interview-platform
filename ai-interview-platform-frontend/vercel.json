@@ -8,7 +8,7 @@
           "value": "prephire.co.in"
         }
       ],
-      "destination": "https://prephire.co/:path*",
+      "destination": "https://www.prephire.co/:path*",
       "permanent": true
     },
     {
@@ -19,7 +19,7 @@
           "value": "www.prephire.co.in"
         }
       ],
-      "destination": "https://prephire.co/:path*",
+      "destination": "https://www.prephire.co/:path*",
       "permanent": true
     }
   ],
