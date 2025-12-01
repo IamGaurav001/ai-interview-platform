@@ -8,9 +8,18 @@ import { callGeminiWithRetry } from "../utils/geminiHelper.js";
 import { geminiSpeechToText } from "../utils/geminiSTT.js";
 import fs from "fs";
 import path from "path";
+import axios from "axios";
+import * as cheerio from "cheerio";
 
 dotenv.config();
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+
+const LEVEL_PROMPTS = {
+  "Junior": "Focus on fundamental concepts, execution, and basic problem-solving. Questions should test their ability to perform core tasks and understand basic principles.",
+  "Mid-Level": "Focus on autonomy, practical application, and problem-solving in real-world scenarios. Questions should cover handling edge cases, error management, and best practices.",
+  "Senior": "Focus on architecture, strategy, scalability, and complex trade-offs. Questions should require deep understanding and ability to justify decisions and mentor others.",
+  "Lead": "Focus on leadership, vision, strategic impact, and high-level design. Questions should cover team management, long-term planning, and balancing technical and business needs."
+};
 
 
 export const evaluateAnswer = async (req, res) => {
@@ -42,7 +51,7 @@ export const evaluateAnswer = async (req, res) => {
 
       **CRITICAL EVALUATION RULES:**
       1. Default assumption: scores should be 4-6/10 unless answer is CLEARLY excellent
-      2. Only give 8+ for answers that are: detailed, specific, technically accurate, AND directly address the question
+      2. Only give 8+ for answers that are: detailed, specific, accurate, AND directly address the question
       3. If answer is vague, repetitive, or lacks concrete examples: max 3/10
       4. If answer shows basic understanding but lacks depth: 4-5/10
       5. If answer is good but has minor gaps: 6-7/10
@@ -326,8 +335,6 @@ export const saveCompleteSession = async (req, res) => {
 
     const averageScore = validScores > 0 ? totalScore / validScores : 0;
 
-    // --- IDEMPOTENCY CHECK START ---
-    // Check if a session was saved for this user in the last 30 seconds with the same number of questions
     const thirtySecondsAgo = new Date(Date.now() - 30 * 1000);
     const existingSession = await InterviewSession.findOne({
       userId: req.user._id,
@@ -344,7 +351,6 @@ export const saveCompleteSession = async (req, res) => {
         message: "Interview session saved successfully (returned existing)",
       });
     }
-    // --- IDEMPOTENCY CHECK END ---
 
     const session = await InterviewSession.create({
       userId: req.user._id,
@@ -375,8 +381,53 @@ export const saveCompleteSession = async (req, res) => {
 export const startInterview = async (req, res) => {
   try {
     const userId = req.user._id.toString();
+    let { level = "Auto", jobRole, jobDescription = "", jobDescriptionUrl = "" } = req.body;
     
-    // Check for existing active session to prevent double deduction (idempotency)
+    // Default jobRole if empty
+    if (!jobRole || !jobRole.trim()) {
+        jobRole = "Software Engineer";
+    }
+
+    // Allow "Auto" or valid levels
+    if (level !== "Auto" && !Object.keys(LEVEL_PROMPTS).includes(level)) {
+        return res.status(400).json({ 
+            success: false, 
+            error: "Invalid interview level selected." 
+        });
+    }
+
+    // Fetch JD from URL if provided
+    if (jobDescriptionUrl) {
+        try {
+            console.log(`🌐 Fetching JD from URL: ${jobDescriptionUrl}`);
+            const response = await axios.get(jobDescriptionUrl, {
+                timeout: 5000,
+                headers: {
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+                }
+            });
+            
+            const $ = cheerio.load(response.data);
+            // Remove scripts, styles, and nav/footer elements to reduce noise
+            $('script').remove();
+            $('style').remove();
+            $('nav').remove();
+            $('footer').remove();
+            $('header').remove();
+            
+            const extractedText = $('body').text().replace(/\s+/g, ' ').trim().slice(0, 3000); // Limit to 3000 chars
+            
+            if (extractedText.length > 50) {
+                jobDescription += `\n\n[Extracted from URL]:\n${extractedText}`;
+                console.log("✅ Successfully extracted text from JD URL");
+            } else {
+                console.warn("⚠️ Extracted text too short, ignoring");
+            }
+        } catch (fetchError) {
+            console.error("❌ Failed to fetch JD URL:", fetchError.message);
+        }
+    }
+    
     const sessionKey = `session:${userId}`;
     const existingSession = await redisClient.hGetAll(sessionKey);
     
@@ -391,12 +442,10 @@ export const startInterview = async (req, res) => {
 
     const user = req.user;
 
-    // --- ELIGIBILITY CHECK START ---
     if (!user) {
         return res.status(404).json({ message: "User not found" });
     }
 
-    // Initialize usage if not present
     if (!user.usage) {
         user.usage = {
             freeInterviewsLeft: 2,
@@ -405,7 +454,6 @@ export const startInterview = async (req, res) => {
         };
     }
 
-    // Check for monthly reset
     const now = new Date();
     const lastReset = new Date(user.usage.lastMonthlyReset);
     const daysSinceReset = (now - lastReset) / (1000 * 60 * 60 * 24);
@@ -415,7 +463,6 @@ export const startInterview = async (req, res) => {
         user.usage.lastMonthlyReset = now;
     }
 
-    // Check eligibility
     if (user.usage.freeInterviewsLeft > 0) {
         user.usage.freeInterviewsLeft -= 1;
         await user.save();
@@ -428,7 +475,6 @@ export const startInterview = async (req, res) => {
             code: "NO_CREDITS",
         });
     }
-    // --- ELIGIBILITY CHECK END ---
 
 
     let resumeText = "";
@@ -456,11 +502,23 @@ export const startInterview = async (req, res) => {
     }
 
 
-    const prompt = `You are a professional technical interviewer conducting a comprehensive interview. Your goal is to thoroughly assess the candidate's technical skills, problem-solving abilities, and experience.
+    const prompt = `You are a professional interviewer conducting a comprehensive interview for the role of **${jobRole}**.
+    
+    **LEVEL/CONTEXT INSTRUCTIONS:**
+    ${level === "Auto" 
+      ? "Analyze the Job Role and Job Description (if provided) to determine the appropriate interview level (Junior, Mid, Senior, Lead). Adapt your questions and evaluation criteria accordingly. If the role implies seniority (e.g. 'Senior', 'Lead', 'Manager'), ask higher-level strategic and architectural questions. If it implies junior/entry-level, focus on fundamentals." 
+      : LEVEL_PROMPTS[level]}
+
+    ${jobDescription ? `**JOB DESCRIPTION CONTEXT:**\n${jobDescription}\n` : ""}
+
+    Your goal is to thoroughly assess the candidate's skills, problem-solving abilities, and experience appropriate for this role and inferred level.
     
 <resume>
 ${resumeText}
 </resume>
+
+Target Role: ${jobRole}
+Target Level: ${level}
 
 Start the interview naturally. Begin with an introductory question that helps you understand their background better. This should be a warm, conversational opening question that sets a professional yet friendly tone.
 
@@ -476,8 +534,7 @@ Generate only the first interview question. Do not include any introduction or e
       firstQuestion = firstQuestion.trim();
     } catch (error) {
       console.error("❌ Error generating first question:", error.message);
-      // Refund credit if AI fails
-      if (user.usage.freeInterviewsLeft < 3) { // Simple heuristic, better to track what was deducted
+      if (user.usage.freeInterviewsLeft < 3) { 
           user.usage.freeInterviewsLeft += 1;
       } else {
           user.usage.purchasedCredits += 1;
@@ -495,7 +552,6 @@ Generate only the first interview question. Do not include any introduction or e
     }
 
 
-    // sessionKey already declared above
     const sessionData = {
       stage: "started",
       currentQuestion: firstQuestion,
@@ -509,6 +565,9 @@ Generate only the first interview question. Do not include any introduction or e
       ]),
       questionCount: "1",
       startedAt: new Date().toISOString(),
+      level: level,
+      jobRole: jobRole,
+      jobDescription: jobDescription || "",
     };
 
     await redisClient.hSet(sessionKey, sessionData);
@@ -586,20 +645,35 @@ export const nextInterviewStep = async (req, res) => {
       .join("\n\n");
 
     const questionCount = parseInt(session.questionCount || "0");
+    const level = session.level || "Auto";
+    const jobRole = session.jobRole || "Software Engineer";
+    const jobDescription = session.jobDescription || "";
 
-    const prompt = `You are a professional technical interviewer conducting a comprehensive, real-world interview. Your goal is to thoroughly evaluate the candidate across multiple dimensions:
+    const prompt = `You are a professional interviewer conducting a comprehensive, real-world interview for the role of **${jobRole}**.
+    
+    **LEVEL/CONTEXT INSTRUCTIONS:**
+    ${level === "Auto" 
+      ? "Analyze the Job Role and Job Description (if provided) to determine the appropriate interview level (Junior, Mid, Senior, Lead). Adapt your questions and evaluation criteria accordingly. If the role implies seniority (e.g. 'Senior', 'Lead', 'Manager'), ask higher-level strategic and architectural questions. If it implies junior/entry-level, focus on fundamentals." 
+      : LEVEL_PROMPTS[level]}
 
-1. **Technical Depth**: Assess their understanding of technologies mentioned in their resume
-2. **Problem-Solving**: Evaluate their approach to solving complex problems
-3. **System Design**: Understand their ability to design scalable systems (if relevant)
-4. **Code Quality**: Discuss coding practices, best practices, and trade-offs
+    ${jobDescription ? `**JOB DESCRIPTION CONTEXT:**\n${jobDescription}\n` : ""}
+
+    Your goal is to thoroughly evaluate the candidate across multiple dimensions appropriate for a ${level === "Auto" ? "inferred level" : level} ${jobRole}:
+
+1. **Role-Specific Knowledge**: Assess their understanding of concepts relevant to ${jobRole}
+2. **Problem-Solving**: Evaluate their approach to solving complex problems in their domain
+3. **Strategic Thinking**: Understand their ability to see the bigger picture (if relevant for level)
+4. **Best Practices**: Discuss industry standards and best practices for ${jobRole}
 5. **Experience & Projects**: Deep dive into their past projects and real-world experience
 6. **Behavioral & Communication**: Understand their teamwork, leadership, and communication skills
-7. **Edge Cases & Optimization**: Explore their thinking on edge cases, performance, and optimization
+7. **Scenario Analysis**: Explore how they handle specific scenarios relevant to the role
 
 <resume>
 ${session.resumeText || "Resume not available"}
 </resume>
+
+Target Role: ${jobRole}
+Target Level: ${level}
 
 CONVERSATION SO FAR (${questionCount} questions asked):
 <conversation_history>
@@ -612,18 +686,17 @@ ${conversationContext}
 - **Interview should naturally conclude between 15-20 questions when you've covered all areas**
 - **Maximum limit: 25 questions - if you reach 25 questions, you MUST end the interview**
 
-**Interview Guidelines:**
-- Vary question types: technical deep-dives, system design, coding scenarios, behavioral questions
+**Interview Guidelines for ${level} ${jobRole}:**
+- Vary question types: theoretical, practical scenarios, behavioral questions
 - Build on previous answers - ask follow-up questions to dig deeper
-- Cover different aspects: frontend, backend, databases, architecture, algorithms, etc.
 - Make it conversational and natural - like a real interview
+- **Adjust difficulty**: Ensure questions are challenging enough for a ${level} candidate.
 
 **When to Complete:**
 You should indicate INTERVIEW_COMPLETE when:
 - You have asked at least 12-15 questions AND
-- You have thoroughly covered multiple technical areas from their resume AND
-- You have had at least 2-3 deep technical discussions AND
-- You have asked system design or architecture questions (if applicable) AND
+- You have thoroughly covered multiple areas from their resume and the job role AND
+- You have had at least 2-3 deep discussions AND
 - You have asked behavioral/experience-based questions AND
 - You genuinely believe you have a comprehensive assessment
 
@@ -957,7 +1030,6 @@ export const endInterview = async (req, res) => {
         experienceRelevance: 0,
       };
 
-      // Save empty session
       const interviewSession = await InterviewSession.create({
         userId: req.user._id,
         domain: "Resume-Based",
@@ -970,7 +1042,6 @@ export const endInterview = async (req, res) => {
         score: 0,
       });
 
-      // Cleanup Redis
       try {
         await redisClient.del(sessionKey);
         await redisClient.del(`feedback:${userId}`);
@@ -1125,7 +1196,7 @@ export const endInterview = async (req, res) => {
       answers,
       feedback: {
         summary: finalSummary,
-        all: allFeedbacks.length > 0 ? allFeedbacks : history, // Use structured feedbacks if available, otherwise history
+        all: allFeedbacks.length > 0 ? allFeedbacks : history,
       },
       score: finalSummary.overallScore || 7,
     });
@@ -1154,7 +1225,6 @@ export const endInterview = async (req, res) => {
     });
   }
 };
-// Evaluate Voice Answer (Speech-to-Text + Evaluation)
 export const evaluateVoiceAnswer = async (req, res) => {
   try {
     const { domain, question } = req.body;
@@ -1183,7 +1253,6 @@ export const evaluateVoiceAnswer = async (req, res) => {
       "bytes"
     );
 
-    // Step 1: Transcribe audio to text using Gemini
     let transcribedText = "";
     try {
       const audioPath = audioFile.path;
@@ -1210,7 +1279,6 @@ export const evaluateVoiceAnswer = async (req, res) => {
       });
     }
 
-    // Step 2: Clean up audio file (we don't need it anymore)
     try {
       fs.unlinkSync(audioFile.path);
       console.log("✅ Audio file cleaned up");
@@ -1218,7 +1286,6 @@ export const evaluateVoiceAnswer = async (req, res) => {
       console.warn("⚠️ Failed to delete audio file:", unlinkError.message);
     }
 
-    // Step 3: Evaluate the transcribed text using existing evaluation logic
     if (!transcribedText || transcribedText.trim().length < 10) {
       return res.status(400).json({
         success: false,
@@ -1245,7 +1312,6 @@ export const evaluateVoiceAnswer = async (req, res) => {
       });
     }
 
-    // Generate evaluation using existing prompt
     const prompt = `
       You are a strict AI Interview Evaluator. You must be critical and thorough in your assessment.
 
@@ -1278,7 +1344,6 @@ export const evaluateVoiceAnswer = async (req, res) => {
         initialDelay: 2000,
       });
 
-      // Detect bad responses
       const lower = feedbackText.toLowerCase();
       const looksWrong =
         lower.includes("i understand") ||
@@ -1315,7 +1380,6 @@ export const evaluateVoiceAnswer = async (req, res) => {
       });
     }
 
-    // Parse feedback
     let feedback = parseFeedbackSafely(feedbackText);
 
     if (feedback.parsingFailed) {
@@ -1347,7 +1411,6 @@ ${feedbackText}`;
       transcribedText,
       feedback,
       score,
-      // Removed sessionId - no session created for individual evaluations
     });
   } catch (err) {
     console.error("❌ Error in evaluateVoiceAnswer:", err.message);
@@ -1381,7 +1444,6 @@ ${feedbackText}`;
   }
 };
 
-// Get Active Interview Session (Resume if needed)
 
 export const getActiveSession = async (req, res) => {
   try {
@@ -1421,7 +1483,6 @@ export const getActiveSession = async (req, res) => {
   }
 };
 
-// Cancel Interview (Exit without saving)
 export const cancelInterview = async (req, res) => {
   try {
     const userId = req.user._id.toString();
@@ -1478,7 +1539,6 @@ export const resetInterview = async (req, res) => {
     const userId = req.user._id.toString();
     const sessionKey = `session:${userId}`;
 
-    // 1. Get active session
     const session = await redisClient.hGetAll(sessionKey);
     if (!session || !session.stage) {
       return res.status(404).json({
@@ -1487,7 +1547,6 @@ export const resetInterview = async (req, res) => {
       });
     }
 
-    // 2. Check reset count (per session)
     const resetCount = parseInt(session.resetCount || "0");
     if (resetCount >= 1) {
       return res.status(403).json({
@@ -1496,7 +1555,6 @@ export const resetInterview = async (req, res) => {
       });
     }
 
-    // 3. Get first question to restart
     let firstQuestion = "";
     let firstHistoryItem = null;
     try {
@@ -1510,7 +1568,6 @@ export const resetInterview = async (req, res) => {
     }
 
     if (!firstQuestion) {
-      // Fallback: use currentQuestion if history is broken
       firstQuestion = session.currentQuestion;
       firstHistoryItem = {
         role: "interviewer",
@@ -1519,7 +1576,6 @@ export const resetInterview = async (req, res) => {
       };
     }
 
-    // 4. Reset session state
     const newHistory = [firstHistoryItem];
     
     await redisClient.hSet(sessionKey, {
@@ -1531,7 +1587,6 @@ export const resetInterview = async (req, res) => {
       stage: "started"
     });
 
-    // Clear feedback cache
     const feedbackKey = `feedback:${userId}`;
     await redisClient.del(feedbackKey);
 

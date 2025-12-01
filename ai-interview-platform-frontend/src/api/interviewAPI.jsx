@@ -7,7 +7,7 @@ export const getHistory = () => axios.get("/interview/history");
 export const getWeakAreas = () => axios.get("/interview/weak-areas");
 
 
-export const startInterview = () => axios.post("/interview/start");
+export const startInterview = (data) => axios.post("/interview/start", data);
 export const nextInterviewStep = (answer) => axios.post("/interview/next", { answer });
 export const endInterview = () => axios.post("/interview/end");
 export const cancelInterview = () => axios.post("/interview/cancel");

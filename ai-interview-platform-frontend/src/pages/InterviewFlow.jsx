@@ -37,6 +37,7 @@ import AnswerArea from "../components/AnswerArea";
 import logo from "../assets/prephire-icon-circle.png";
 import { useToast } from "../context/ToastContext";
 import { useAuth } from "../context/AuthContext";
+import InterviewSetupModal from "../components/InterviewSetupModal";
 
 const InterviewFlow = () => {
   const navigate = useNavigate();
@@ -44,7 +45,7 @@ const InterviewFlow = () => {
   const [currentQuestion, setCurrentQuestion] = useState("");
   const [currentAnswer, setCurrentAnswer] = useState("");
   const [feedback, setFeedback] = useState("");
-  const [loading, setLoading] = useState(true); // Start with loading true to prevent empty flash
+  const [loading, setLoading] = useState(true); 
   const { error: toastError, success: toastSuccess } = useToast();
   const [questionCount, setQuestionCount] = useState(0);
   const [conversationHistory, setConversationHistory] = useState([]);
@@ -59,7 +60,6 @@ const InterviewFlow = () => {
   const [transcribedText, setTranscribedText] = useState("");
   const [recordingTime, setRecordingTime] = useState(0);
   
-  // Refs for auto-scrolling
   const answerAreaRef = useRef(null);
   const feedbackRef = useRef(null);
 
@@ -72,10 +72,10 @@ const InterviewFlow = () => {
   const [showScrollIndicator, setShowScrollIndicator] = useState(false);
   const feedbackContentRef = useRef(null);
 
-  // Voice Settings State
   const [voices, setVoices] = useState([]);
   const [selectedVoice, setSelectedVoice] = useState(null);
   const [showVoiceSettings, setShowVoiceSettings] = useState(false);
+  const [showSetupModal, setShowSetupModal] = useState(false);
 
   useEffect(() => {
     const loadVoices = () => {
@@ -87,7 +87,6 @@ const InterviewFlow = () => {
         return;
       }
 
-      // Smart Mapping Logic
       let femaleVoice = englishVoices.find(v => v.name === "Google UK English Female");
       let maleVoice = englishVoices.find(v => v.name === "Google UK English Male");
 
@@ -111,11 +110,9 @@ const InterviewFlow = () => {
         );
       }
 
-      // Fallbacks if specific genders not found
       if (!femaleVoice && englishVoices.length > 0) femaleVoice = englishVoices[0];
       if (!maleVoice && englishVoices.length > 1) maleVoice = englishVoices[1];
       
-      // Create simplified options
       const simplifiedOptions = [];
       
       if (femaleVoice) {
@@ -138,9 +135,7 @@ const InterviewFlow = () => {
 
       setVoices(simplifiedOptions);
       
-      // Restore selection or set default
       const savedVoiceName = localStorage.getItem('preferredVoice');
-      // We store the *original* name in localStorage to persist the actual voice choice
       
       if (savedVoiceName) {
         const savedOption = simplifiedOptions.find(opt => opt.originalName === savedVoiceName);
@@ -150,7 +145,6 @@ const InterviewFlow = () => {
         }
       }
 
-      // Default to Female (Voice 1)
       if (simplifiedOptions.length > 0) {
         setSelectedVoice(simplifiedOptions[0]);
       }
@@ -158,7 +152,6 @@ const InterviewFlow = () => {
 
     loadVoices();
     
-    // Chrome loads voices asynchronously
     if (window.speechSynthesis.onvoiceschanged !== undefined) {
       window.speechSynthesis.onvoiceschanged = loadVoices;
     }
@@ -174,7 +167,6 @@ const InterviewFlow = () => {
     setSelectedVoice(voiceOption);
     localStorage.setItem('preferredVoice', voiceOption.originalName);
     
-    // Preview the voice
     window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance("Hello, I am your AI interviewer.");
     utterance.voice = voiceOption.voice;
@@ -248,25 +240,27 @@ const InterviewFlow = () => {
         setCurrentQuestion(res.data.currentQuestion);
         setQuestionCount(res.data.questionCount);
         setConversationHistory(res.data.history || []);
-        setLoading(false); // Only stop loading if we found a session
+        setLoading(false);
       } else {
-        startNewInterview();
+        setShowSetupModal(true);
+        setLoading(false);
       }
     } catch (err) {
       console.error("Error checking active session:", err);
-      startNewInterview();
+      setShowSetupModal(true);
+      setLoading(false);
     }
   };
 
   const isStartingRef = useRef(false);
 
-  const startNewInterview = async () => {
+  const startNewInterview = async (setupData = {}) => {
     if (isStartingRef.current) return;
     isStartingRef.current = true;
+    setLoading(true);
     
-    // loading is already true from initialization or checkActiveSession
     try {
-      const res = await startInterview();
+      const res = await startInterview(setupData);
       if (res.data.success) {
         setCurrentQuestion(res.data.question);
         setQuestionCount(1);
@@ -285,8 +279,7 @@ const InterviewFlow = () => {
       } else if (err.response?.status === 429 || err.response?.status === 503) {
         toastError(err.response?.data?.message || "AI service is busy. Please wait a moment and try again.");
       } else if (err.response?.status === 403 && err.response?.data?.code === "NO_CREDITS") {
-        // Handle race condition: Check if session was created by another request
-        // Poll for up to 5 seconds to allow AI generation to complete
+
         console.log("⚠️ 403 No Credits. Polling for active session...");
         let attempts = 0;
         let recovered = false;
@@ -403,7 +396,6 @@ const InterviewFlow = () => {
     if (selectedVoice) {
       utterance.voice = selectedVoice.voice;
     } else {
-      // Fallback if no selected voice (shouldn't happen often due to useEffect default)
       const preferredVoice = voices.find(
         (voice) =>
           voice.lang.includes("en") &&
@@ -488,7 +480,6 @@ const InterviewFlow = () => {
       setRecordedAudio(null);
       setTranscribedText("");
       
-      // Auto-scroll to answer area when recording starts
       setTimeout(() => {
         answerAreaRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }, 100);
@@ -519,9 +510,6 @@ const InterviewFlow = () => {
       formData.append("audio", recordedAudio, "answer.webm");
       formData.append("domain", "Resume-Based");
       formData.append("question", currentQuestion);
-
-      // Note: evaluateVoiceAnswer still returns synchronous result for transcription
-      // But we need to use nextInterviewStep (which is now async) for the flow
       const res = await evaluateVoiceAnswer(formData);
 
       if (res.data && res.data.success) {
@@ -544,7 +532,6 @@ const InterviewFlow = () => {
 
             if (result.feedback) {
               setFeedback(result.feedback);
-              // Auto-scroll to feedback after submission
               setTimeout(() => {
                 feedbackRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
               }, 300);
@@ -730,6 +717,19 @@ const InterviewFlow = () => {
           </motion.div>
         </div>
       </PageLayout>
+    );
+  }
+
+  if (showSetupModal) {
+    return (
+      <InterviewSetupModal
+        isOpen={showSetupModal}
+        onClose={() => navigate("/dashboard")}
+        onConfirm={(data) => {
+          setShowSetupModal(false);
+          startNewInterview(data);
+        }}
+      />
     );
   }
 
@@ -1041,7 +1041,6 @@ const InterviewFlow = () => {
                     </div>
                   </div>
                   
-                  {/* Scroll indicator - gradient fade */}
                   <AnimatePresence>
                     {showScrollIndicator && (
                       <motion.div
@@ -1081,7 +1080,6 @@ const InterviewFlow = () => {
                   }}
                 />
 
-                {/* Answer Area */}
                 <div ref={answerAreaRef}>
                   <AnswerArea
                     isRecording={isRecording}
@@ -1104,7 +1102,6 @@ const InterviewFlow = () => {
          </div>
       </div>
 
-      {/* Modals */}
       <ConfirmModal
         isOpen={showEndModal}
         onClose={() => setShowEndModal(false)}
@@ -1162,7 +1159,6 @@ const InterviewFlow = () => {
       )}
       
       <InterviewTour start={startTour} onFinish={handleTourFinish} type="flow" />
-      {/* Voice Settings Modal */}
       <AnimatePresence>
         {showVoiceSettings && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
