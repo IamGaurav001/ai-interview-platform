@@ -1,14 +1,6 @@
 {
   "rewrites": [
     {
-      "source": "/api/:match*",
-      "destination": "http://13.60.25.27/api/:match*"
-    },
-    {
-      "source": "/audio/:match*",
-      "destination": "http://13.60.25.27/audio/:match*"
-    },
-    {
       "source": "/(.*)",
       "destination": "/index.html"
     }

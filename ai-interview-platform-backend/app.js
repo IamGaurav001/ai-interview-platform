@@ -13,26 +13,24 @@ import mongoose from "mongoose";
 import redisClient from "./config/redis.js";
 import monetizationRoutes from "./routes/monetizationRoutes.js";
 
-
 dotenv.config();
 const app = express();
 
+app.set('trust proxy', 1);
+
 connectDB();
 
-// Security Middleware
 app.use(helmet());
 
-// Rate Limiting
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // Limit each IP to 100 requests per windowMs
+  windowMs: 15 * 60 * 1000, 
+  max: 100, 
   message: "Too many requests from this IP, please try again later.",
   standardHeaders: true,
   legacyHeaders: false,
 });
 app.use(limiter);
 
-// CORS Configuration
 const allowedOrigins = [
   "http://localhost:5173",
   "http://localhost:3000",
@@ -42,7 +40,6 @@ const allowedOrigins = [
 
 app.use(cors({
   origin: function (origin, callback) {
-    // Allow requests with no origin (like mobile apps or curl requests)
     if (!origin) return callback(null, true);
     if (allowedOrigins.indexOf(origin) === -1) {
       const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
@@ -90,12 +87,10 @@ app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
 
-// Start server immediately (don't wait for Redis)
 console.log("CI/CD working test");
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
   
-  // Connect to Redis in background (non-blocking)
   redisClient.connect()
     .then(() => {
       console.log("✅ Redis connected successfully");
