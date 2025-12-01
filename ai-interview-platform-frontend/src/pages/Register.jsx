@@ -7,7 +7,7 @@ import { motion } from "framer-motion";
 import logo from "../assets/intervueai-logo.png";
 import PageLayout from "../components/PageLayout";
 
-import { logEvent, setUserId } from "../config/amplitude";
+import { logEvent, setUserId, setUserProperties } from "../config/amplitude";
 
 const Register = () => {
   const { signup, googleLogin, user, loading: authLoading } = useAuth();
@@ -52,7 +52,12 @@ const Register = () => {
       const userCredential = await signup(formData.email, formData.password, formData.name.trim());
       if (userCredential && userCredential.user) {
         setUserId(userCredential.user.uid);
+        setUserProperties({
+          email: userCredential.user.email,
+          name: formData.name || userCredential.user.displayName || 'User',
+        });
         logEvent('Sign Up', { method: 'Email' });
+        navigate("/dashboard");
       }
       // Sync user to MongoDB backend
       try {
@@ -88,7 +93,12 @@ const Register = () => {
       const user = await googleLogin();
       if (user) {
         setUserId(user.uid);
+        setUserProperties({
+          email: user.email,
+          name: user.displayName || 'User',
+        });
         logEvent('Sign Up', { method: 'Google' });
+        navigate("/dashboard");
         try {
           await syncUser();
         } catch (syncError) {

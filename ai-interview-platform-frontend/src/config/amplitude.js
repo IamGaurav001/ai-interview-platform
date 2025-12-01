@@ -16,3 +16,11 @@ export const logEvent = (eventName, eventProperties) => {
 export const setUserId = (userId) => {
   amplitude.setUserId(userId);
 };
+
+export const setUserProperties = (properties) => {
+  const identify = new amplitude.Identify();
+  Object.keys(properties).forEach((key) => {
+    identify.set(key, properties[key]);
+  });
+  amplitude.identify(identify);
+};

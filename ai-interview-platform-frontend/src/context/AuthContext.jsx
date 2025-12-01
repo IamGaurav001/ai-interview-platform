@@ -15,6 +15,7 @@ import {
   sendVerificationEmail as sendVerificationEmailAPI,
   sendPasswordResetEmail as sendPasswordResetEmailAPI
 } from "../api/authAPI";
+import { setUserId, setUserProperties } from "../config/amplitude";
 
 export const AuthContext = createContext(null);
 
@@ -40,9 +41,18 @@ export const AuthProvider = ({ children }) => {
       if (firebaseUser) {
         await updateToken(firebaseUser);
         
+        // Set Amplitude User Identity
+        setUserId(firebaseUser.uid);
+        setUserProperties({
+          email: firebaseUser.email,
+          name: firebaseUser.displayName || 'User',
+          email_verified: firebaseUser.emailVerified
+        });
+
         setUser(firebaseUser);
       } else {
         localStorage.removeItem("firebaseToken");
+        setUserId(null); // Clear Amplitude user on logout
         setUser(null);
       }
       setLoading(false);

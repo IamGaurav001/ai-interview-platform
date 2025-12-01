@@ -7,7 +7,7 @@ import { motion } from "framer-motion";
 import logo from "../assets/intervueai-logo.png";
 import PageLayout from "../components/PageLayout";
 
-import { logEvent, setUserId } from "../config/amplitude";
+import { logEvent, setUserId, setUserProperties } from "../config/amplitude";
 
 const Login = () => {
   const { login, googleLogin, user, loading: authLoading } = useAuth();
@@ -34,6 +34,10 @@ const Login = () => {
       const userCredential = await login(email, password);
       if (userCredential && userCredential.user) {
           setUserId(userCredential.user.uid);
+          setUserProperties({
+            email: userCredential.user.email,
+            name: userCredential.user.displayName || 'User',
+          });
           logEvent('Login', { method: 'Email' });
       }
       
@@ -81,6 +85,10 @@ const Login = () => {
       // If googleLogin returned null, we are in redirect flow (handled automatically)
       if (user) {
         setUserId(user.uid);
+        setUserProperties({
+          email: user.email,
+          name: user.displayName || 'User',
+        });
         logEvent('Login', { method: 'Google' });
         try {
           await syncUser();
