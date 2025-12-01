@@ -26,11 +26,11 @@
   "rewrites": [
     {
       "source": "/api/:match*",
-      "destination": "http://13.60.25.27/api/:match*"
+      "destination": "https://api.prephire.co/api/:match*"
     },
     {
       "source": "/audio/:match*",
-      "destination": "http://13.60.25.27/audio/:match*"
+      "destination": "https://api.prephire.co/audio/:match*"
     },
     {
       "source": "/(.*)",
