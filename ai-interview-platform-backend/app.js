@@ -36,6 +36,7 @@ const allowedOrigins = [
   "http://localhost:3000",
   "https://prephire.co",
   "https://www.prephire.co",
+  "https://prephire.vercel.app",
   process.env.FRONTEND_URL
 ].filter(Boolean);
 
