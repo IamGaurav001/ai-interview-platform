@@ -1,6 +1,14 @@
 {
   "rewrites": [
     {
+      "source": "/api/(.*)",
+      "destination": "http://13.60.25.27:3001/api/$1"
+    },
+    {
+      "source": "/audio/(.*)",
+      "destination": "http://13.60.25.27:3001/audio/$1"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }
