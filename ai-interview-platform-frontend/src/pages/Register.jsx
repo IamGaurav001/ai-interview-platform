@@ -7,6 +7,8 @@ import { motion } from "framer-motion";
 import logo from "../assets/intervueai-logo.png";
 import PageLayout from "../components/PageLayout";
 
+import { logEvent, setUserId } from "../config/amplitude";
+
 const Register = () => {
   const { signup, googleLogin, user, loading: authLoading } = useAuth();
   const [formData, setFormData] = useState({
@@ -19,11 +21,9 @@ const Register = () => {
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
-  // Redirect if user is already authenticated (prevents accessing register page when logged in)
   useEffect(() => {
-    // Only redirect if we are NOT currently submitting the form (loading is false)
-    // This prevents the race condition where Firebase auth finishes before our backend sync
     if (user && !authLoading && !loading) {
+      setUserId(user.uid);
       navigate("/dashboard", { replace: true });
     }
   }, [user, authLoading, navigate, loading]);
@@ -49,7 +49,11 @@ const Register = () => {
 
     setLoading(true);
     try {
-      await signup(formData.email, formData.password, formData.name.trim());
+      const userCredential = await signup(formData.email, formData.password, formData.name.trim());
+      if (userCredential && userCredential.user) {
+        setUserId(userCredential.user.uid);
+        logEvent('Sign Up', { method: 'Email' });
+      }
       // Sync user to MongoDB backend
       try {
         await syncUser();
@@ -83,6 +87,8 @@ const Register = () => {
     try {
       const user = await googleLogin();
       if (user) {
+        setUserId(user.uid);
+        logEvent('Sign Up', { method: 'Google' });
         try {
           await syncUser();
         } catch (syncError) {

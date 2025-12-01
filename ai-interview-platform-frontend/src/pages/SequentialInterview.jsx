@@ -32,6 +32,8 @@ import logo from "../assets/prephire-icon-circle.png";
 import { useToast } from "../context/ToastContext";
 
 
+import { logEvent } from "../config/amplitude";
+
 const SequentialInterview = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -82,6 +84,12 @@ const SequentialInterview = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
   const [startTour, setStartTour] = useState(false);
+
+  useEffect(() => {
+    if (questions.length > 0) {
+      logEvent('Start Interview', { type: 'Sequential', questionCount: questions.length });
+    }
+  }, []);
 
   useEffect(() => {
     const hasSeenTour = localStorage.getItem('hasSeenSequentialTour');
@@ -322,6 +330,11 @@ const SequentialInterview = () => {
         questions,
         answers: finalAnswers,
         feedbacks: finalFeedbacks,
+      });
+      logEvent('Complete Interview', { 
+        type: 'Sequential', 
+        questionCount: questions.length,
+        score: calculateOverallScore()
       });
       setShowSummary(true);
     } catch (err) {

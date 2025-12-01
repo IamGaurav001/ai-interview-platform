@@ -39,6 +39,8 @@ import { useToast } from "../context/ToastContext";
 import { useAuth } from "../context/AuthContext";
 import InterviewSetupModal from "../components/InterviewSetupModal";
 
+import { logEvent } from "../config/amplitude";
+
 const InterviewFlow = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -267,6 +269,7 @@ const InterviewFlow = () => {
         setConversationHistory([
           { role: "interviewer", text: res.data.question, timestamp: new Date().toISOString() }
         ]);
+        logEvent('Start Interview', { type: 'Flow' });
 
       } else {
         toastError(res.data.message || "Failed to start interview");
@@ -594,6 +597,11 @@ const InterviewFlow = () => {
       const res = await endInterview();
       if (res.data.success) {
         setSummary(res.data.summary);
+        logEvent('Complete Interview', { 
+          type: 'Flow', 
+          questionCount: questionCount,
+          score: res.data.summary.overallScore 
+        });
       } else {
         toastError("Failed to complete interview");
         setIsComplete(false);

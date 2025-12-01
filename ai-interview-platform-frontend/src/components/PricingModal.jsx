@@ -3,6 +3,7 @@ import { X, CheckCircle2, AlertCircle, CreditCard } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import axios from "axios";
 import { auth } from "../config/firebase";
+import { logEvent } from "../config/amplitude";
 
 const PricingModal = ({ isOpen, onClose, onSuccess, userEmail, userName }) => {
   const [loading, setLoading] = useState(false);
@@ -34,6 +35,8 @@ const PricingModal = ({ isOpen, onClose, onSuccess, userEmail, userName }) => {
     setError("");
 
     try {
+      logEvent('Initiate Checkout', { plan: selectedPlan, amount: selectedPlan === "3_interviews" ? 49 : 19 });
+
       const isScriptLoaded = await loadRazorpayScript();
       if (!isScriptLoaded) {
         setError("Failed to load payment SDK. Please check your internet connection.");
@@ -79,10 +82,12 @@ const PricingModal = ({ isOpen, onClose, onSuccess, userEmail, userName }) => {
               { headers: { Authorization: `Bearer ${token}` } }
             );
 
+            logEvent('Payment Success', { plan: selectedPlan, amount: order.amount / 100, orderId: order.id });
             onSuccess();
             onClose();
           } catch (verifyErr) {
             console.error("Verification failed:", verifyErr);
+            logEvent('Payment Verification Failed', { error: verifyErr.message });
             setError(verifyErr.response?.data?.message || "Payment verification failed. Please contact support.");
           }
         },
@@ -97,11 +102,13 @@ const PricingModal = ({ isOpen, onClose, onSuccess, userEmail, userName }) => {
 
       const rzp1 = new window.Razorpay(options);
       rzp1.on("payment.failed", function (response) {
+        logEvent('Payment Failed', { error: response.error.description });
         setError(response.error.description || "Payment failed");
       });
       rzp1.open();
     } catch (err) {
       console.error("Payment initiation failed:", err);
+      logEvent('Payment Initiation Error', { error: err.message });
       setError(err.response?.data?.message || err.message || "Failed to start payment. Please try again.");
     } finally {
       setLoading(false);

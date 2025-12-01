@@ -13,6 +13,7 @@ import {
   Trash2,
   Save
 } from "lucide-react";
+import { logEvent } from "../config/amplitude";
 
 const Settings = () => {
   const { user, updateUser, logout, resetPassword } = useAuth();
@@ -42,6 +43,7 @@ const Settings = () => {
 
     try {
       await updateUser({ displayName });
+      logEvent('Update Profile', { field: 'displayName' });
       setMessage({ type: "success", text: "Profile updated successfully" });
     } catch (error) {
       setMessage({ type: "error", text: "Failed to update profile" });
@@ -203,6 +205,7 @@ const Settings = () => {
                             
                             try {
                               await updateUser({ notifications: newNotifications });
+                              logEvent('Update Settings', { type: 'Notifications', setting: item.id, value: newValue });
                               setMessage({ type: "success", text: "Preferences saved" });
                               setTimeout(() => setMessage({ type: "", text: "" }), 3000);
                             } catch (err) {

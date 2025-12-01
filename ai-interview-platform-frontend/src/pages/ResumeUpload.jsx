@@ -22,6 +22,8 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import PageLayout from "../components/PageLayout";
 
+import { logEvent } from "../config/amplitude";
+
 const ResumeUpload = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -187,6 +189,7 @@ const ResumeUpload = () => {
         Array.isArray(questionsData) &&
         questionsData.length > 0
       ) {
+        logEvent('Resume Upload', { success: true });
         const questionsText = questionsData
           .map((q, idx) => `${idx + 1}. ${q}`)
           .join("\n");
@@ -205,12 +208,14 @@ const ResumeUpload = () => {
           }
         }, 500);
       } else {
+        logEvent('Resume Upload', { success: false, error: 'No questions generated' });
         setError(
           "No questions were generated. Please try again or check if the backend is properly configured."
         );
       }
     } catch (err) {
       console.error("Resume upload error:", err);
+      logEvent('Resume Upload', { success: false, error: err.message });
       if (err.networkError || !err.response) {
         setError(
           "Cannot connect to server. Please make sure the backend is running."

@@ -2,6 +2,7 @@ import React, { useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useAuth } from "../context/AuthContext";
+import { logEvent } from "../config/amplitude";
 import logo from "../assets/intervueai-logo.png";
 import icon from "../assets/prephire-icon-circle.png";
 import { 
@@ -94,6 +95,7 @@ const Landing = () => {
             <motion.div variants={fadeIn} className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-20">
               <Link
                 to="/register"
+                onClick={() => logEvent('Click CTA', { location: 'Hero', text: 'Start Practicing Free' })}
                 className="px-8 py-4 bg-slate-900 text-white text-lg font-semibold rounded-full hover:bg-slate-800 transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5 flex items-center gap-2"
               >
                 Start Practicing Free <ArrowRight className="h-4 w-4" />
@@ -267,6 +269,7 @@ const Landing = () => {
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Link
                 to="/register"
+                onClick={() => logEvent('Click CTA', { location: 'Bottom', text: 'Get Started Now' })}
                 className="px-10 py-5 bg-slate-900 text-white text-lg font-bold rounded-full hover:bg-slate-800 transition-all shadow-lg hover:shadow-xl hover:-translate-y-1 flex items-center gap-2"
               >
                 Get Started Now <ArrowRight className="h-5 w-5" />

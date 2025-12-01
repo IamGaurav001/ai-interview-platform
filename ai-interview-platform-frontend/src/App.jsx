@@ -1,4 +1,4 @@
-import React from "react";
+import { useEffect } from "react";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -24,11 +24,16 @@ import Pricing from "./pages/Pricing";
 import VerifyEmail from "./pages/VerifyEmail";
 import Refund from "./pages/Refund";
 import Shipping from "./pages/Shipping";
+import { logEvent } from "./config/amplitude";
 
 const Layout = ({ children }) => {
   const location = useLocation();
   const hideNavbarRoutes = ["/login", "/register", "/interview-flow", "/sequential-interview", "/forgot-password", "/verify-email"];
   const showNavbar = !hideNavbarRoutes.includes(location.pathname);
+
+  useEffect(() => {
+    logEvent('Page View', { path: location.pathname });
+  }, [location]);
 
   return (
     <>

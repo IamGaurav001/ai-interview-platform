@@ -30,6 +30,7 @@ import {
 } from "recharts";
 import Loader from "../components/Loader";
 import PageLayout from "../components/PageLayout";
+import { logEvent } from "../config/amplitude";
 import { motion, AnimatePresence } from "framer-motion";
 
 const Dashboard = () => {
@@ -137,6 +138,7 @@ const Dashboard = () => {
   };
 
   const handleStartInterview = () => {
+    logEvent('Click Start Interview', { source: 'Dashboard' });
     const totalCredits = (userUsage.freeInterviewsLeft || 0) + (userUsage.purchasedCredits || 0);
     if (totalCredits > 0) {
       navigate("/upload-resume");

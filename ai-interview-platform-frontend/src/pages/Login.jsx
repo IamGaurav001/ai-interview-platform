@@ -7,6 +7,8 @@ import { motion } from "framer-motion";
 import logo from "../assets/intervueai-logo.png";
 import PageLayout from "../components/PageLayout";
 
+import { logEvent, setUserId } from "../config/amplitude";
+
 const Login = () => {
   const { login, googleLogin, user, loading: authLoading } = useAuth();
   const [email, setEmail] = useState("");
@@ -18,6 +20,7 @@ const Login = () => {
   // Redirect if user is already authenticated (prevents accessing login page when logged in)
   useEffect(() => {
     if (user && !authLoading) {
+      setUserId(user.uid);
       navigate("/dashboard", { replace: true });
     }
   }, [user, authLoading, navigate]);
@@ -28,7 +31,12 @@ const Login = () => {
     setLoading(true);
 
     try {
-      await login(email, password);
+      const userCredential = await login(email, password);
+      if (userCredential && userCredential.user) {
+          setUserId(userCredential.user.uid);
+          logEvent('Login', { method: 'Email' });
+      }
+      
       try {
         await syncUser();
       } catch (syncError) {
@@ -72,6 +80,8 @@ const Login = () => {
       const user = await googleLogin();
       // If googleLogin returned null, we are in redirect flow (handled automatically)
       if (user) {
+        setUserId(user.uid);
+        logEvent('Login', { method: 'Google' });
         try {
           await syncUser();
         } catch (syncError) {
