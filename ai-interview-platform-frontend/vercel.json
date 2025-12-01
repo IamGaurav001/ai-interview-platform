@@ -1,12 +1,12 @@
 {
   "rewrites": [
     {
-      "source": "/api/(.*)",
-      "destination": "http://13.60.25.27:3001/api/$1"
+      "source": "/api/:match*",
+      "destination": "http://13.60.25.27/api/:match*"
     },
     {
-      "source": "/audio/(.*)",
-      "destination": "http://13.60.25.27:3001/audio/$1"
+      "source": "/audio/:match*",
+      "destination": "http://13.60.25.27/audio/:match*"
     },
     {
       "source": "/(.*)",
