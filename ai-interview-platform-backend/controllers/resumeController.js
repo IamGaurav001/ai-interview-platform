@@ -119,7 +119,11 @@ export const analyzeResume = async (req, res) => {
     - Clear and professional
     - Directly related to what's mentioned in their resume
 
-    Format your response as a numbered list with just the questions.`;
+    CRITICAL OUTPUT RULES:
+    - Return ONLY the numbered list of questions.
+    - Do NOT include any introductory text like "Here are the questions" or "Based on the resume".
+    - Do NOT include any closing text.
+    - Each line must start with a number followed by a dot or parenthesis.`;
 
     console.log("Prompt length:", prompt.length);
     console.log("Resume snippet in prompt:", prompt.includes(cleanResumeText.substring(0, 100)) ? "✓" : "✗");
@@ -183,7 +187,12 @@ export const analyzeResume = async (req, res) => {
     for (const line of lines) {
       const cleaned = line.replace(/^\d+[\.\)]\s*/, "").trim();
       
-      if (cleaned.length > 10 && !cleaned.match(/^(question|answer|note|tip)/i)) {
+      // Improved filtering to remove introductory/concluding text
+      const isIntro = /^(here are|based on|sure|okay|i have generated|following are)/i.test(cleaned);
+      const isTooShort = cleaned.length < 15;
+      const isMeta = /^(question|answer|note|tip)/i.test(cleaned);
+      
+      if (!isIntro && !isTooShort && !isMeta) {
         questionsArray.push(cleaned);
       }
     }

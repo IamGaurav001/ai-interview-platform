@@ -176,7 +176,7 @@ const ResumeUpload = () => {
             .filter((line) => line.trim());
           questionsData = lines
             .map((line) => line.replace(/^\d+[\.\)]\s*/, "").trim())
-            .filter((q) => q.length > 10);
+            .filter((q) => q.length > 10 && !/^(here are|based on|sure|okay|i have generated)/i.test(q));
         } else if (res.data.data && Array.isArray(res.data.data.questions)) {
           questionsData = res.data.data.questions;
         }
