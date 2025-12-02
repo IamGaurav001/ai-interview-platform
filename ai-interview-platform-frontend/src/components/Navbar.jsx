@@ -13,6 +13,7 @@ import {
   Settings,
 } from "lucide-react";
 import logo from "../assets/intervueai-logo.png";
+import prephireIcon from "../assets/prephire-icon-circle.png";
 import { motion, AnimatePresence } from "framer-motion";
 
 const Navbar = () => {
@@ -107,6 +108,11 @@ const Navbar = () => {
               to={user ? "/dashboard" : "/"}
               className="flex items-center gap-2 group relative z-10"
             >
+              <img
+                src={prephireIcon}
+                alt="PrepHire Icon"
+                className="h-10 w-10 transition-transform duration-300 group-hover:scale-105"
+              />
               <img
                 src={logo}
                 alt="PrepHire"
