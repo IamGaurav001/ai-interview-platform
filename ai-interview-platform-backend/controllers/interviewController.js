@@ -1493,7 +1493,7 @@ export const cancelInterview = async (req, res) => {
     if (session && session.history) {
         try {
             const history = JSON.parse(session.history);
-            if (history.length <= 5) {
+            if (history.length <= 10) {
                 const user = await User.findById(userId);
                 if (user) {
                     if (!user.usage) user.usage = {};

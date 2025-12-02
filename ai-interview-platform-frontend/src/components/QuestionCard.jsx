@@ -4,11 +4,12 @@ import { Bot, Volume2, Pause, Sparkles } from 'lucide-react';
 const QuestionCard = ({ 
   question, 
   isPlaying, 
-  onPlayToggle 
+  onPlayToggle,
+  className = ""
 }) => {
   return (
     <div 
-      className="bg-gradient-to-br from-white via-white to-blue-50/30 rounded-3xl shadow-lg border border-blue-100/50 p-6 sm:p-8 relative overflow-hidden group hover:shadow-xl transition-all duration-300" 
+      className={`bg-gradient-to-br from-white via-white to-blue-50/30 rounded-3xl shadow-lg border border-blue-100/50 p-6 sm:p-8 relative overflow-hidden group hover:shadow-xl transition-all duration-300 flex flex-col ${className}`}
       data-tour="question-display"
     >
       {/* Accent Bar with Gradient */}
@@ -18,9 +19,9 @@ const QuestionCard = ({
       <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 rounded-full blur-3xl"></div>
       <div className="absolute bottom-0 left-1/2 w-24 h-24 bg-indigo-500/5 rounded-full blur-2xl"></div>
       
-      <div className="flex flex-col gap-5 relative z-10">
+      <div className="flex flex-col gap-5 relative z-10 flex-1 min-h-0">
         {/* Header with Icon */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 flex-shrink-0">
           <div className="flex-shrink-0 w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-lg shadow-blue-500/30 group-hover:scale-110 transition-transform duration-300">
             <Bot className="h-5 w-5 text-white" />
           </div>
@@ -31,12 +32,14 @@ const QuestionCard = ({
         </div>
 
         {/* Question Text */}
-        <p className="text-lg sm:text-xl text-slate-800 font-semibold leading-relaxed pl-1">
-          {question}
-        </p>
+        <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar min-h-[60px]">
+          <p className="text-lg sm:text-xl text-slate-800 font-semibold leading-relaxed pl-1">
+            {question}
+          </p>
+        </div>
 
         {/* Audio Control Button */}
-        <div className="flex items-center gap-3 pt-2">
+        <div className="flex items-center gap-3 pt-2 flex-shrink-0">
           <button
             onClick={onPlayToggle}
             className={`flex items-center gap-2.5 px-5 py-2.5 rounded-xl font-semibold text-sm transition-all duration-300 shadow-md hover:shadow-lg transform hover:scale-105 active:scale-95 ${

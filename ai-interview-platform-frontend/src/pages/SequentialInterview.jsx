@@ -28,6 +28,9 @@ import SpeakingAvatar from "../components/SpeakingAvatar";
 import ConfirmModal from "../components/ConfirmModal";
 import PageLayout from "../components/PageLayout";
 import InterviewTour from "../components/InterviewTour";
+import QuestionCard from "../components/QuestionCard";
+import AnswerArea from "../components/AnswerArea";
+import VoiceSettingsModal from "../components/VoiceSettingsModal";
 import logo from "../assets/prephire-icon-circle.png";
 import { useToast } from "../context/ToastContext";
 
@@ -84,6 +87,8 @@ const SequentialInterview = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
   const [startTour, setStartTour] = useState(false);
+  const [isPlayingQuestion, setIsPlayingQuestion] = useState(false);
+  const [isPlayingFeedback, setIsPlayingFeedback] = useState(false);
 
   useEffect(() => {
     if (questions.length > 0) {
@@ -140,6 +145,8 @@ const SequentialInterview = () => {
       if (mediaRecorder && isRecording) {
         mediaRecorder.stop();
       }
+      
+      window.speechSynthesis.cancel();
     };
   }, [audioInstances, mediaRecorder, isRecording]);
 
@@ -457,6 +464,69 @@ const SequentialInterview = () => {
     }
   };
 
+  const playBrowserTTS = (text, type = "question") => {
+    if (!("speechSynthesis" in window)) {
+      console.warn("Browser TTS not supported");
+      return;
+    }
+
+    window.speechSynthesis.cancel();
+
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = "en-US";
+    utterance.rate = 1.0;
+    utterance.pitch = 1.0;
+    utterance.volume = 1.0;
+
+    // Try to find a good voice
+    const voices = window.speechSynthesis.getVoices();
+    const preferredVoice = voices.find(
+      (voice) =>
+        voice.lang.includes("en") &&
+        (voice.name.includes("Samantha") ||
+          voice.name.includes("Karen") ||
+          voice.name.includes("Victoria") ||
+          voice.voiceURI.includes("Neural"))
+    );
+    if (preferredVoice) {
+      utterance.voice = preferredVoice;
+    }
+
+    if (type === "question") {
+      setIsPlayingQuestion(true);
+    } else {
+      setIsPlayingFeedback(true);
+    }
+
+    utterance.onend = () => {
+      if (type === "question") {
+        setIsPlayingQuestion(false);
+      } else {
+        setIsPlayingFeedback(false);
+      }
+    };
+
+    utterance.onerror = () => {
+      console.error("Browser TTS error");
+      if (type === "question") {
+        setIsPlayingQuestion(false);
+      } else {
+        setIsPlayingFeedback(false);
+      }
+    };
+
+    window.speechSynthesis.speak(utterance);
+  };
+
+  const stopBrowserTTS = (type = "question") => {
+    window.speechSynthesis.cancel();
+    if (type === "question") {
+      setIsPlayingQuestion(false);
+    } else {
+      setIsPlayingFeedback(false);
+    }
+  };
+
   const calculateOverallScore = () => {
     if (feedbacks.length === 0) return 0;
     let total = 0;
@@ -680,7 +750,7 @@ const SequentialInterview = () => {
     <PageLayout>
       <div className="min-h-screen bg-slate-50 p-4 sm:p-6 lg:p-8 font-sans">
         {/* Header */}
-        <header className="max-w-7xl mx-auto mb-6 flex items-center justify-between">
+        <header className="max-w-7xl mx-auto mb-6 flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <div className="flex gap-1.5">
               <div className="w-3 h-3 rounded-full bg-red-400"></div>
@@ -715,7 +785,7 @@ const SequentialInterview = () => {
           </div>
         </header>
 
-        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 h-[calc(100vh-140px)]">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 lg:h-[calc(100vh-140px)] min-h-[calc(100vh-140px)]">
           {/* Left Column - AI Interviewer */}
           <div className="lg:col-span-4 bg-white rounded-3xl shadow-sm border border-slate-100 p-10 flex flex-col items-center justify-center relative overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-b from-transparent to-slate-50/50 pointer-events-none"></div>
@@ -790,126 +860,43 @@ const SequentialInterview = () => {
             </div>
           </div>
 
-          {/* Right Column - Interaction Area */}
-          <div className="lg:col-span-8 flex flex-col gap-8 h-full overflow-hidden">
-            <div className="flex-1 overflow-y-auto space-y-8 pr-2">
-            {/* Question Card */}
-            <div className="bg-white rounded-3xl shadow-sm border border-slate-100 p-10 relative overflow-hidden group">
-              <div className="absolute top-0 left-0 w-2 h-full bg-blue-500"></div>
-              <div className="flex items-start gap-6">
-                <div className="flex-shrink-0 w-12 h-12 rounded-2xl bg-blue-50 flex items-center justify-center text-blue-600 font-bold text-base">
-                  AI
-                </div>
-                <div className="flex-1">
-                  <p className="text-2xl text-slate-800 font-medium leading-relaxed">
-                    {currentQuestion}
-                  </p>
-                </div>
-                {questionAudioUrls[currentQuestionIndex] && (
-                  <button
-                    onClick={() => {
-                      const audioKey = `question_${currentQuestionIndex}`;
-                      if (playingAudio[audioKey]) {
-                        stopAudio("question", currentQuestionIndex);
-                      } else {
-                        playAudio(questionAudioUrls[currentQuestionIndex], "question", currentQuestionIndex);
-                      }
-                    }}
-                    className="text-slate-400 hover:text-blue-600 transition-colors p-2 hover:bg-blue-50 rounded-full"
-                  >
-                    {playingAudio[`question_${currentQuestionIndex}`] ? (
-                      <Pause className="h-6 w-6" />
-                    ) : (
-                      <Volume2 className="h-6 w-6" />
-                    )}
-                  </button>
-                )}
-              </div>
-            </div>
-
-            {/* Answer Area */}
-            <div className="flex-1 bg-blue-50/50 rounded-3xl border border-blue-100/50 p-8 flex flex-col justify-center items-center relative overflow-hidden">
-              {/* Controls */}
-              <div className="absolute bottom-8 left-0 right-0 flex justify-center items-center gap-6 z-20">
-                 {!isRecording ? (
-                    <button
-                      onClick={startRecording}
-                      disabled={loading || playingAudio[`question_${currentQuestionIndex}`] || playingAudio[`feedback_${currentQuestionIndex}`]}
-                      className="h-16 w-16 bg-blue-600 hover:bg-blue-700 text-white rounded-full flex items-center justify-center shadow-lg hover:shadow-blue-500/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105"
-                    >
-                      <Mic className="h-7 w-7" />
-                    </button>
-                 ) : (
-                    <button
-                      onClick={stopRecording}
-                      className="h-16 w-16 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center shadow-lg hover:shadow-red-500/30 transition-all animate-pulse"
-                    >
-                      <Square className="h-6 w-6 fill-current" />
-                    </button>
-                 )}
+            {/* Right Column - Interaction Area */}
+            <div className="lg:col-span-8 flex flex-col gap-6 h-full overflow-hidden">
+              {/* Question Section - Flexible */}
+              <div className="flex-1 min-h-0 flex flex-col">
+                <QuestionCard
+                  question={currentQuestion}
+                  isPlaying={isPlayingQuestion}
+                  onPlayToggle={() => {
+                    if (isPlayingQuestion) {
+                      stopBrowserTTS("question");
+                    } else {
+                      playBrowserTTS(currentQuestion, "question");
+                    }
+                  }}
+                  className="max-h-full"
+                />
               </div>
 
-              {/* User Content */}
-              <div className="w-full max-w-2xl text-center z-10 mb-16">
-                {isRecording ? (
-                   <div className="text-slate-500 text-lg font-medium animate-pulse">
-                     Listening to your answer...
-                   </div>
-                ) : recordedAudio ? (
-                  <div className="flex flex-col items-center gap-4">
-                    <div className="bg-white px-6 py-3 rounded-full shadow-sm border border-slate-200 flex items-center gap-3">
-                      <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                      <span className="text-slate-700 font-medium">Answer Recorded</span>
-                    </div>
-                    <div className="flex gap-3">
-                      <button 
-                        onClick={() => setRecordedAudio(null)}
-                        className="px-6 py-2.5 rounded-xl text-slate-600 hover:bg-white/50 transition-colors font-medium text-sm"
-                      >
-                        Re-record
-                      </button>
-                      <button 
-                        onClick={handleSubmitVoiceAnswer}
-                        disabled={loading}
-                        className="px-8 py-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors shadow-md hover:shadow-lg font-medium text-sm flex items-center gap-2"
-                      >
-                        {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-                        Submit Answer
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="flex items-start gap-4 w-full">
-                    <div className="flex-shrink-0 w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold text-sm shadow-md">
-                      ME
-                    </div>
-                    <div className="flex-1">
-                      <textarea
-                        value={currentAnswer}
-                        onChange={(e) => setCurrentAnswer(e.target.value)}
-                        placeholder="Type your answer here or use the microphone..."
-                        className="w-full bg-transparent border-none text-xl text-slate-700 placeholder:text-slate-400 focus:ring-0 resize-none p-0 leading-relaxed"
-                        rows={4}
-                      />
-                      {currentAnswer && (
-                         <div className="flex justify-end mt-4">
-                            <button 
-                              onClick={handleSubmitAnswer}
-                              disabled={loading}
-                              className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm font-medium text-sm flex items-center gap-2"
-                            >
-                              {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-                              Submit
-                            </button>
-                         </div>
-                      )}
-                    </div>
-                  </div>
-                )}
+              {/* Answer Section - Fixed */}
+              <div className="flex-shrink-0">
+                <AnswerArea
+                  isRecording={isRecording}
+                  recordedAudio={recordedAudio}
+                  currentAnswer={currentAnswer}
+                  transcribedText={transcribedText}
+                  loading={loading}
+                  isPlayingQuestion={isPlayingQuestion}
+                  isPlayingFeedback={isPlayingFeedback}
+                  onStartRecording={startRecording}
+                  onStopRecording={stopRecording}
+                  onClearRecording={() => setRecordedAudio(null)}
+                  onSubmitVoice={handleSubmitVoiceAnswer}
+                  onAnswerChange={setCurrentAnswer}
+                  onSubmitText={handleSubmitAnswer}
+                />
               </div>
             </div>
-            </div>
-          </div>
         </div>
       </div>
 
@@ -922,6 +909,7 @@ const SequentialInterview = () => {
         confirmText="End Interview"
         cancelText="Continue Interview"
         type="warning"
+        isDestructive={true}
       />
 
       {/* Exit Confirmation Modal */}
@@ -934,9 +922,18 @@ const SequentialInterview = () => {
         confirmText="Exit without Saving"
         cancelText="Continue Interview"
         type="warning"
+        isDestructive={true}
       />
       
       <InterviewTour start={startTour} onFinish={handleTourFinish} type="sequential" />
+      
+      <VoiceSettingsModal
+        isOpen={showVoiceSettings}
+        onClose={() => setShowVoiceSettings(false)}
+        voices={voices}
+        selectedVoice={selectedVoice}
+        onVoiceSelect={handleVoiceChange}
+      />
     </PageLayout>
   );
 };
