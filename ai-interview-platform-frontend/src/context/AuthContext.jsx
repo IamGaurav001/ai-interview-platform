@@ -88,6 +88,15 @@ export const AuthProvider = ({ children }) => {
 
     await updateToken(userCredential.user);
     
+    // Set Amplitude User Identity
+    setUserId(userCredential.user.uid);
+    setUserProperties({
+      email: userCredential.user.email,
+      name: displayName || 'User',
+      username: displayName || 'User',
+      email_verified: userCredential.user.emailVerified
+    });
+
     // Send verification email
     try {
       await sendVerificationEmailAPI();
@@ -120,6 +129,15 @@ export const AuthProvider = ({ children }) => {
     
     await updateToken(userCredential.user);
     
+    // Set Amplitude User Identity
+    setUserId(userCredential.user.uid);
+    setUserProperties({
+      email: userCredential.user.email,
+      name: userCredential.user.displayName || 'User',
+      username: userCredential.user.displayName || 'User',
+      email_verified: userCredential.user.emailVerified
+    });
+
     setUser(userCredential.user);
     
     return userCredential.user;
@@ -139,6 +157,15 @@ export const AuthProvider = ({ children }) => {
     try {
       const result = await signInWithPopup(auth, provider);
       await updateToken(result.user);
+
+      // Set Amplitude User Identity
+      setUserId(result.user.uid);
+      setUserProperties({
+        email: result.user.email,
+        name: result.user.displayName || 'User',
+        username: result.user.displayName || 'User',
+        email_verified: result.user.emailVerified
+      });
 
       setUser(result.user);
       return result.user;
