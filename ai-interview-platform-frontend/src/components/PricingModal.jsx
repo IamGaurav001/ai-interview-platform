@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { X, CheckCircle2, AlertCircle, CreditCard } from "lucide-react";
+import { X, CheckCircle2, AlertCircle, CreditCard, Zap, ShieldCheck } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import axios from "axios";
 import { auth } from "../config/firebase";
@@ -9,6 +9,13 @@ const PricingModal = ({ isOpen, onClose, onSuccess, userEmail, userName }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [selectedPlan, setSelectedPlan] = useState("1_interview");
+
+  const plans = {
+    "1_interview": { price: 19, currency: "₹", label: "1 Interview Credit" },
+    "3_interviews": { price: 49, currency: "₹", label: "3 Interview Credits" },
+  };
+
+  const currentPlan = plans[selectedPlan];
 
   const loadRazorpayScript = () => {
     return new Promise((resolve) => {
@@ -35,22 +42,15 @@ const PricingModal = ({ isOpen, onClose, onSuccess, userEmail, userName }) => {
     setError("");
 
     try {
-      logEvent('Initiate Checkout', { plan: selectedPlan, amount: selectedPlan === "3_interviews" ? 49 : 19 });
+      logEvent('Initiate Razorpay Checkout', { plan: selectedPlan });
 
       const isScriptLoaded = await loadRazorpayScript();
       if (!isScriptLoaded) {
-        setError("Failed to load payment SDK. Please check your internet connection.");
-        setLoading(false);
-        return;
+        throw new Error("Failed to load payment SDK. Please check your internet connection.");
       }
 
-      // 1. Create Order on Backend
       const user = auth.currentUser;
-      if (!user) {
-        setError("User not authenticated");
-        setLoading(false);
-        return;
-      }
+      if (!user) throw new Error("User not authenticated");
       
       const token = await user.getIdToken();
       const orderRes = await axios.post(
@@ -61,7 +61,6 @@ const PricingModal = ({ isOpen, onClose, onSuccess, userEmail, userName }) => {
 
       const { order } = orderRes.data;
 
-      // 2. Open Razorpay Checkout
       const options = {
         key: import.meta.env.VITE_RAZORPAY_KEY_ID,
         amount: order.amount,
@@ -71,7 +70,6 @@ const PricingModal = ({ isOpen, onClose, onSuccess, userEmail, userName }) => {
         order_id: order.id,
         handler: async (response) => {
           try {
-            // 3. Verify Payment on Backend
             await axios.post(
               "/api/monetization/verify-payment",
               {
@@ -82,34 +80,26 @@ const PricingModal = ({ isOpen, onClose, onSuccess, userEmail, userName }) => {
               { headers: { Authorization: `Bearer ${token}` } }
             );
 
-            logEvent('Payment Success', { plan: selectedPlan, amount: order.amount / 100, orderId: order.id });
+            logEvent('Payment Success', { plan: selectedPlan, method: 'Razorpay' });
             onSuccess();
             onClose();
           } catch (verifyErr) {
             console.error("Verification failed:", verifyErr);
-            logEvent('Payment Verification Failed', { error: verifyErr.message });
-            setError(verifyErr.response?.data?.message || "Payment verification failed. Please contact support.");
+            setError(verifyErr.response?.data?.message || "Payment verification failed.");
           }
         },
-        prefill: {
-          name: userName,
-          email: userEmail,
-        },
-        theme: {
-          color: "#4F46E5",
-        },
+        prefill: { name: userName, email: userEmail },
+        theme: { color: "#4F46E5" },
       };
 
       const rzp1 = new window.Razorpay(options);
       rzp1.on("payment.failed", function (response) {
-        logEvent('Payment Failed', { error: response.error.description });
         setError(response.error.description || "Payment failed");
       });
       rzp1.open();
     } catch (err) {
-      console.error("Payment initiation failed:", err);
-      logEvent('Payment Initiation Error', { error: err.message });
-      setError(err.response?.data?.message || err.message || "Failed to start payment. Please try again.");
+      console.error("Razorpay initiation failed:", err);
+      setError(err.message || "Failed to start payment.");
     } finally {
       setLoading(false);
     }
@@ -119,89 +109,93 @@ const PricingModal = ({ isOpen, onClose, onSuccess, userEmail, userName }) => {
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
+      <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
         <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: 0.95 }}
-          className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden"
+          initial={{ opacity: 0, scale: 0.95, y: 20 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          exit={{ opacity: 0, scale: 0.95, y: 20 }}
+          className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden border border-slate-100"
         >
-          <div className="p-6 border-b border-slate-100 flex justify-between items-center">
-            <h3 className="text-xl font-bold text-slate-900">Unlock More Interviews</h3>
-            <button
-              onClick={onClose}
-              className="text-slate-400 hover:text-slate-600 transition-colors"
-            >
-              <X className="h-5 w-5" />
-            </button>
+          {/* Header */}
+          <div className="bg-gradient-to-r from-indigo-600 to-violet-600 p-6 text-white relative overflow-hidden">
+            <div className="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-white/10 rounded-full blur-xl"></div>
+            <div className="relative z-10 flex justify-between items-start">
+              <div>
+                <h3 className="text-2xl font-bold">Unlock Potential</h3>
+                <p className="text-indigo-100 text-sm mt-1">Get AI-powered interview feedback</p>
+              </div>
+              <button
+                onClick={onClose}
+                className="text-white/70 hover:text-white bg-white/10 hover:bg-white/20 rounded-full p-1 transition-colors"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
           </div>
 
-          <div className="p-6 space-y-4">
-            <div className="bg-indigo-50 rounded-xl p-4 border border-indigo-100 flex gap-4">
-              <div className="h-10 w-10 bg-indigo-100 rounded-full flex items-center justify-center flex-shrink-0">
-                <AlertCircle className="h-5 w-5 text-indigo-600" />
-              </div>
-              <div>
-                <h4 className="font-semibold text-indigo-900">Limit Reached</h4>
-                <p className="text-sm text-indigo-700 mt-1">
-                  You've used your free interviews for this month.
-                </p>
-              </div>
-            </div>
-
-            <div className="space-y-3">
+          <div className="p-6">
+            {/* Plans */}
+            <div className="space-y-4 mb-6">
               {/* Option 1: 1 Interview */}
-              <div 
+              <div
                 onClick={() => setSelectedPlan("1_interview")}
-                className={`border rounded-xl p-4 cursor-pointer transition-all ${
-                  selectedPlan === "1_interview" 
-                    ? "border-indigo-500 ring-1 ring-indigo-500 bg-indigo-50/30" 
-                    : "border-slate-200 hover:border-indigo-300"
+                className={`group relative border-2 rounded-xl p-4 cursor-pointer transition-all duration-200 ${
+                  selectedPlan === "1_interview"
+                    ? "border-indigo-600 bg-indigo-50/50"
+                    : "border-slate-100 hover:border-indigo-200 hover:bg-slate-50"
                 }`}
               >
-                <div className="flex justify-between items-center mb-2">
-                  <span className="font-bold text-slate-900">1 Interview Credit</span>
-                  <span className="text-lg font-bold text-indigo-600">₹19</span>
+                <div className="flex justify-between items-center">
+                  <div className="flex items-center gap-3">
+                    <div className={`h-5 w-5 rounded-full border-2 flex items-center justify-center ${
+                      selectedPlan === "1_interview" ? "border-indigo-600" : "border-slate-300"
+                    }`}>
+                      {selectedPlan === "1_interview" && <div className="h-2.5 w-2.5 rounded-full bg-indigo-600" />}
+                    </div>
+                    <span className="font-semibold text-slate-900">1 Interview Credit</span>
+                  </div>
+                  <span className="text-xl font-bold text-slate-900">
+                    ₹19
+                  </span>
                 </div>
-                <ul className="text-sm text-slate-600 space-y-1">
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="h-3 w-3 text-emerald-500" />
-                    Full AI Evaluation & Feedback
-                  </li>
-                </ul>
               </div>
 
               {/* Option 2: 3 Interviews */}
-              <div 
+              <div
                 onClick={() => setSelectedPlan("3_interviews")}
-                className={`relative border rounded-xl p-4 cursor-pointer transition-all ${
-                  selectedPlan === "3_interviews" 
-                    ? "border-indigo-500 ring-1 ring-indigo-500 bg-indigo-50/30" 
-                    : "border-slate-200 hover:border-indigo-300"
+                className={`group relative border-2 rounded-xl p-4 cursor-pointer transition-all duration-200 ${
+                  selectedPlan === "3_interviews"
+                    ? "border-indigo-600 bg-indigo-50/50 shadow-sm"
+                    : "border-slate-100 hover:border-indigo-200 hover:bg-slate-50"
                 }`}
               >
-                <div className="absolute -top-3 right-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-xs font-bold px-2 py-1 rounded-full shadow-sm">
-                  Best Value
+                <div className="absolute -top-3 right-4 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm uppercase tracking-wide">
+                  Most Popular
                 </div>
-                <div className="flex justify-between items-center mb-2">
-                  <span className="font-bold text-slate-900">3 Interview Credits</span>
-                  <span className="text-lg font-bold text-indigo-600">₹49</span>
+                <div className="flex justify-between items-center">
+                  <div className="flex items-center gap-3">
+                    <div className={`h-5 w-5 rounded-full border-2 flex items-center justify-center ${
+                      selectedPlan === "3_interviews" ? "border-indigo-600" : "border-slate-300"
+                    }`}>
+                      {selectedPlan === "3_interviews" && <div className="h-2.5 w-2.5 rounded-full bg-indigo-600" />}
+                    </div>
+                    <div>
+                      <span className="font-semibold text-slate-900">3 Interview Credits</span>
+                      <div className="text-xs text-emerald-600 font-medium mt-0.5 flex items-center gap-1">
+                        <Zap className="h-3 w-3" /> Save 14%
+                      </div>
+                    </div>
+                  </div>
+                  <span className="text-xl font-bold text-slate-900">
+                    ₹49
+                  </span>
                 </div>
-                <ul className="text-sm text-slate-600 space-y-1">
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="h-3 w-3 text-emerald-500" />
-                    Save ₹8 (14% off)
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="h-3 w-3 text-emerald-500" />
-                    Full AI Evaluation & Feedback
-                  </li>
-                </ul>
               </div>
             </div>
 
             {error && (
-              <div className="text-sm text-red-600 bg-red-50 p-3 rounded-lg">
+              <div className="mb-4 text-sm text-red-600 bg-red-50 p-3 rounded-lg flex items-start gap-2">
+                <AlertCircle className="h-4 w-4 mt-0.5 flex-shrink-0" />
                 {error}
               </div>
             )}
@@ -209,21 +203,22 @@ const PricingModal = ({ isOpen, onClose, onSuccess, userEmail, userName }) => {
             <button
               onClick={handlePayment}
               disabled={loading}
-              className="w-full py-3 px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl shadow-lg shadow-indigo-200 transition-all flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
+              className="w-full py-3.5 px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-lg shadow-indigo-200 transition-all transform active:scale-[0.98] flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
             >
               {loading ? (
                 "Processing..."
               ) : (
                 <>
                   <CreditCard className="h-5 w-5" />
-                  {selectedPlan === "1_interview" ? "Buy Now - ₹19" : "Buy Now - ₹49"}
+                  Pay {currentPlan.currency}{currentPlan.price}
                 </>
               )}
             </button>
             
-            <p className="text-xs text-center text-slate-400">
-              Secured by Razorpay. 100% Safe & Secure.
-            </p>
+            <div className="mt-4 flex items-center justify-center gap-2 text-xs text-slate-400">
+              <ShieldCheck className="h-3 w-3" />
+              <span>Secured by Razorpay</span>
+            </div>
           </div>
         </motion.div>
       </div>
