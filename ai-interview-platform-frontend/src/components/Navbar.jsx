@@ -111,7 +111,7 @@ const Navbar = () => {
               <img
                 src={prephireIcon}
                 alt="PrepHire Icon"
-                className="h-10 w-10 transition-transform duration-300 group-hover:scale-105"
+                className="h-10 w-10 transition-transform duration-300 group-hover:scale-105 rounded-full"
               />
               <img
                 src={logo}
