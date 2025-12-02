@@ -290,7 +290,7 @@ const Dashboard = () => {
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
               <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-2 tracking-tight">
-                Welcome back, <span className="text-blue-600">{userDisplayName}</span>! 👋
+                Welcome back, <span className="text-[#1d2f62]">{userDisplayName}</span>! 👋
               </h1>
               <p className="text-lg text-slate-500">
                 Ready to ace your next interview? Let's get started.
@@ -316,7 +316,7 @@ const Dashboard = () => {
               <div
                 data-tour="start-interview"
                 onClick={handleStartInterview}
-                className="group relative block overflow-hidden rounded-3xl bg-gradient-to-br from-blue-600 to-blue-700 p-8 sm:p-10 shadow-xl transition-all duration-300 hover:shadow-2xl hover:scale-[1.01] cursor-pointer"
+                className="group relative block overflow-hidden rounded-3xl bg-gradient-to-br from-[#1d2f62] via-[#1d2f62] to-[#1d2f62] p-8 sm:p-10 shadow-xl transition-all duration-300 hover:shadow-2xl hover:scale-[1.01] cursor-pointer"
               >
                 <div className="absolute top-0 right-0 -mt-10 -mr-10 h-64 w-64 rounded-full bg-white opacity-10 blur-3xl transition-all duration-500 group-hover:scale-125"></div>
                 <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
@@ -328,11 +328,11 @@ const Dashboard = () => {
                     <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
                       Start New Interview
                     </h2>
-                    <p className="text-lg text-blue-100 max-w-xl leading-relaxed">
+                    <p className="text-lg text-white max-w-xl leading-relaxed">
                       Practice with personalized AI-generated questions based on your resume. Get instant feedback and improve your confidence.
                     </p>
                     
-                    <div className="mt-8 inline-flex items-center gap-3 px-6 py-3 bg-white text-blue-600 rounded-xl font-bold shadow-lg group-hover:bg-blue-50 transition-colors">
+                    <div className="mt-8 inline-flex items-center gap-3 px-6 py-3 bg-white text-[#1d2f62] rounded-xl font-bold shadow-lg group-hover:bg-blue-50 transition-colors">
                       <span>Begin Session</span>
                       <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
                     </div>
@@ -631,7 +631,7 @@ const Dashboard = () => {
             {/* 2. Quick Tips */}
             <motion.div
               variants={itemVariants}
-              className="bg-blue-800 rounded-2xl shadow-lg p-6 text-white"
+              className="bg-[#1d2f62] rounded-2xl shadow-lg p-6 text-white"
               data-tour="pro-tips"
             >
               <h2 className="text-lg font-bold mb-4 flex items-center gap-2">

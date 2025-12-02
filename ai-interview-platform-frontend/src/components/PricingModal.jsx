@@ -203,7 +203,7 @@ const PricingModal = ({ isOpen, onClose, onSuccess, userEmail, userName }) => {
             <button
               onClick={handlePayment}
               disabled={loading}
-              className="w-full py-3.5 px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-lg shadow-indigo-200 transition-all transform active:scale-[0.98] flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
+              className="w-full py-3.5 px-4 bg-[#1d2f62] hover:bg-[#1d2f62]/90 text-white font-bold rounded-xl shadow-lg hover:shadow-xl hover:shadow-[#1d2f62]/40 hover:scale-105 active:scale-95 transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
             >
               {loading ? (
                 "Processing..."

@@ -292,7 +292,7 @@ const ResumeUpload = () => {
                 <div
                   className={`relative group flex flex-col items-center justify-center w-full p-6 sm:p-10 border-2 border-dashed rounded-2xl transition-all duration-300 cursor-pointer ${
                     isDragging
-                      ? "border-blue-500 bg-blue-50 scale-[1.02]"
+                      ? "border-[#1d2f62] bg-[#1d2f62] scale-[1.02]"
                       : file
                       ? "border-blue-200 bg-blue-50/50"
                       : "border-slate-300 bg-slate-50 hover:bg-slate-100 hover:border-blue-400"
@@ -409,8 +409,8 @@ const ResumeUpload = () => {
                   disabled={loading || !file}
                   className={`relative w-full py-3 sm:py-4 px-4 sm:px-6 rounded-xl font-bold text-base sm:text-lg text-white shadow-lg transition-all duration-300 flex items-center justify-center gap-2 sm:gap-3 overflow-hidden ${
                     loading || !file
-                      ? "bg-slate-300 cursor-not-allowed shadow-none"
-                      : "bg-blue-600 hover:shadow-blue-200 hover:scale-[1.01] active:scale-[0.99]"
+                      ? "bg-[#1d2f62] cursor-not-allowed shadow-none"
+                      : "bg-[#1d2f62] hover:shadow-xl hover:shadow-[#1d2f62]/40 hover:scale-105 active:scale-95"
                   }`}
                 >
                   {loading ? (
@@ -494,7 +494,7 @@ const ResumeUpload = () => {
                   <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
                     <button
                       onClick={() => navigate("/interview-flow")}
-                      className="w-full sm:flex-1 py-3 sm:py-4 px-6 sm:px-8 bg-blue-600 text-white rounded-xl font-bold text-base sm:text-lg hover:bg-blue-700 transition-all shadow-lg hover:shadow-blue-200 flex items-center justify-center gap-2 group"
+                      className="w-full sm:flex-1 py-3 sm:py-4 px-6 sm:px-8 bg-[#1d2f62] text-white rounded-xl font-bold text-base sm:text-lg hover:bg-[#1d2f62] transition-all duration-300 shadow-lg hover:shadow-xl hover:shadow-[#1d2f62]/40 hover:scale-105 active:scale-95 flex items-center justify-center gap-2 group"
                     >
                       <Play className="h-4 w-4 sm:h-5 sm:w-5 fill-current" />
                       <span>Start Full Interview</span>

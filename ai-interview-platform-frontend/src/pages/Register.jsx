@@ -263,7 +263,7 @@ const Register = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full relative flex justify-center items-center py-3 px-4 border border-transparent rounded-xl shadow-lg shadow-blue-500/20 text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-600 disabled:opacity-70 disabled:cursor-not-allowed transition-all transform active:scale-[0.98]"
+                className="w-full relative flex justify-center items-center py-3 px-4 border border-transparent rounded-xl shadow-lg shadow-blue-500/20 text-sm font-bold text-white bg-[#1d2f62] hover:bg-[#1d2f62]/80 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-600 disabled:opacity-70 disabled:cursor-not-allowed transition-all transform active:scale-[0.98]"
               >
                 {loading ? (
                   <>
@@ -319,7 +319,7 @@ const Register = () => {
                 Already have an account?{" "}
                 <Link
                   to="/login"
-                  className="font-bold text-blue-600 hover:text-blue-700 hover:underline underline-offset-4 transition-all"
+                  className="font-bold text-[#1d2f62] hover:text-[#1d2f62] hover:underline underline-offset-4 transition-all"
                 >
                   Sign in
                 </Link>

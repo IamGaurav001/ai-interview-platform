@@ -9,25 +9,25 @@ const QuestionCard = ({
 }) => {
   return (
     <div 
-      className={`bg-gradient-to-br from-white via-white to-blue-50/30 rounded-3xl shadow-lg border border-blue-100/50 p-6 sm:p-8 relative overflow-hidden group hover:shadow-xl transition-all duration-300 flex flex-col ${className}`}
+      className={`bg-gradient-to-br from-white via-white to-[#1d2f62]/5 rounded-3xl shadow-lg border border-[#1d2f62]/10 p-6 sm:p-8 relative overflow-hidden group hover:shadow-xl transition-all duration-300 flex flex-col ${className}`}
       data-tour="question-display"
     >
       {/* Accent Bar with Gradient */}
-      <div className="absolute top-0 left-0 w-2 h-full bg-gradient-to-b from-blue-400 via-blue-500 to-blue-600"></div>
+      <div className="absolute top-0 left-0 w-2 h-full bg-gradient-to-b from-[#1d2f62] via-[#2a407a] to-[#1d2f62]"></div>
       
       {/* Decorative Background Elements */}
-      <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 rounded-full blur-3xl"></div>
-      <div className="absolute bottom-0 left-1/2 w-24 h-24 bg-indigo-500/5 rounded-full blur-2xl"></div>
+      <div className="absolute top-0 right-0 w-32 h-32 bg-[#1d2f62]/5 rounded-full blur-3xl"></div>
+      <div className="absolute bottom-0 left-1/2 w-24 h-24 bg-[#1d2f62]/5 rounded-full blur-2xl"></div>
       
       <div className="flex flex-col gap-5 relative z-10 flex-1 min-h-0">
         {/* Header with Icon */}
         <div className="flex items-center gap-3 flex-shrink-0">
-          <div className="flex-shrink-0 w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-lg shadow-blue-500/30 group-hover:scale-110 transition-transform duration-300">
+          <div className="flex-shrink-0 w-10 h-10 rounded-xl bg-gradient-to-br from-[#1d2f62] to-[#2a407a] flex items-center justify-center shadow-lg shadow-[#1d2f62]/30 group-hover:scale-110 transition-transform duration-300">
             <Bot className="h-5 w-5 text-white" />
           </div>
           <div className="flex items-center gap-2">
-            <Sparkles className="h-3.5 w-3.5 text-blue-500" />
-            <span className="text-xs font-bold text-blue-600 uppercase tracking-wider">AI Question</span>
+            <Sparkles className="h-3.5 w-3.5 text-[#1d2f62]" />
+            <span className="text-xs font-bold text-[#1d2f62] uppercase tracking-wider">AI Question</span>
           </div>
         </div>
 
@@ -44,8 +44,8 @@ const QuestionCard = ({
             onClick={onPlayToggle}
             className={`flex items-center gap-2.5 px-5 py-2.5 rounded-xl font-semibold text-sm transition-all duration-300 shadow-md hover:shadow-lg transform hover:scale-105 active:scale-95 ${
               isPlaying 
-                ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-blue-500/30' 
-                : 'bg-white text-slate-700 hover:bg-blue-50 hover:text-blue-700 border border-slate-200 hover:border-blue-300'
+                ? 'bg-[#1d2f62] text-white shadow-lg shadow-[#1d2f62]/30' 
+                : 'bg-white text-slate-700 hover:bg-[#1d2f62]/5 hover:text-[#1d2f62] border border-slate-200 hover:border-[#1d2f62]/30'
             }`}
             data-tour="tts-control"
           >

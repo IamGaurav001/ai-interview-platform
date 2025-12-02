@@ -133,7 +133,7 @@ const Navbar = () => {
                         to={link.path}
                         data-tour={`nav-${link.label.toLowerCase()}`}
                         className={`relative flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-colors duration-200 ${
-                          active ? "text-primary-700" : "text-gray-600 hover:text-gray-900"
+                          active ? "text-[#1d2f62]" : "text-[#1d2f62] hover:text-[#1d2f62]"
                         }`}
                       >
                         {active && (
@@ -174,7 +174,8 @@ const Navbar = () => {
                           className="h-8 w-8 rounded-full object-cover border border-gray-200 shadow-sm"
                         />
                       ) : (
-                        <div className="h-8 w-8 rounded-full bg-blue-600 text-white flex items-center justify-center text-sm font-bold shadow-sm">
+                        <div className="h-8 w-8 rounded-full bg-
+                         text-white flex items-center justify-center text-sm font-bold shadow-sm">
                           {userInitials}
                         </div>
                       )}
@@ -251,7 +252,7 @@ const Navbar = () => {
                   </Link>
                   <Link
                     to="/register"
-                    className="px-5 py-2.5 text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 rounded-full shadow-lg shadow-primary-600/20 hover:shadow-xl hover:shadow-primary-600/30 transition-all hover:-translate-y-0.5 active:translate-y-0"
+                    className="px-5 py-2.5 text-sm font-medium text-white bg-[#1d2f62] hover:bg-[#1d2f62] rounded-full shadow-lg hover:shadow-xl hover:shadow-[#1d2f62]/40 hover:scale-105 active:scale-95 transition-all duration-300"
                   >
                     Get Started
                   </Link>
@@ -346,7 +347,7 @@ const Navbar = () => {
                       </Link>
                       <Link
                         to="/register"
-                        className="flex justify-center w-full px-4 py-3 rounded-xl text-white bg-primary-600 font-medium shadow-sm"
+                        className="flex justify-center w-full px-4 py-3 rounded-xl text-white bg-[#1d2f62] font-medium shadow-lg hover:shadow-xl hover:shadow-[#1d2f62]/40 hover:scale-105 active:scale-95 transition-all duration-300"
                       >
                         Create Account
                       </Link>

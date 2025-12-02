@@ -765,7 +765,7 @@ const InterviewFlow = () => {
 
           <div className="bg-white rounded-2xl shadow-xl p-8 border border-slate-200 mb-8">
             <h2 className="text-2xl font-bold text-slate-900 mb-6 flex items-center gap-3">
-              Overall Score: <span className="text-blue-600">{summary.overallScore}/10</span>
+              Overall Score: <span className="text-[#1d2f62]">{summary.overallScore}/10</span>
             </h2>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
@@ -846,7 +846,7 @@ const InterviewFlow = () => {
           <div className="flex items-center gap-3 sm:gap-4 flex-wrap">
             <h1 className="text-slate-600 font-medium text-sm sm:text-base">{user?.displayName || 'User'}</h1>
             <span className="text-slate-300 mx-1">/</span>
-            <span className="text-blue-600 font-semibold text-xs sm:text-sm bg-blue-50 px-3 py-1 rounded-full border border-blue-100">
+            <span className="text-[#1d2f62] font-semibold text-xs sm:text-sm bg-[#1d2f62]/10 px-3 py-1 rounded-full border border-[#1d2f62]/20">
               Q {questionCount} / ~25
             </span>
           </div>
@@ -854,7 +854,7 @@ const InterviewFlow = () => {
           <div className="flex items-center gap-2 sm:gap-3">
             <button
               onClick={() => setStartTour(true)}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-slate-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors text-xs sm:text-sm font-medium"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-slate-600 hover:text-[#1d2f62] hover:bg-[#1d2f62]/10 rounded-lg transition-colors text-xs sm:text-sm font-medium"
               title="Start Tour"
             >
               <Sparkles className="h-4 w-4" />
@@ -862,7 +862,7 @@ const InterviewFlow = () => {
             </button>
             <button
               onClick={() => setShowVoiceSettings(true)}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-slate-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors text-xs sm:text-sm font-medium"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-slate-600 hover:text-[#1d2f62] hover:bg-[#1d2f62]/10 rounded-lg transition-colors text-xs sm:text-sm font-medium"
               title="Voice Settings"
               data-tour="voice-settings"
             >
@@ -871,7 +871,7 @@ const InterviewFlow = () => {
             </button>
             <button
               onClick={() => setShowResetModal(true)}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-slate-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors text-xs sm:text-sm font-medium"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-slate-600 hover:text-[#1d2f62] hover:bg-[#1d2f62]/10 rounded-lg transition-colors text-xs sm:text-sm font-medium"
               title="Reset Interview"
               data-tour="reset-interview"
             >
@@ -880,7 +880,7 @@ const InterviewFlow = () => {
             </button>
             <button
               onClick={() => setShowExitModal(true)}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-slate-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors text-xs sm:text-sm font-medium"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-slate-600 hover:text-[#1d2f62] hover:bg-[#1d2f62]/10 rounded-lg transition-colors text-xs sm:text-sm font-medium"
               title="Exit without completing"
               data-tour="exit-interview"
             >
@@ -907,9 +907,9 @@ const InterviewFlow = () => {
             <div className="relative z-10 flex flex-col items-center">
               <div className="mb-6 relative">
                 <div className="relative w-20 h-20 sm:w-24 sm:h-24 lg:w-28 lg:h-28">
-                  <div className="absolute inset-0 rounded-full bg-blue-400 opacity-20 blur-xl animate-pulse"></div>
+                  <div className="absolute inset-0 rounded-full bg-[#1d2f62] opacity-20 blur-xl animate-pulse"></div>
                   
-                  <div className="relative w-full h-full rounded-full bg-gradient-to-br from-blue-500 to-blue-600 shadow-xl flex items-center justify-center">
+                  <div className="relative w-full h-full rounded-full bg-gradient-to-br from-[#1d2f62] to-[#2a407a] shadow-xl flex items-center justify-center">
                     <div className="absolute inset-2 rounded-full bg-gradient-to-br from-white/30 to-transparent"></div>
                     
                     <svg className="w-10 h-10 sm:w-12 sm:h-12 lg:w-14 lg:h-14 text-white relative z-10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
@@ -940,7 +940,7 @@ const InterviewFlow = () => {
                     : isRecording
                     ? "bg-red-50 text-red-600 border border-red-100"
                     : (isPlayingQuestion || isPlayingFeedback)
-                    ? "bg-blue-50 text-blue-600 border border-blue-100"
+                    ? "bg-[#1d2f62]/10 text-[#1d2f62] border border-[#1d2f62]/20"
                     : "bg-slate-100 text-slate-600 border border-slate-200"
                 }`}>
                   {loading ? (

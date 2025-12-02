@@ -131,7 +131,7 @@ const Login = () => {
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="w-full max-w-md bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/20 p-8 sm:p-10 relative overflow-hidden"
+          className="w-full max-w-sm bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/20 p-6 sm:p-8 relative overflow-hidden"
         >
           {/* Decorative background blob inside card */}
           <div className="absolute top-0 right-0 -mt-10 -mr-10 h-40 w-40 rounded-full bg-blue-500/10 blur-2xl"></div>
@@ -216,7 +216,7 @@ const Login = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full relative flex justify-center items-center py-3.5 px-4 border border-transparent rounded-xl shadow-lg shadow-blue-500/20 text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-600 disabled:opacity-70 disabled:cursor-not-allowed transition-all transform active:scale-[0.98]"
+                className="w-full relative flex justify-center items-center py-3.5 px-4 border border-transparent rounded-xl shadow-lg hover:shadow-xl hover:shadow-[#1d2f62]/40 hover:scale-105 active:scale-95 text-sm font-bold text-white bg-[#1d2f62] hover:bg-[#1d2f62]/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-600 disabled:opacity-70 disabled:cursor-not-allowed transition-all duration-300"
               >
                 {loading ? (
                   <>
@@ -272,7 +272,7 @@ const Login = () => {
                 Don't have an account?{" "}
                 <Link
                   to="/register"
-                  className="font-bold text-blue-600 hover:text-blue-700 hover:underline underline-offset-4 transition-all"
+                  className="font-bold text-[#1d2f62] hover:text-[#1d2f62]/80 hover:underline underline-offset-4 transition-all"
                 >
                   Create one for free
                 </Link>

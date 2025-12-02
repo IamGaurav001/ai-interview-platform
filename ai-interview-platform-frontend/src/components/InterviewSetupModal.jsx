@@ -91,7 +91,7 @@ const InterviewSetupModal = ({ isOpen, onClose, onConfirm }) => {
             
             <button
               onClick={handleStart}
-              className="flex-1 px-6 py-4 rounded-xl font-bold text-white transition-all shadow-xl shadow-blue-500/20 flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 hover:scale-[1.02] active:scale-[0.98]"
+              className="flex-1 px-6 py-4 rounded-xl font-bold text-white transition-all shadow-xl shadow-blue-500/20 flex items-center justify-center gap-2 bg-gradient-to-r from-[#1d2f62] to-[#1d2f62] hover:from-[#1d2f62] hover:to-[#1d2f62] hover:scale-[1.02] active:scale-[0.98]"
             >
               Start Interview
               <ArrowRight className="h-5 w-5" />

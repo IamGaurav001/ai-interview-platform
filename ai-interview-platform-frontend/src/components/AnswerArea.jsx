@@ -87,7 +87,7 @@ const AnswerArea = ({
                 <button 
                   onClick={onSubmitVoice}
                   disabled={loading}
-                  className="flex-1 sm:flex-none px-7 py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all shadow-lg hover:shadow-blue-500/40 font-bold text-sm flex items-center justify-center gap-2.5 disabled:opacity-50 disabled:shadow-none transform hover:scale-105 active:scale-95 disabled:transform-none"
+                  className="flex-1 sm:flex-none px-7 py-2.5 bg-[#1d2f62] text-white rounded-xl hover:bg-[#1d2f62]/90 transition-all shadow-lg hover:shadow-xl hover:shadow-[#1d2f62]/40 font-bold text-sm flex items-center justify-center gap-2.5 disabled:opacity-50 disabled:shadow-none transform hover:scale-105 active:scale-95 disabled:transform-none"
                 >
                   {loading ? (
                     <>
@@ -117,9 +117,9 @@ const AnswerArea = ({
         ) : (
           <div className="space-y-4">
             {/* Primary Action - Voice Recording */}
-            <div className="bg-gradient-to-br from-blue-50 to-indigo-50/50 rounded-2xl p-6 border-2 border-blue-200/60 shadow-md hover:shadow-xl transition-all duration-300 group flex flex-col sm:flex-row items-center justify-between gap-5 cursor-pointer">
+            <div className="bg-gradient-to-br from-[#1d2f62]/5 to-[#1d2f62]/10 rounded-2xl p-6 border-2 border-[#1d2f62]/20 shadow-md hover:shadow-xl transition-all duration-300 group flex flex-col sm:flex-row items-center justify-between gap-5 cursor-pointer">
               <div className="flex items-center gap-5 text-center sm:text-left">
-                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-600 to-blue-700 flex items-center justify-center group-hover:scale-110 transition-transform duration-300 flex-shrink-0 shadow-lg shadow-blue-500/40">
+                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#1d2f62] to-[#2a407a] flex items-center justify-center group-hover:scale-110 transition-transform duration-300 flex-shrink-0 shadow-lg shadow-[#1d2f62]/40">
                   <Mic className="h-7 w-7 text-white" />
                 </div>
                 <div>
@@ -131,7 +131,7 @@ const AnswerArea = ({
               <button
                 onClick={onStartRecording}
                 disabled={loading || isPlayingQuestion || isPlayingFeedback}
-                className="w-full sm:w-auto flex items-center justify-center gap-2.5 px-7 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all shadow-lg hover:shadow-blue-500/40 font-bold text-sm disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none transform hover:scale-105 active:scale-95 disabled:transform-none"
+                className="w-full sm:w-auto flex items-center justify-center gap-2.5 px-7 py-3 bg-[#1d2f62] text-white rounded-xl hover:bg-[#1d2f62]/90 transition-all shadow-lg hover:shadow-xl hover:shadow-[#1d2f62]/40 font-bold text-sm disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none transform hover:scale-105 active:scale-95 disabled:transform-none"
                 data-tour="mic-button"
               >
                 <Mic className="h-4 w-4" />
