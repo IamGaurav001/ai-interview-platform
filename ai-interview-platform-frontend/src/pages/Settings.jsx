@@ -14,6 +14,7 @@ import {
   Save
 } from "lucide-react";
 import { logEvent } from "../config/amplitude";
+import SEO from "../components/SEO";
 
 const Settings = () => {
   const { user, updateUser, logout, resetPassword } = useAuth();
@@ -73,6 +74,7 @@ const Settings = () => {
 
   return (
     <div className="pb-12">
+      <SEO title="Settings" description="Manage your profile, notifications, and security settings." />
       {/* Header Background */}
       <div className="bg-white border-b border-slate-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">

@@ -23,6 +23,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import PageLayout from "../components/PageLayout";
 
 import { logEvent } from "../config/amplitude";
+import SEO from "../components/SEO";
 
 const ResumeUpload = () => {
   const navigate = useNavigate();
@@ -255,6 +256,7 @@ const ResumeUpload = () => {
 
   return (
     <PageLayout>
+      <SEO title="Resume Upload" description="Upload your resume to generate personalized AI interview questions." />
       <motion.div
         className="max-w-4xl mx-auto px-4 sm:px-6 py-6 sm:py-12"
         variants={containerVariants}

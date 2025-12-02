@@ -36,6 +36,7 @@ import { useToast } from "../context/ToastContext";
 
 
 import { logEvent } from "../config/amplitude";
+import SEO from "../components/SEO";
 
 const SequentialInterview = () => {
   const navigate = useNavigate();
@@ -748,6 +749,7 @@ const SequentialInterview = () => {
 
   return (
     <PageLayout>
+      <SEO title="Sequential Interview" description="Practice sequential interview questions tailored to your resume." />
       <div className="min-h-screen bg-slate-50 p-4 sm:p-6 lg:p-8 font-sans">
         {/* Header */}
         <header className="max-w-7xl mx-auto mb-6 flex flex-wrap items-center justify-between gap-4">

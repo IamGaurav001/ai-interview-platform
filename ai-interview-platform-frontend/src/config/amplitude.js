@@ -5,7 +5,7 @@ const AMPLITUDE_API_KEY = import.meta.env.VITE_AMPLITUDE_API_KEY || 'YOUR_AMPLIT
 
 export const initAmplitude = () => {
   amplitude.init(AMPLITUDE_API_KEY, {
-    defaultTracking: true,
+    defaultTracking: false,
   });
 };
 
@@ -23,4 +23,23 @@ export const setUserProperties = (properties) => {
     identify.set(key, properties[key]);
   });
   amplitude.identify(identify);
+};
+
+let lastPagePath = null;
+let lastPageLogTime = 0;
+
+export const logPageView = (pageName, properties) => {
+  const now = Date.now();
+  const path = properties.path;
+
+  // Debounce: Ignore if same path within 1000ms
+  if (path === lastPagePath && (now - lastPageLogTime < 1000)) {
+    console.log('Duplicate Page View ignored:', path);
+    return;
+  }
+
+  lastPagePath = path;
+  lastPageLogTime = now;
+  
+  logEvent(`Page View: ${pageName}`, properties);
 };

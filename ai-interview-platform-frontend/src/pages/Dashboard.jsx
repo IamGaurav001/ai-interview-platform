@@ -32,6 +32,7 @@ import Loader from "../components/Loader";
 import PageLayout from "../components/PageLayout";
 import { logEvent } from "../config/amplitude";
 import { motion, AnimatePresence } from "framer-motion";
+import SEO from "../components/SEO";
 
 const Dashboard = () => {
   const { user } = useAuth();
@@ -276,6 +277,7 @@ const Dashboard = () => {
 
   return (
     <PageLayout>
+      <SEO title="Dashboard" description="Track your interview progress, view recent sessions, and start new practice interviews." />
       <OnboardingTour start={showTour} onFinish={handleTourFinish} />
       <div className="pb-12">
       <motion.div

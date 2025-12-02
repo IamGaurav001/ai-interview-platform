@@ -5,6 +5,7 @@ import { Mail, ArrowRight, ArrowLeft, AlertCircle, CheckCircle2, Loader2 } from 
 import { motion } from "framer-motion";
 import logo from "../assets/intervueai-logo.png";
 import PageLayout from "../components/PageLayout";
+import SEO from "../components/SEO";
 
 const ForgotPassword = () => {
   const { resetPassword } = useAuth();
@@ -36,6 +37,7 @@ const ForgotPassword = () => {
 
   return (
     <PageLayout showNavbar={false}>
+      <SEO title="Forgot Password" description="Reset your PrepHire account password." />
       <div className="min-h-screen flex items-center justify-center p-4 relative">
         <Link 
           to="/login" 

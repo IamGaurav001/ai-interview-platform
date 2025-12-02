@@ -13,6 +13,7 @@ import {
   Star,
 } from "lucide-react";
 import PageLayout from "../components/PageLayout";
+import SEO from "../components/SEO";
 
 // --- Animation Variants ---
 
@@ -45,6 +46,7 @@ const WatchDemo = () => {
 
   return (
     <PageLayout>
+      <SEO title="Watch Demo" description="See PrepHire in action with our interactive demo." />
       <main>
         {/* Hero Section with Video */}
         <section className="relative min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8 overflow-hidden py-20">

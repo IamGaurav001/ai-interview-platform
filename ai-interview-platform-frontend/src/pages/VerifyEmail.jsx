@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { Mail, CheckCircle2, RefreshCw, ArrowLeft, LogOut } from "lucide-react";
 import { motion } from "framer-motion";
 import PageLayout from "../components/PageLayout";
+import SEO from "../components/SEO";
 
 const VerifyEmail = () => {
   const { user, sendVerificationEmail, logout } = useAuth();
@@ -56,6 +57,7 @@ const VerifyEmail = () => {
 
   return (
     <PageLayout showNavbar={false}>
+      <SEO title="Verify Email" description="Verify your email address to access PrepHire." />
       <div className="min-h-screen flex items-center justify-center p-4 relative bg-gradient-to-br from-blue-50 via-white to-indigo-50">
         {/* Decorative elements */}
         <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">

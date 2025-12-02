@@ -41,6 +41,7 @@ import InterviewSetupModal from "../components/InterviewSetupModal";
 import VoiceSettingsModal from "../components/VoiceSettingsModal";
 
 import { logEvent } from "../config/amplitude";
+import SEO from "../components/SEO";
 
 const InterviewFlow = () => {
   const navigate = useNavigate();
@@ -670,6 +671,7 @@ const InterviewFlow = () => {
   if (saving) {
     return (
       <PageLayout showNavbar={false}>
+        <SEO title="Interview Session" description="Live AI interview session in progress." />
         <div className="min-h-screen flex flex-col items-center justify-center">
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
@@ -701,6 +703,7 @@ const InterviewFlow = () => {
   if (loading && !currentQuestion) {
     return (
       <PageLayout showNavbar={false}>
+        <SEO title="Interview Session" description="Live AI interview session in progress." />
         <div className="min-h-screen flex flex-col items-center justify-center">
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
@@ -745,6 +748,7 @@ const InterviewFlow = () => {
   if (isComplete && summary) {
     return (
       <PageLayout>
+        <SEO title="Interview Complete" description="View your interview summary and feedback." />
         <div className="max-w-4xl mx-auto py-12">
         <motion.div 
           initial={{ opacity: 0, y: 20 }}

@@ -1,12 +1,48 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
+import { useLocation } from 'react-router-dom';
+import { logEvent, logPageView } from '../config/amplitude';
 
 const SEO = ({ title, description, keywords, url, image }) => {
+  const location = useLocation();
   const siteTitle = 'PrepHire - Practice & Ace Your Interviews';
   const defaultDescription = 'PrepHire is an AI-powered interview preparation platform that helps you practice and ace your interviews with real-time feedback.';
   const defaultKeywords = 'AI interview, interview practice, mock interview, interview preparation, career growth';
   const siteUrl = 'https://prephire.co';
-  const defaultImage = 'https://prephire.co/og-image.png'; // Make sure this exists or update to a valid URL
+  const defaultImage = 'https://prephire.co/og-image.png';
+
+  const PAGE_NAMES = {
+    '/': 'Landing Page',
+    '/login': 'Login',
+    '/register': 'Register',
+    '/dashboard': 'Dashboard',
+    '/sequential-interview': 'Sequential Interview',
+    '/interview-flow': 'Interview Flow',
+    '/history': 'History',
+    '/upload-resume': 'Resume Upload',
+    '/settings': 'Settings',
+    '/forgot-password': 'Forgot Password',
+    '/demo': 'Watch Demo',
+    '/about': 'About Us',
+    '/contact': 'Contact Us',
+    '/privacy': 'Privacy Policy',
+    '/terms': 'Terms of Service',
+    '/features': 'Features',
+    '/pricing': 'Pricing',
+    '/refund': 'Refund Policy',
+    '/shipping': 'Shipping Policy',
+    '/verify-email': 'Verify Email'
+  };
+
+  useEffect(() => {
+    const pageName = PAGE_NAMES[location.pathname] || title || 'Unknown Page';
+    // Log the event with the *intended* title passed to this component, 
+    // ensuring we don't log stale document.title from the previous page.
+    logPageView(pageName, { 
+      path: location.pathname,
+      title: title ? `${title} | PrepHire` : siteTitle
+    });
+  }, [location.pathname, title]);
 
   return (
     <Helmet>

@@ -54,13 +54,7 @@ const Layout = ({ children }) => {
     '/verify-email': 'Verify Email'
   };
 
-  useEffect(() => {
-    const pageName = PAGE_NAMES[location.pathname] || 'Unknown Page';
-    logEvent(`Page View: ${pageName}`, { 
-      path: location.pathname,
-      title: document.title
-    });
-  }, [location]);
+  // Page view tracking is now handled in the SEO component to ensure correct titles and avoid race conditions
 
   return (
     <>
