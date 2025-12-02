@@ -31,8 +31,35 @@ const Layout = ({ children }) => {
   const hideNavbarRoutes = ["/login", "/register", "/interview-flow", "/sequential-interview", "/forgot-password", "/verify-email"];
   const showNavbar = !hideNavbarRoutes.includes(location.pathname);
 
+  const PAGE_NAMES = {
+    '/': 'Landing Page',
+    '/login': 'Login',
+    '/register': 'Register',
+    '/dashboard': 'Dashboard',
+    '/sequential-interview': 'Sequential Interview',
+    '/interview-flow': 'Interview Flow',
+    '/history': 'History',
+    '/upload-resume': 'Resume Upload',
+    '/settings': 'Settings',
+    '/forgot-password': 'Forgot Password',
+    '/demo': 'Watch Demo',
+    '/about': 'About Us',
+    '/contact': 'Contact Us',
+    '/privacy': 'Privacy Policy',
+    '/terms': 'Terms of Service',
+    '/features': 'Features',
+    '/pricing': 'Pricing',
+    '/refund': 'Refund Policy',
+    '/shipping': 'Shipping Policy',
+    '/verify-email': 'Verify Email'
+  };
+
   useEffect(() => {
-    logEvent('Page View', { path: location.pathname });
+    const pageName = PAGE_NAMES[location.pathname] || 'Unknown Page';
+    logEvent(`Page View: ${pageName}`, { 
+      path: location.pathname,
+      title: document.title
+    });
   }, [location]);
 
   return (
