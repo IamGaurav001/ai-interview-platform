@@ -11,17 +11,17 @@
   -moz-osx-font-smoothing: grayscale;
 
   /* Primary Color Palette - Modern Premium: Blue (Matches Logo) */
-  --color-primary-50: #eff6ff;
-  --color-primary-100: #dbeafe;
-  --color-primary-200: #bfdbfe;
-  --color-primary-300: #93c5fd;
-  --color-primary-400: #60a5fa;
-  --color-primary-500: #3b82f6;
-  --color-primary-600: #2563eb;
-  --color-primary-700: #1d4ed8;
-  --color-primary-800: #1e40af;
-  --color-primary-900: #1e3a8a;
-  --color-primary-950: #172554;
+  --color-primary-50: #eff7ff;
+  --color-primary-100: #dcebfd;
+  --color-primary-200: #c0ddfd;
+  --color-primary-300: #95c8fb;
+  --color-primary-400: #64aaf6;
+  --color-primary-500: #3f89f2;
+  --color-primary-600: #2a6be6;
+  --color-primary-700: #2156d4;
+  --color-primary-800: #2146ac;
+  --color-primary-900: #213e87;
+  --color-primary-950: #1d2f62;
   
   /* Accent Color - Coral */
   --color-accent-50: #FFF7ED;
@@ -56,17 +56,30 @@ main {
 
 /* Primary color utility classes for Tailwind v4 */
 @theme {
-  --color-primary-50: #eff6ff;
-  --color-primary-100: #dbeafe;
-  --color-primary-200: #bfdbfe;
-  --color-primary-300: #93c5fd;
-  --color-primary-400: #60a5fa;
-  --color-primary-500: #3b82f6;
-  --color-primary-600: #2563eb;
-  --color-primary-700: #1d4ed8;
-  --color-primary-800: #1e40af;
-  --color-primary-900: #1e3a8a;
-  --color-primary-950: #172554;
+  --color-primary-50: #eff7ff;
+  --color-primary-100: #dcebfd;
+  --color-primary-200: #c0ddfd;
+  --color-primary-300: #95c8fb;
+  --color-primary-400: #64aaf6;
+  --color-primary-500: #3f89f2;
+  --color-primary-600: #2a6be6;
+  --color-primary-700: #2156d4;
+  --color-primary-800: #2146ac;
+  --color-primary-900: #213e87;
+  --color-primary-950: #1d2f62;
+
+  /* Override default blue to use primary brand color */
+  --color-blue-50: var(--color-primary-50);
+  --color-blue-100: var(--color-primary-100);
+  --color-blue-200: var(--color-primary-200);
+  --color-blue-300: var(--color-primary-300);
+  --color-blue-400: var(--color-primary-400);
+  --color-blue-500: var(--color-primary-500);
+  --color-blue-600: var(--color-primary-600);
+  --color-blue-700: var(--color-primary-700);
+  --color-blue-800: var(--color-primary-800);
+  --color-blue-900: var(--color-primary-900);
+  --color-blue-950: var(--color-primary-950);
   
   --color-accent-50: #FFF7ED;
   --color-accent-100: #FFEDD5;

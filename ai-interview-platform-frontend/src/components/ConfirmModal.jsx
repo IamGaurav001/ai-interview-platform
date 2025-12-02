@@ -14,13 +14,13 @@ const ConfirmModal = ({
   stats = null, // Optional stats to display
 }) => {
   const icons = {
-    warning: <AlertTriangle className="h-12 w-12 text-orange-500" />,
+    warning: <AlertTriangle className="h-12 w-12 text-blue-500" />,
     info: <Info className="h-12 w-12 text-blue-500" />,
     success: <CheckCircle className="h-12 w-12 text-green-500" />,
   };
 
   const colors = {
-    warning: "bg-orange-600 hover:bg-orange-700",
+    warning: "bg-blue-600 hover:bg-blue-700",
     info: "bg-blue-600 hover:bg-blue-700",
     success: "bg-green-600 hover:bg-green-700",
   };

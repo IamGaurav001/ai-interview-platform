@@ -397,7 +397,7 @@ const HeroDashboardPreview = () => {
             </div>
             
             <div className="text-center relative z-10">
-              <div className="text-base font-semibold text-slate-900 mb-1">AI Interviewer</div>
+              <div className="text-base font-semibold text-slate-900 mb-1">Prism AI</div>
               <div className="text-xs font-medium text-blue-600 bg-blue-50 px-3 py-1 rounded-full inline-block border border-blue-100">
                 Listening...
               </div>

@@ -678,7 +678,7 @@ const InterviewFlow = () => {
             <div className="relative mb-8">
               <div className="absolute inset-0 bg-blue-200 rounded-full animate-ping opacity-40"></div>
               <div className="relative bg-white/80 backdrop-blur-xl p-6 rounded-full shadow-2xl border border-white/20">
-                <img src={logo} alt="Prephire" className="h-16 w-16 object-contain animate-pulse" />
+                <img src={logo} alt="Prephire" className="h-32 w-32 object-contain animate-pulse" />
               </div>
             </div>
             <h2 className="text-3xl font-bold text-slate-900 mb-3 tracking-tight">Finalizing Interview</h2>
@@ -709,7 +709,7 @@ const InterviewFlow = () => {
             <div className="relative mb-8">
               <div className="absolute inset-0 bg-blue-200 rounded-full animate-ping opacity-40"></div>
               <div className="relative bg-white/80 backdrop-blur-xl p-6 rounded-full shadow-2xl border border-white/20">
-                <img src={logo} alt="Loading..." className="h-16 w-16 object-contain animate-pulse" />
+                <img src={logo} alt="Loading..." className="h-32 w-32 object-contain animate-pulse" />
               </div>
             </div>
             <h2 className="text-3xl font-bold text-slate-900 mb-3 tracking-tight">Starting Interview</h2>
@@ -875,7 +875,7 @@ const InterviewFlow = () => {
             </button>
             <button
               onClick={() => setShowExitModal(true)}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-slate-600 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-colors text-xs sm:text-sm font-medium"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-slate-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors text-xs sm:text-sm font-medium"
               title="Exit without completing"
               data-tour="exit-interview"
             >
