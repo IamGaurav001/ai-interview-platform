@@ -106,7 +106,7 @@ const Navbar = () => {
 
             <Link
               to={user ? "/dashboard" : "/"}
-              className="flex items-center gap-2 group relative z-10"
+              className="flex items-center group relative z-10"
             >
               <img
                 src={prephireIcon}
@@ -116,7 +116,7 @@ const Navbar = () => {
               <img
                 src={logo}
                 alt="PrepHire"
-                className="h-9 w-auto transition-transform duration-300 group-hover:scale-105"
+                className="h-9 w-auto transition-transform duration-300 group-hover:scale-105 -ml-2"
               />
             </Link>
 
