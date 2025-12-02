@@ -2,6 +2,7 @@ import React from "react";
 import PageLayout from "../components/PageLayout";
 import { Users, Target, Shield, Award, ArrowRight, Sparkles } from "lucide-react";
 import { motion } from "framer-motion";
+import SEO from "../components/SEO";
 
 const About = () => {
 
@@ -30,6 +31,7 @@ const About = () => {
 
   return (
     <PageLayout>
+      <SEO title="About Us" description="Learn about PrepHire's mission to democratize career success with AI-powered interview coaching." />
       <div className="bg-slate-50 min-h-screen overflow-hidden">
         {/* Hero Section */}
         <div className="relative bg-slate-900 py-24 sm:py-32 isolate overflow-hidden rounded-2xl mx-auto max-w-7xl">

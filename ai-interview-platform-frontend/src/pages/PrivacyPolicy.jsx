@@ -1,10 +1,12 @@
 import React from "react";
 import PageLayout from "../components/PageLayout";
 import { Shield } from "lucide-react";
+import SEO from "../components/SEO";
 
 const PrivacyPolicy = () => {
   return (
     <PageLayout>
+      <SEO title="Privacy Policy" description="Read PrepHire's Privacy Policy to understand how we collect, use, and protect your personal information." />
       <div className="bg-slate-50 min-h-screen py-16 sm:py-24">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           

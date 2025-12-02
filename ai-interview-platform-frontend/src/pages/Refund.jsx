@@ -1,10 +1,12 @@
 import React from "react";
 import PageLayout from "../components/PageLayout";
 import { RefreshCcw } from "lucide-react";
+import SEO from "../components/SEO";
 
 const Refund = () => {
   return (
     <PageLayout>
+      <SEO title="Cancellation & Refund Policy" description="Read PrepHire's Cancellation & Refund Policy to understand our terms for cancellations and refunds." />
       <div className="bg-slate-50 min-h-screen py-16 sm:py-24">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           

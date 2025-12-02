@@ -2,6 +2,7 @@ import React, { useRef } from "react";
 import PageLayout from "../components/PageLayout";
 import { Mic, Brain, TrendingUp, FileText, Zap, Shield, CheckCircle2, ChevronDown } from "lucide-react";
 import { motion } from "framer-motion";
+import SEO from "../components/SEO";
 
 const Features = () => {
   const container = {
@@ -27,6 +28,7 @@ const Features = () => {
 
   return (
     <PageLayout>
+      <SEO title="Features" description="Explore PrepHire's AI-powered features: Real-time Voice Analysis, Adaptive AI, Progress Tracking, and Resume Integration." />
       <div className="bg-white min-h-screen">
         {/* Header */}
         <div className="relative bg-slate-900 py-16 sm:py-24 lg:py-32 overflow-hidden rounded-2xl mx-4 sm:mx-6 lg:mx-8 my-8">

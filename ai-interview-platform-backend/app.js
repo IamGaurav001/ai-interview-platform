@@ -2,6 +2,7 @@ import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
 import helmet from "helmet";
+import compression from "compression";
 import rateLimit from "express-rate-limit";
 import connectDB from "./config/db.js";
 import authRoutes from "./routes/authRoutes.js";
@@ -20,6 +21,7 @@ app.set('trust proxy', 1);
 
 connectDB();
 
+app.use(compression());
 app.use(helmet());
 
 const limiter = rateLimit({

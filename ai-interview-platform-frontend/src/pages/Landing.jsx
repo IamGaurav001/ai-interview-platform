@@ -5,6 +5,7 @@ import { useAuth } from "../context/AuthContext";
 import { logEvent } from "../config/amplitude";
 import logo from "../assets/intervueai-logo.png";
 import icon from "../assets/prephire-icon-circle.png";
+import SEO from "../components/SEO";
 import { 
   ArrowRight, 
   CheckCircle2, 
@@ -54,6 +55,10 @@ const Landing = () => {
 
   return (
     <div className="bg-slate-50 min-h-screen font-sans text-slate-900 selection:bg-indigo-100 selection:text-indigo-900">
+      <SEO 
+        title="PrepHire - Practice & Ace Your Interviews" 
+        description="PrepHire is an AI-powered interview preparation platform that helps you practice and ace your interviews with real-time feedback."
+      />
       
       {/* Background Mesh Gradient */}
       <div className="fixed inset-0 z-0 pointer-events-none">

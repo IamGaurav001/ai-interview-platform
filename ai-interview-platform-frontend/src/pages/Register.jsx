@@ -6,6 +6,7 @@ import { syncUser } from "../api/authAPI.jsx";
 import { motion } from "framer-motion";
 import logo from "../assets/intervueai-logo.png";
 import PageLayout from "../components/PageLayout";
+import SEO from "../components/SEO";
 
 import { logEvent, setUserId, setUserProperties } from "../config/amplitude";
 
@@ -125,6 +126,7 @@ const Register = () => {
 
   return (
     <PageLayout showNavbar={false}>
+      <SEO title="Register" description="Create a free PrepHire account and start practicing for your interviews today." />
       <div className="min-h-screen flex items-center justify-center p-4 relative">
         <Link 
           to="/" 

@@ -6,6 +6,7 @@ import { syncUser } from "../api/authAPI.jsx";
 import { motion } from "framer-motion";
 import logo from "../assets/intervueai-logo.png";
 import PageLayout from "../components/PageLayout";
+import SEO from "../components/SEO";
 
 import { logEvent, setUserId, setUserProperties } from "../config/amplitude";
 
@@ -118,6 +119,7 @@ const Login = () => {
 
   return (
     <PageLayout showNavbar={false}>
+      <SEO title="Login" description="Login to your PrepHire account to continue your interview preparation." />
       <div className="min-h-screen flex items-center justify-center p-4 relative">
         <Link 
           to="/" 

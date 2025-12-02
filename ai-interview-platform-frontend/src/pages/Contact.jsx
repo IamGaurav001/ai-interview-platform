@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import PageLayout from "../components/PageLayout";
 import { Mail, MessageSquare, MapPin, Send, ArrowRight, Phone, Clock } from "lucide-react";
 import { motion } from "framer-motion";
+import SEO from "../components/SEO";
 
 const Contact = () => {
   const [formData, setFormData] = useState({
@@ -21,6 +22,7 @@ const Contact = () => {
 
   return (
     <PageLayout>
+      <SEO title="Contact Us" description="Get in touch with the PrepHire team for support, inquiries, or feedback." />
       <div className="min-h-screen bg-slate-50 relative overflow-hidden">
         {/* Background Decoration */}
         <div className="absolute top-0 left-0 w-full h-[500px] bg-gradient-to-b from-blue-50 to-slate-50 z-0" />

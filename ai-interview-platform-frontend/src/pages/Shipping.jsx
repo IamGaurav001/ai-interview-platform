@@ -1,10 +1,12 @@
 import React from "react";
 import PageLayout from "../components/PageLayout";
 import { Truck } from "lucide-react";
+import SEO from "../components/SEO";
 
 const Shipping = () => {
   return (
     <PageLayout>
+      <SEO title="Shipping & Delivery" description="Read PrepHire's Shipping & Delivery Policy. As a digital platform, we do not ship physical products." />
       <div className="bg-slate-50 min-h-screen py-16 sm:py-24">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           

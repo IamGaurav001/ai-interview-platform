@@ -3,11 +3,13 @@ import PageLayout from "../components/PageLayout";
 import { Check, Star } from "lucide-react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
+import SEO from "../components/SEO";
 
 const Pricing = () => {
 
   return (
     <PageLayout>
+      <SEO title="Pricing" description="Simple, transparent pricing for your interview preparation. Pay-as-you-go or value bundles." />
       <div className="bg-slate-50 min-h-screen flex flex-col justify-center py-12 sm:py-16">
         <div className="mx-auto max-w-7xl px-6 lg:px-8 w-full">
           <div className="mx-auto max-w-4xl text-center">

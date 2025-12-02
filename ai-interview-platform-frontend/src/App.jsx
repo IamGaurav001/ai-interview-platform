@@ -72,89 +72,93 @@ const Layout = ({ children }) => {
   );
 };
 
+import { HelmetProvider } from 'react-helmet-async';
+
 function App() {
   return (
-    <ToastProvider>
-      <BrowserRouter>
-        <ScrollToTop />
-        <Layout>
-          <Routes>
-            {/* Public Routes */}
-            <Route path="/" element={<Landing />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/forgot-password" element={<ForgotPassword />} />
-            <Route path="/demo" element={<WatchDemo />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/contact" element={<Contact />} />
-            <Route path="/privacy" element={<PrivacyPolicy />} />
-            <Route path="/terms" element={<TermsOfService />} />
-            <Route path="/features" element={<Features />} />
-            <Route path="/pricing" element={<Pricing />} />
-            <Route path="/refund" element={<Refund />} />
-            <Route path="/shipping" element={<Shipping />} />
+    <HelmetProvider>
+      <ToastProvider>
+        <BrowserRouter>
+          <ScrollToTop />
+          <Layout>
+            <Routes>
+              {/* Public Routes */}
+              <Route path="/" element={<Landing />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
+              <Route path="/demo" element={<WatchDemo />} />
+              <Route path="/about" element={<About />} />
+              <Route path="/contact" element={<Contact />} />
+              <Route path="/privacy" element={<PrivacyPolicy />} />
+              <Route path="/terms" element={<TermsOfService />} />
+              <Route path="/features" element={<Features />} />
+              <Route path="/pricing" element={<Pricing />} />
+              <Route path="/refund" element={<Refund />} />
+              <Route path="/shipping" element={<Shipping />} />
 
-            {/* Protected Routes */}
-            <Route
-              path="/dashboard"
-              element={
-                <ProtectedRoute>
-                  <Dashboard />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/sequential-interview"
-              element={
-                <ProtectedRoute>
-                  <SequentialInterview />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/interview-flow"
-              element={
-                <ProtectedRoute>
-                  <InterviewFlow />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/history"
-              element={
-                <ProtectedRoute>
-                  <History />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/upload-resume"
-              element={
-                <ProtectedRoute>
-                  <ResumeUpload />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/settings"
-              element={
-                <ProtectedRoute>
-                  <Settings />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/verify-email"
-              element={
-                <ProtectedRoute requireVerification={false}>
-                  <VerifyEmail />
-                </ProtectedRoute>
-              }
-            />
-          </Routes>
-        </Layout>
-      </BrowserRouter>
-    </ToastProvider>
+              {/* Protected Routes */}
+              <Route
+                path="/dashboard"
+                element={
+                  <ProtectedRoute>
+                    <Dashboard />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/sequential-interview"
+                element={
+                  <ProtectedRoute>
+                    <SequentialInterview />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/interview-flow"
+                element={
+                  <ProtectedRoute>
+                    <InterviewFlow />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/history"
+                element={
+                  <ProtectedRoute>
+                    <History />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/upload-resume"
+                element={
+                  <ProtectedRoute>
+                    <ResumeUpload />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/settings"
+                element={
+                  <ProtectedRoute>
+                    <Settings />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/verify-email"
+                element={
+                  <ProtectedRoute requireVerification={false}>
+                    <VerifyEmail />
+                  </ProtectedRoute>
+                }
+              />
+            </Routes>
+          </Layout>
+        </BrowserRouter>
+      </ToastProvider>
+    </HelmetProvider>
   );
 }
 
