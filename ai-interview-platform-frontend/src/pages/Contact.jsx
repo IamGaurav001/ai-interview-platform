@@ -27,7 +27,7 @@ const Contact = () => {
         {/* Background Decoration */}
         <div className="absolute top-0 left-0 w-full h-[500px] bg-gradient-to-b from-blue-50 to-slate-50 z-0" />
         
-        <div className="relative z-10 py-20 sm:py-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+        <div className="relative z-10 py-20 sm:py-24 px-4 sm:px-6 lg:px-8 max-w-screen-2xl mx-auto">
           
           {/* Header */}
           <div className="text-center max-w-2xl mx-auto mb-16">

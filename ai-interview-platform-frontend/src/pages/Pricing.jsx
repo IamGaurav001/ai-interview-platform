@@ -11,7 +11,7 @@ const Pricing = () => {
     <PageLayout>
       <SEO title="Pricing" description="Simple, transparent pricing for your interview preparation. Pay-as-you-go or value bundles." />
       <div className="bg-slate-50 min-h-screen flex flex-col justify-center py-12 sm:py-16">
-        <div className="mx-auto max-w-7xl px-6 lg:px-8 w-full">
+        <div className="mx-auto max-w-screen-2xl px-6 lg:px-8 w-full">
           <div className="mx-auto max-w-4xl text-center">
             <h2 className="text-base font-semibold leading-7 text-blue-600">Pricing</h2>
             <p className="mt-2 text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl">

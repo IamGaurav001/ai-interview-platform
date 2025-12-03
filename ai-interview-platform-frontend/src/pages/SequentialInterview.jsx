@@ -752,7 +752,7 @@ const SequentialInterview = () => {
       <SEO title="Sequential Interview" description="Practice sequential interview questions tailored to your resume." />
       <div className="min-h-screen bg-slate-50 p-4 sm:p-6 lg:p-8 font-sans">
         {/* Header */}
-        <header className="max-w-7xl mx-auto mb-6 flex flex-wrap items-center justify-between gap-4">
+        <header className="max-w-screen-2xl mx-auto mb-6 flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <div className="flex gap-1.5">
               <div className="w-3 h-3 rounded-full bg-red-400"></div>
@@ -787,7 +787,7 @@ const SequentialInterview = () => {
           </div>
         </header>
 
-        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 lg:h-[calc(100vh-140px)] min-h-[calc(100vh-140px)]">
+        <div className="max-w-screen-2xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 lg:h-[calc(100vh-140px)] min-h-[calc(100vh-140px)]">
           {/* Left Column - AI Interviewer */}
           <div className="lg:col-span-4 bg-white rounded-3xl shadow-sm border border-slate-100 p-10 flex flex-col items-center justify-center relative overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-b from-transparent to-slate-50/50 pointer-events-none"></div>

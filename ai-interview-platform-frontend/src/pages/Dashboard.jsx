@@ -281,7 +281,7 @@ const Dashboard = () => {
       <OnboardingTour start={showTour} onFinish={handleTourFinish} />
       <div className="pb-12">
       <motion.div
-        className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12"
+        className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12"
         variants={containerVariants}
         initial="hidden"
         animate="visible"
