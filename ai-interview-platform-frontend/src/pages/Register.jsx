@@ -52,10 +52,12 @@ const Register = () => {
     try {
       const userCredential = await signup(formData.email, formData.password, formData.name.trim());
       if (userCredential && userCredential.user) {
-        setUserId(userCredential.user.uid);
+        const userId = userCredential.user.email || userCredential.user.uid;
+        setUserId(userId);
         setUserProperties({
           email: userCredential.user.email,
           name: formData.name || userCredential.user.displayName || 'User',
+          user_id: userCredential.user.uid
         });
         logEvent('Sign Up', { method: 'Email' });
         navigate("/dashboard");
@@ -93,10 +95,12 @@ const Register = () => {
     try {
       const user = await googleLogin();
       if (user) {
-        setUserId(user.uid);
+        const userId = user.email || user.uid;
+        setUserId(userId);
         setUserProperties({
           email: user.email,
           name: user.displayName || 'User',
+          user_id: user.uid
         });
         logEvent('Sign Up', { method: 'Google' });
         navigate("/dashboard");

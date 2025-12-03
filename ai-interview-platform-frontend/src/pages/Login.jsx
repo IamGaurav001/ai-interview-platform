@@ -34,10 +34,12 @@ const Login = () => {
     try {
       const userCredential = await login(email, password);
       if (userCredential && userCredential.user) {
-          setUserId(userCredential.user.uid);
+          const userId = userCredential.user.email || userCredential.user.uid;
+          setUserId(userId);
           setUserProperties({
             email: userCredential.user.email,
             name: userCredential.user.displayName || 'User',
+            user_id: userCredential.user.uid
           });
           logEvent('Login', { method: 'Email' });
       }
@@ -85,10 +87,12 @@ const Login = () => {
       const user = await googleLogin();
       // If googleLogin returned null, we are in redirect flow (handled automatically)
       if (user) {
-        setUserId(user.uid);
+        const userId = user.email || user.uid;
+        setUserId(userId);
         setUserProperties({
           email: user.email,
           name: user.displayName || 'User',
+          user_id: user.uid
         });
         logEvent('Login', { method: 'Google' });
         try {

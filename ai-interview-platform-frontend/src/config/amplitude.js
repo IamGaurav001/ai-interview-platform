@@ -14,7 +14,13 @@ export const logEvent = (eventName, eventProperties) => {
 };
 
 export const setUserId = (userId) => {
-  amplitude.setUserId(userId);
+  if (userId) {
+    amplitude.setUserId(userId);
+    console.log('Amplitude User ID set:', userId);
+  } else {
+    amplitude.setUserId(null);
+    console.log('Amplitude User ID cleared');
+  }
 };
 
 export const setUserProperties = (properties) => {

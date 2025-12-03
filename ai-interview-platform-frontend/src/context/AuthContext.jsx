@@ -57,13 +57,18 @@ export const AuthProvider = ({ children }) => {
         }
 
         // Set Amplitude User Identity
-        setUserId(firebaseUser.uid);
-        setUserProperties({
-          email: firebaseUser.email,
-          name: firebaseUser.displayName || 'User',
-          email_verified: firebaseUser.emailVerified,
-          role: firebaseUser.role
-        });
+        // Set Amplitude User Identity
+        const userId = firebaseUser.email || firebaseUser.uid;
+        if (userId) {
+          setUserId(userId);
+          setUserProperties({
+            email: firebaseUser.email,
+            name: firebaseUser.displayName || 'User',
+            email_verified: firebaseUser.emailVerified,
+            role: firebaseUser.role,
+            user_id: firebaseUser.uid // Store UID as a property for reference
+          });
+        }
 
         setUser(firebaseUser);
       } else {
@@ -105,12 +110,15 @@ export const AuthProvider = ({ children }) => {
     await updateToken(userCredential.user);
     
     // Set Amplitude User Identity
-    setUserId(userCredential.user.uid);
+    // Set Amplitude User Identity
+    const userId = userCredential.user.email || userCredential.user.uid;
+    setUserId(userId);
     setUserProperties({
       email: userCredential.user.email,
       name: displayName || 'User',
       username: displayName || 'User',
-      email_verified: userCredential.user.emailVerified
+      email_verified: userCredential.user.emailVerified,
+      user_id: userCredential.user.uid
     });
 
     // Send verification email
@@ -146,12 +154,15 @@ export const AuthProvider = ({ children }) => {
     await updateToken(userCredential.user);
     
     // Set Amplitude User Identity
-    setUserId(userCredential.user.uid);
+    // Set Amplitude User Identity
+    const userId = userCredential.user.email || userCredential.user.uid;
+    setUserId(userId);
     setUserProperties({
       email: userCredential.user.email,
       name: userCredential.user.displayName || 'User',
       username: userCredential.user.displayName || 'User',
-      email_verified: userCredential.user.emailVerified
+      email_verified: userCredential.user.emailVerified,
+      user_id: userCredential.user.uid
     });
 
     setUser(userCredential.user);
@@ -175,12 +186,15 @@ export const AuthProvider = ({ children }) => {
       await updateToken(result.user);
 
       // Set Amplitude User Identity
-      setUserId(result.user.uid);
+      // Set Amplitude User Identity
+      const userId = result.user.email || result.user.uid;
+      setUserId(userId);
       setUserProperties({
         email: result.user.email,
         name: result.user.displayName || 'User',
         username: result.user.displayName || 'User',
-        email_verified: result.user.emailVerified
+        email_verified: result.user.emailVerified,
+        user_id: result.user.uid
       });
 
       setUser(result.user);
