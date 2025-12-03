@@ -85,6 +85,7 @@ const SequentialInterview = () => {
   const [recordedAudio, setRecordedAudio] = useState(null);
   const [transcribedText, setTranscribedText] = useState("");
   const [recordingTime, setRecordingTime] = useState(0);
+  const [audioStream, setAudioStream] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
   const [startTour, setStartTour] = useState(false);
@@ -169,6 +170,7 @@ const SequentialInterview = () => {
   const startRecording = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      setAudioStream(stream);
       const recorder = new MediaRecorder(stream, {
         mimeType: "audio/webm;codecs=opus",
       });
@@ -187,12 +189,14 @@ const SequentialInterview = () => {
           const audioUrl = URL.createObjectURL(blob);
           setRecordedAudio(blob);
           stream.getTracks().forEach((track) => track.stop());
+          setAudioStream(null);
         } catch (err) {
           console.error("Error processing recorded audio:", err);
           toastError("Failed to process recording. Please try again.");
           setRecordedAudio(null);
           setIsRecording(false);
           stream.getTracks().forEach((track) => track.stop());
+          setAudioStream(null);
         }
       };
 
@@ -655,13 +659,19 @@ const SequentialInterview = () => {
 
 
           <div className="space-y-6 mb-12">
+            <div className="flex items-center justify-between mb-8">
+              <h2 className="text-2xl font-bold text-slate-900">Interview Questions</h2>
+              <span className="text-sm font-medium text-slate-500 bg-slate-100 px-4 py-2 rounded-full">
+                {questions.length} Questions
+              </span>
+            </div>
             {questions.map((question, idx) => (
               <motion.div 
                 key={idx}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: idx * 0.1 }}
-                className="bg-white rounded-xl shadow-md p-4 sm:p-6 border border-slate-200 hover:shadow-lg transition-shadow"
+                className="bg-white rounded-3xl shadow-md p-4 sm:p-6 border border-slate-200 hover:shadow-lg transition-shadow"
               >
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex-1">
@@ -752,15 +762,15 @@ const SequentialInterview = () => {
       <SEO title="Sequential Interview" description="Practice sequential interview questions tailored to your resume." />
       <div className="min-h-screen bg-slate-50 p-4 sm:p-6 lg:p-8 font-sans">
         {/* Header */}
-        <header className="max-w-screen-2xl mx-auto mb-6 flex flex-wrap items-center justify-between gap-4">
+        <header className="max-w-7xl mx-auto mb-4 flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="flex gap-1.5">
-              <div className="w-3 h-3 rounded-full bg-red-400"></div>
-              <div className="w-3 h-3 rounded-full bg-yellow-400"></div>
-              <div className="w-3 h-3 rounded-full bg-green-400"></div>
+            <div className="flex gap-2">
+              <div className="w-4 h-4 rounded-full bg-red-400"></div>
+              <div className="w-4 h-4 rounded-full bg-yellow-400"></div>
+              <div className="w-4 h-4 rounded-full bg-green-400"></div>
             </div>
             <span className="text-slate-300 mx-2">/</span>
-            <h1 className="text-slate-500 font-medium">interview-session-01</h1>
+            <h1 className="text-xl sm:text-2xl font-bold text-slate-800">Sequential Interview</h1>
           </div>
           <div className="flex items-center gap-3">
             <div className="bg-red-50 text-red-500 px-3 py-1 rounded-md text-xs font-bold tracking-wider flex items-center gap-2 border border-red-100">
@@ -787,19 +797,20 @@ const SequentialInterview = () => {
           </div>
         </header>
 
-        <div className="max-w-screen-2xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 lg:h-[calc(100vh-140px)] min-h-[calc(100vh-140px)]">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-4 lg:h-[calc(100vh-140px)] min-h-[calc(100vh-140px)]">
           {/* Left Column - AI Interviewer */}
-          <div className="lg:col-span-4 bg-white rounded-3xl shadow-sm border border-slate-100 p-10 flex flex-col items-center justify-center relative overflow-hidden">
+          <div className="lg:col-span-3 bg-white rounded-3xl shadow-sm border border-slate-100 p-6 flex flex-col items-center justify-center relative overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-b from-transparent to-slate-50/50 pointer-events-none"></div>
             
             <div className="relative z-10 flex flex-col items-center">
-              <div className="mb-10 relative">
+              <div className="mb-6 relative">
                 <SpeakingAvatar 
                   isSpeaking={
                     playingAudio[`question_${currentQuestionIndex}`] || 
                     playingAudio[`feedback_${currentQuestionIndex}`]
                   } 
-                  size="large" 
+                  size="medium" 
+                  showWave={true}
                 />
                 {(playingAudio[`question_${currentQuestionIndex}`] || playingAudio[`feedback_${currentQuestionIndex}`]) && (
                   <div className="absolute -bottom-2 -right-2 bg-green-500 border-4 border-white w-6 h-6 rounded-full flex items-center justify-center">
@@ -808,9 +819,9 @@ const SequentialInterview = () => {
                 )}
               </div>
 
-              <h2 className="text-2xl font-bold text-slate-900 mb-3">AI Interviewer</h2>
+              <h2 className="text-xl font-bold text-slate-900 mb-2">AI Interviewer</h2>
               
-              <div className="flex items-center gap-2 mb-10">
+              <div className="flex items-center gap-2 mb-6">
                 <div className={`px-5 py-2 rounded-full text-sm font-medium flex items-center gap-2 ${
                   loading 
                     ? "bg-amber-50 text-amber-600 border border-amber-100"
@@ -844,11 +855,12 @@ const SequentialInterview = () => {
                 </div>
               </div>
 
-              <div className="h-20 flex items-center justify-center w-full max-w-[240px]">
+              <div className="h-16 flex items-center justify-center w-full max-w-[200px]">
                 {(playingAudio[`question_${currentQuestionIndex}`] || playingAudio[`feedback_${currentQuestionIndex}`] || isRecording) ? (
                   <AudioVisualizer 
                     isPlaying={playingAudio[`question_${currentQuestionIndex}`] || playingAudio[`feedback_${currentQuestionIndex}`]}
                     isRecording={isRecording}
+                    audioStream={audioStream}
                     mode={isRecording ? "speaking" : "listening"}
                   />
                 ) : (
@@ -863,7 +875,7 @@ const SequentialInterview = () => {
           </div>
 
             {/* Right Column - Interaction Area */}
-            <div className="lg:col-span-8 flex flex-col gap-6 h-full overflow-hidden">
+            <div className="lg:col-span-9 flex flex-col gap-4 h-full overflow-hidden">
               {/* Question Section - Flexible */}
               <div className="flex-1 min-h-0 flex flex-col">
                 <QuestionCard

@@ -11,13 +11,13 @@ const Pricing = () => {
     <PageLayout>
       <SEO title="Pricing" description="Simple, transparent pricing for your interview preparation. Pay-as-you-go or value bundles." />
       <div className="bg-slate-50 min-h-screen flex flex-col justify-center py-12 sm:py-16">
-        <div className="mx-auto max-w-screen-2xl px-6 lg:px-8 w-full">
+        <div className="mx-auto max-w-7xl px-6 lg:px-8 w-full">
           <div className="mx-auto max-w-4xl text-center">
             <h2 className="text-base font-semibold leading-7 text-blue-600">Pricing</h2>
-            <p className="mt-2 text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl">
+            <p className="mt-2 text-5xl font-bold tracking-tight text-slate-900 sm:text-6xl">
               Invest in your career with <span className="text-blue-600">PrepHire</span>
             </p>
-            <p className="mt-4 text-lg leading-8 text-slate-600">
+            <p className="mt-6 text-xl leading-8 text-slate-600">
               No hidden fees, cancel anytime.
             </p>
           </div>
@@ -43,8 +43,8 @@ const Pricing = () => {
                 </div>
                 <p className="mt-4 text-sm leading-6 text-slate-600">Perfect for a quick practice session.</p>
                 <p className="mt-6 flex items-baseline gap-x-1">
-                  <span className="text-4xl font-bold tracking-tight text-slate-900">₹19</span>
-                  <span className="text-sm font-semibold leading-6 text-slate-600">/interview</span>
+                  <span className="text-5xl font-bold tracking-tight text-slate-900">₹19</span>
+                  <span className="text-base font-semibold leading-6 text-slate-600">/interview</span>
                 </p>
                 <ul className="mt-8 space-y-3 text-sm leading-6 text-slate-600">
                   {['1 AI Interview', 'Instant Feedback', 'Standard Analysis'].map((feature) => (
@@ -77,8 +77,8 @@ const Pricing = () => {
                 </div>
                 <p className="mt-4 text-sm leading-6 text-slate-600">Best value for serious preparation.</p>
                 <p className="mt-6 flex items-baseline gap-x-1">
-                  <span className="text-4xl font-bold tracking-tight text-slate-900">₹49</span>
-                  <span className="text-sm font-semibold leading-6 text-slate-600">/3 interviews</span>
+                  <span className="text-5xl font-bold tracking-tight text-slate-900">₹49</span>
+                  <span className="text-base font-semibold leading-6 text-slate-600">/3 interviews</span>
                 </p>
                 <ul className="mt-8 space-y-3 text-sm leading-6 text-slate-600">
                   {['3 Premium Interviews', 'Detailed Voice Analysis', 'Resume-Tailored Questions', 'Priority Support'].map((feature) => (
@@ -91,7 +91,7 @@ const Pricing = () => {
               </div>
               <Link
                 to="/dashboard"
-                className="mt-8 block rounded-xl bg-blue-600 py-2.5 px-3 text-center text-sm font-semibold leading-6 text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 transition-all hover:shadow-lg"
+                className="mt-8 block rounded-xl bg-blue-600 py-3.5 px-3 text-center text-base font-bold leading-6 text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 transition-all hover:shadow-lg"
               >
                 Buy Credits
               </Link>

@@ -49,9 +49,9 @@ const AdminDashboard = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 pb-12">
-      <div className="pt-8 px-4 sm:px-6 lg:px-8 max-w-screen-2xl mx-auto">
+      <div className="pt-8 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
         <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
+          <h1 className="text-4xl font-bold text-gray-900">Admin Dashboard</h1>
           <button
             onClick={fetchData}
             className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
@@ -85,7 +85,7 @@ const AdminDashboard = () => {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Users Table */}
-          <div className="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+          <div className="lg:col-span-2 bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
             <div className="p-6 border-b border-gray-100 flex justify-between items-center">
               <h2 className="text-lg font-semibold text-gray-900">Users</h2>
               <div className="relative">
@@ -101,12 +101,12 @@ const AdminDashboard = () => {
             </div>
             <div className="overflow-x-auto">
               <table className="w-full text-left text-sm">
-                <thead className="bg-gray-50 text-gray-500 font-medium">
+                <thead className="bg-gray-50 text-gray-500 font-medium text-base">
                   <tr>
-                    <th className="px-6 py-3">Name</th>
-                    <th className="px-6 py-3">Email</th>
-                    <th className="px-6 py-3">Joined</th>
-                    <th className="px-6 py-3">Credits</th>
+                    <th className="px-6 py-4">Name</th>
+                    <th className="px-6 py-4">Email</th>
+                    <th className="px-6 py-4">Joined</th>
+                    <th className="px-6 py-4">Credits</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
@@ -142,7 +142,7 @@ const AdminDashboard = () => {
           </div>
 
           {/* Recent Activity */}
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+          <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
             <div className="p-6 border-b border-gray-100">
               <h2 className="text-lg font-semibold text-gray-900">Recent Activity</h2>
             </div>
@@ -180,14 +180,14 @@ const StatsCard = ({ title, value, icon: Icon, color }) => (
   <motion.div
     initial={{ opacity: 0, y: 20 }}
     animate={{ opacity: 1, y: 0 }}
-    className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-4"
+    className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 flex items-center gap-4"
   >
-    <div className={`p-3 rounded-xl ${color} bg-opacity-10`}>
-      <Icon className={`h-6 w-6 ${color.replace("bg-", "text-")}`} />
+    <div className={`p-4 rounded-2xl ${color} bg-opacity-10`}>
+      <Icon className={`h-8 w-8 ${color.replace("bg-", "text-")}`} />
     </div>
     <div>
-      <p className="text-sm text-gray-500 font-medium">{title}</p>
-      <p className="text-2xl font-bold text-gray-900">{value}</p>
+      <p className="text-base text-gray-500 font-medium">{title}</p>
+      <p className="text-3xl font-bold text-gray-900">{value}</p>
     </div>
   </motion.div>
 );

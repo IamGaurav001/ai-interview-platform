@@ -13,29 +13,31 @@ const SpeakingAvatar = ({ isSpeaking, size = "large", Icon = Bot, color = "indig
 
   return (
     <div className="relative flex items-center justify-center">
-      {/* Ripple Effect when speaking */}
+      {/* Advanced Ripple Effect when speaking */}
       {isSpeaking && (
         <>
+          {[...Array(3)].map((_, i) => (
+            <motion.div
+              key={i}
+              initial={{ opacity: 0, scale: 1 }}
+              animate={{ 
+                opacity: [0, 0.4, 0],
+                scale: [1, 1.5 + (i * 0.3), 2 + (i * 0.3)],
+              }}
+              transition={{
+                duration: 2,
+                repeat: Infinity,
+                ease: "easeOut",
+                delay: i * 0.4,
+              }}
+              className={`absolute ${containerSize} ${bgClass} rounded-full opacity-20 border-2 border-white/30`}
+            />
+          ))}
+          {/* Inner Glow Pulse */}
           <motion.div
-            initial={{ opacity: 0.5, scale: 1 }}
-            animate={{ opacity: 0, scale: 2 }}
-            transition={{
-              duration: 2,
-              repeat: Infinity,
-              ease: "easeOut",
-            }}
-            className={`absolute ${containerSize} ${bgClass} rounded-full opacity-20`}
-          />
-          <motion.div
-            initial={{ opacity: 0.5, scale: 1 }}
-            animate={{ opacity: 0, scale: 1.5 }}
-            transition={{
-              duration: 2,
-              repeat: Infinity,
-              ease: "easeOut",
-              delay: 0.5,
-            }}
-            className={`absolute ${containerSize} ${bgClass} rounded-full opacity-20`}
+            animate={{ opacity: [0.2, 0.5, 0.2], scale: [1, 1.1, 1] }}
+            transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+            className={`absolute ${containerSize} ${bgClass} rounded-full blur-md`}
           />
         </>
       )}
@@ -61,13 +63,13 @@ const SpeakingAvatar = ({ isSpeaking, size = "large", Icon = Bot, color = "indig
         {/* Icon with "Talking" animation */}
         <motion.div
           animate={{
-            y: isSpeaking ? [0, -2, 0] : 0,
-            rotate: isSpeaking ? [0, -2, 2, 0] : 0,
+            scale: isSpeaking ? [1, 1.1, 1] : 1,
+            rotate: isSpeaking ? [0, -5, 5, 0] : 0,
           }}
           transition={{
-            duration: 0.3,
+            duration: 0.5,
             repeat: isSpeaking ? Infinity : 0,
-            ease: "linear",
+            ease: "easeInOut",
           }}
         >
           <Icon className={`${iconSize} text-white`} />

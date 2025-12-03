@@ -62,8 +62,8 @@ const AnswerEvaluation = () => {
     return (
       <div className="mb-4">
         <div className="flex justify-between items-center mb-2">
-          <span className="text-slate-600 font-medium">{label}</span>
-          <span className="text-slate-900 font-bold">{score}/10</span>
+          <span className="text-slate-600 font-medium text-lg">{label}</span>
+          <span className="text-slate-900 font-bold text-xl">{score}/10</span>
         </div>
         <div className="w-full bg-slate-200 rounded-full h-2.5 overflow-hidden">
           <motion.div 
@@ -85,8 +85,8 @@ const AnswerEvaluation = () => {
           animate={{ opacity: 1, y: 0 }}
           className="text-center mb-12"
         >
-          <h1 className="text-4xl font-bold text-slate-900 mb-4">Answer Evaluation</h1>
-          <p className="text-lg text-slate-600">
+          <h1 className="text-5xl font-bold text-slate-900 mb-6">Answer Evaluation</h1>
+          <p className="text-xl text-slate-600">
             Get detailed AI feedback on your interview answers with scoring and suggestions
           </p>
         </motion.div>
@@ -106,7 +106,7 @@ const AnswerEvaluation = () => {
             <div className="space-y-6">
               {/* Question Input */}
               <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-2">
+                <label className="block text-lg font-semibold text-slate-700 mb-3">
                   Interview Question
                 </label>
                 <textarea
@@ -120,7 +120,7 @@ const AnswerEvaluation = () => {
 
               {/* Answer Input */}
               <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-2">
+                <label className="block text-lg font-semibold text-slate-700 mb-3">
                   Your Answer
                 </label>
                 <textarea
@@ -149,7 +149,7 @@ const AnswerEvaluation = () => {
                     </>
                   ) : (
                     <>
-                      <Send className="h-5 w-5 mr-2" />
+                      <Send className="h-6 w-6 mr-3" />
                       Evaluate Answer
                     </>
                   )}
@@ -204,8 +204,8 @@ const AnswerEvaluation = () => {
                     {/* Overall Feedback */}
                     {evaluation.overall_feedback && (
                       <div className="bg-blue-50 rounded-xl p-6 border border-blue-100">
-                        <h4 className="text-lg font-semibold text-blue-900 mb-3">Overall Feedback</h4>
-                        <p className="text-blue-800 leading-relaxed">
+                        <h4 className="text-xl font-semibold text-blue-900 mb-4">Overall Feedback</h4>
+                        <p className="text-blue-800 leading-relaxed text-lg">
                           {evaluation.overall_feedback}
                         </p>
                       </div>
@@ -246,8 +246,8 @@ const AnswerEvaluation = () => {
             transition={{ delay: 0.2 }}
             className="bg-blue-900 rounded-2xl p-8 shadow-lg text-white"
           >
-            <h3 className="text-xl font-bold mb-6 flex items-center gap-2">
-              <Star className="h-5 w-5 text-yellow-400" />
+            <h3 className="text-2xl font-bold mb-8 flex items-center gap-3">
+              <Star className="h-6 w-6 text-yellow-400" />
               Tips for Better Answers
             </h3>
             <div className="grid md:grid-cols-2 gap-8">

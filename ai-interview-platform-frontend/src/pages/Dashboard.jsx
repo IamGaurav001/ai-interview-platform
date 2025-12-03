@@ -279,384 +279,244 @@ const Dashboard = () => {
     <PageLayout>
       <SEO title="Dashboard" description="Track your interview progress, view recent sessions, and start new practice interviews." />
       <OnboardingTour start={showTour} onFinish={handleTourFinish} />
-      <div className="pb-12">
-      <motion.div
-        className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12"
-        variants={containerVariants}
-        initial="hidden"
-        animate="visible"
-      >
-        <motion.div className="mb-10" variants={itemVariants}>
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <div>
-              <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-2 tracking-tight">
-                Welcome back, <span className="text-green-600">{userDisplayName}</span>! 👋
-              </h1>
-              <p className="text-lg text-slate-500">
-                Ready to ace your next interview? Let's get started.
-              </p>
-            </div>
-          </div>
-        </motion.div>
+      
+      <div className="min-h-screen bg-slate-50/50 pb-12 relative overflow-hidden">
+        {/* Background Blobs */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full max-w-7xl pointer-events-none z-0">
+          <div className="absolute top-20 left-20 w-72 h-72 bg-blue-200/20 rounded-full blur-3xl mix-blend-multiply animate-blob" />
+          <div className="absolute top-40 right-20 w-72 h-72 bg-purple-200/20 rounded-full blur-3xl mix-blend-multiply animate-blob animation-delay-2000" />
+        </div>
 
-        {error && (
-          <motion.div
-            variants={itemVariants}
-            className="mb-8 bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-xl flex items-center gap-3 shadow-sm"
-          >
-            <AlertTriangle className="h-5 w-5 text-red-600 flex-shrink-0" />
-            <p className="font-medium">{error}</p>
-          </motion.div>
-        )}
-
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-          <div className="lg:col-span-3 space-y-10">
-            
-            <motion.div variants={itemVariants}>
-              <div
-                data-tour="start-interview"
-                onClick={handleStartInterview}
-                className="group relative block overflow-hidden rounded-3xl bg-gradient-to-br from-[#1d2f62] via-[#1d2f62] to-[#1d2f62] p-8 sm:p-10 shadow-xl transition-all duration-300 hover:shadow-2xl hover:scale-[1.01] cursor-pointer"
-              >
-                <div className="absolute top-0 right-0 -mt-10 -mr-10 h-64 w-64 rounded-full bg-white opacity-10 blur-3xl transition-all duration-500 group-hover:scale-125"></div>
-                <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
-                  <div>
-                    <div className="inline-flex items-center gap-2 rounded-full bg-white/20 px-3 py-1 text-xs font-medium text-white backdrop-blur-md mb-4">
-                      <Sparkles className="h-3 w-3" />
-                      <span>AI-Powered Interviewer</span>
-                    </div>
-                    <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
-                      Start New Interview
-                    </h2>
-                    <p className="text-lg text-white max-w-xl leading-relaxed">
-                      Practice with personalized AI-generated questions based on your resume. Get instant feedback and improve your confidence.
-                    </p>
-                    
-                    <div className="mt-8 inline-flex items-center gap-3 px-6 py-3 bg-white text-[#1d2f62] rounded-xl font-bold shadow-lg group-hover:bg-blue-50 transition-colors">
-                      <span>Begin Session</span>
-                      <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
-                    </div>
-                  </div>
-                  <div className="hidden sm:flex h-24 w-24 items-center justify-center rounded-full bg-white/20 backdrop-blur-md transition-transform duration-300 group-hover:rotate-12 border border-white/30">
-                    <Mic className="h-10 w-10 text-white" />
-                  </div>
-                </div>
+        <motion.div
+          className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 relative z-10"
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+        >
+          <motion.div className="mb-10" variants={itemVariants}>
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+              <div>
+                <h1 className="text-2xl sm:text-4xl font-bold text-slate-900 mb-2 tracking-tight">
+                  Welcome back, <span className="text-[#1d2f62]">{userDisplayName}</span>! 👋
+                </h1>
+                <p className="text-lg text-slate-500 font-medium">
+                  Ready to ace your next interview? Let's get started.
+                </p>
               </div>
-            </motion.div>
+            </div>
+          </motion.div>
 
-            {/* 2. Recent Interview Preview - Animated Q&A */}
-            {recentQAs.length > 0 && (
-              <motion.div variants={itemVariants} data-tour="recent-interviews">
-                <div className="bg-gradient-to-br from-slate-50 to-blue-50 p-5 rounded-2xl shadow-lg border border-blue-100 relative overflow-hidden">
-                  {/* Animated background elements */}
-                  <div className="absolute top-0 right-0 w-64 h-64 bg-blue-200 rounded-full blur-3xl opacity-20 animate-pulse"></div>
-                  <div className="absolute bottom-0 left-0 w-48 h-48 bg-blue-200 rounded-full blur-3xl opacity-20 animate-pulse" style={{ animationDelay: '1s' }}></div>
+          {error && (
+            <motion.div
+              variants={itemVariants}
+              className="mb-8 bg-red-50 border border-red-200 text-red-800 px-6 py-4 rounded-2xl flex items-center gap-3 shadow-sm"
+            >
+              <AlertTriangle className="h-5 w-5 text-red-600 flex-shrink-0" />
+              <p className="font-medium">{error}</p>
+            </motion.div>
+          )}
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-6">
+            {/* Left Column (Main Actions & Chart) */}
+            <div className="lg:col-span-8 space-y-8">
+              
+              {/* Start Interview Card */}
+              <motion.div variants={itemVariants}>
+                <div
+                  data-tour="start-interview"
+                  onClick={handleStartInterview}
+                  className="group relative block overflow-hidden rounded-[2rem] bg-[#1d2f62] p-6 sm:p-10 shadow-xl transition-all duration-300 hover:shadow-2xl hover:scale-[1.01] cursor-pointer"
+                >
+                  <div className="absolute top-0 right-0 -mt-10 -mr-10 h-80 w-80 rounded-full bg-white opacity-5 blur-3xl transition-all duration-500 group-hover:scale-125"></div>
+                  <div className="absolute bottom-0 left-0 -mb-10 -ml-10 h-64 w-64 rounded-full bg-blue-500 opacity-10 blur-3xl transition-all duration-500 group-hover:scale-125"></div>
                   
-                  <div className="relative z-10">
-                    <div className="flex items-center justify-between mb-4">
-                      <div>
-                        <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-                          <Brain className="h-6 w-6 text-blue-600" />
-                          Recent Interview Preview
-                        </h3>
-                        <p className="text-sm text-slate-500 mt-1">Auto-rotating through your latest sessions</p>
+                  <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-8">
+                    <div className="flex-1">
+                      <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-1.5 text-sm font-bold text-blue-100 backdrop-blur-md mb-4 border border-white/10">
+                        <Sparkles className="h-4 w-4" />
+                        <span>AI-Powered Interviewer</span>
                       </div>
-                      <div className="flex items-center gap-2">
-                        {recentQAs.map((_, idx) => (
-                          <motion.div
-                            key={idx}
-                            className={`h-2 rounded-full transition-all duration-300 ${
-                              idx === currentQAIndex ? 'w-8 bg-blue-600' : 'w-2 bg-slate-300'
-                            }`}
-                            animate={{
-                              scale: idx === currentQAIndex ? 1.2 : 1
-                            }}
-                          />
-                        ))}
+                      <h2 className="text-3xl sm:text-4xl font-bold text-white mb-3 tracking-tight">
+                        Start New Interview
+                      </h2>
+                      <p className="text-base sm:text-lg text-blue-100/80 max-w-xl leading-relaxed font-medium">
+                        Practice with personalized AI-generated questions based on your resume. Get instant feedback and improve your confidence.
+                      </p>
+                      
+                      <div className="mt-6 inline-flex items-center gap-3 px-6 py-3 bg-white text-[#1d2f62] rounded-2xl font-bold text-lg shadow-lg group-hover:bg-blue-50 transition-colors">
+                        <span>Begin Session</span>
+                        <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
                       </div>
                     </div>
-
-                    <AnimatePresence mode="wait">
-                      <motion.div
-                        key={currentQAIndex}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -20 }}
-                        transition={{ duration: 0.5 }}
-                        className="grid grid-cols-1 lg:grid-cols-3 gap-4"
-                      >
-                        <div className="lg:col-span-2 space-y-3">
-                          <div className="bg-white rounded-xl p-4 shadow-sm border border-slate-200">
-                            <div className="flex items-start gap-3">
-                              <div className="h-8 w-8 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                                <MessageCircle className="h-4 w-4 text-blue-600" />
-                              </div>
-                              <div className="flex-1">
-                                <h4 className="text-xs font-bold text-blue-600 mb-1.5">QUESTION</h4>
-                                <p className="text-base text-slate-800 leading-relaxed">
-                                  {recentQAs[currentQAIndex].question}
-                                </p>
-                              </div>
-                            </div>
-                          </div>
-
-                          <div className="bg-white rounded-xl p-4 shadow-sm border border-slate-200">
-                            <div className="flex items-start gap-3">
-                              <div className="h-8 w-8 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                                <Mic className="h-4 w-4 text-blue-600" />
-                              </div>
-                              <div className="flex-1">
-                                <h4 className="text-xs font-bold text-blue-600 mb-1.5">YOUR ANSWER</h4>
-                                <p className="text-sm text-slate-700 leading-relaxed line-clamp-3">
-                                  {recentQAs[currentQAIndex].answer}
-                                </p>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Score Card with Circular Progress */}
-                        <div className="bg-white rounded-xl p-4 shadow-sm border border-slate-200 flex flex-col items-center justify-center">
-                          <div className="relative w-32 h-32 mb-4">
-                            {/* Animated circular progress */}
-                            <svg className="w-full h-full transform -rotate-90">
-                              <circle
-                                cx="64"
-                                cy="64"
-                                r="56"
-                                stroke="#f1f5f9"
-                                strokeWidth="10"
-                                fill="none"
-                              />
-                              <motion.circle
-                                cx="64"
-                                cy="64"
-                                r="56"
-                                stroke="url(#scoreGradient)"
-                                strokeWidth="10"
-                                fill="none"
-                                strokeLinecap="round"
-                                initial={{ strokeDasharray: "0 440" }}
-                                animate={{ 
-                                  strokeDasharray: `${(recentQAs[currentQAIndex].score / 10) * 352} 352` 
-                                }}
-                                transition={{ duration: 1, ease: "easeOut" }}
-                              />
-                              <defs>
-                                <linearGradient id="scoreGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                                  <stop offset="0%" stopColor="#10b981" />
-                                  <stop offset="100%" stopColor="#3b82f6" />
-                                </linearGradient>
-                              </defs>
-                            </svg>
-                            <div className="absolute inset-0 flex flex-col items-center justify-center">
-                              <motion.div
-                                key={`score-${currentQAIndex}`}
-                                initial={{ scale: 0 }}
-                                animate={{ scale: 1 }}
-                                transition={{ delay: 0.3, type: "spring" }}
-                                className="text-center"
-                              >
-                                <div className="text-3xl font-bold bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">
-                                  {recentQAs[currentQAIndex].score}
-                                </div>
-                                <div className="text-sm text-slate-500 font-medium">/10</div>
-                              </motion.div>
-                            </div>
-                          </div>
-
-                          {/* Metrics */}
-                          <div className="w-full space-y-2">
-                            <div className="flex items-center justify-between text-sm">
-                              <span className="text-slate-600">Clarity</span>
-                              <span className="font-bold text-slate-900">
-                                {recentQAs[currentQAIndex].clarity >= 7 ? 'High' : 
-                                 recentQAs[currentQAIndex].clarity >= 5 ? 'Medium' : 'Low'}
-                              </span>
-                            </div>
-                            <div className="flex items-center justify-between text-sm">
-                              <span className="text-slate-600">Pace</span>
-                              <span className="font-bold text-slate-900">
-                                {recentQAs[currentQAIndex].pace}
-                              </span>
-                            </div>
-                            <div className="flex items-center justify-between text-sm">
-                              <span className="text-slate-600">Confidence</span>
-                              <span className="font-bold text-slate-900">
-                                {recentQAs[currentQAIndex].confidence}
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                      </motion.div>
-                    </AnimatePresence>
+                    <div className="hidden sm:flex h-32 w-32 items-center justify-center rounded-[2rem] bg-white/10 backdrop-blur-md transition-transform duration-300 group-hover:rotate-6 border border-white/20 shadow-inner">
+                      <Mic className="h-14 w-14 text-white" />
+                    </div>
                   </div>
                 </div>
               </motion.div>
-            )}
 
-            {/* 3. Analytics Section */}
-            <motion.div variants={itemVariants}>
-              <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-                <div className="flex items-center justify-between mb-6">
-                  <div>
-                    <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-                      <Activity className="h-5 w-5 text-blue-600" />
-                      Performance Trend
-                    </h3>
-                    <p className="text-sm text-slate-500">Your scores over the last 10 sessions</p>
-                  </div>
-                </div>
-                
-                {chartData.trend.length > 0 ? (
-                  <div className="h-64 w-full">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <AreaChart data={chartData.trend} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                        <defs>
-                          <linearGradient id="colorScore" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%" stopColor="#4f46e5" stopOpacity={0.2}/>
-                            <stop offset="95%" stopColor="#4f46e5" stopOpacity={0}/>
-                          </linearGradient>
-                        </defs>
-                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                        <XAxis 
-                          dataKey="id" 
-                          axisLine={false} 
-                          tickLine={false} 
-                          tick={{ fill: '#64748b', fontSize: 12 }} 
-                          dy={10}
-                          tickFormatter={(value) => {
-                            const item = chartData.trend.find(i => i.id === value);
-                            return item ? item.date : '';
-                          }}
-                        />
-                        <YAxis 
-                          domain={[0, 10]} 
-                          axisLine={false} 
-                          tickLine={false} 
-                          tick={{ fill: '#64748b', fontSize: 12 }} 
-                        />
-                        <Tooltip 
-                          contentStyle={{ 
-                            backgroundColor: '#fff',
-                            borderRadius: '12px', 
-                            border: 'none', 
-                            boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
-                            padding: '12px'
-                          }}
-                          itemStyle={{ color: '#4f46e5', fontWeight: 600 }}
-                          labelStyle={{ color: '#64748b', marginBottom: '4px' }}
-                          cursor={{ stroke: '#ea580c', strokeWidth: 1, strokeDasharray: '4 4' }}
-                          formatter={(value) => [`${value}/10`, 'Score']}
-                          labelFormatter={(value) => {
-                            const item = chartData.trend.find(i => i.id === value);
-                            return item ? item.fullDate : value;
-                          }}
-                        />
-                        <Area 
-                          type="monotone" 
-                          dataKey="score" 
-                          stroke="#4f46e5" 
-                          strokeWidth={3}
-                          fillOpacity={1} 
-                          fill="url(#colorScore)" 
-                          activeDot={{ r: 6, strokeWidth: 0, fill: '#4f46e5' }}
-                        />
-                      </AreaChart>
-                    </ResponsiveContainer>
-                  </div>
-                ) : (
-                  <div className="h-64 w-full flex flex-col items-center justify-center bg-gradient-to-br from-blue-50 to-blue-50 rounded-xl border-2 border-dashed border-blue-200">
-                    <div className="text-center px-6">
-                      <div className="h-16 w-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <Activity className="h-8 w-8 text-blue-600" />
-                      </div>
-                      <h4 className="text-lg font-bold text-slate-900 mb-2">No Data Yet</h4>
-                      <p className="text-sm text-slate-600 max-w-sm">
-                        Complete your first interview to start tracking your performance over time.
-                      </p>
-                      <button 
-                        onClick={handleStartInterview}
-                        className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-[#1d2f62] text-white rounded-lg font-semibold hover:bg-[#1d2f62] hover:shadow-[#1d2f62]/40 hover:-translate-y-0.5 active:translate-y-0 transition-all"
-                      >
-                        Start First Interview
-                        <ArrowRight className="h-4 w-4" />
-                      </button>
+              {/* Performance Chart */}
+              <motion.div variants={itemVariants}>
+                <div className="bg-white p-6 sm:p-8 rounded-[2rem] shadow-xl shadow-slate-200/50 border border-white">
+                  <div className="flex items-center justify-between mb-6">
+                    <div>
+                      <h3 className="text-xl font-bold text-slate-900 flex items-center gap-3">
+                        <div className="p-2 bg-blue-50 rounded-xl">
+                          <Activity className="h-6 w-6 text-[#1d2f62]" />
+                        </div>
+                        Performance Trend
+                      </h3>
+                      <p className="text-base text-slate-500 font-medium mt-1 ml-14">Your scores over the last 10 sessions</p>
                     </div>
                   </div>
-                )}
-              </div>
-            </motion.div>
+                  
+                  {chartData.trend.length > 0 ? (
+                    <div className="h-64 w-full">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <AreaChart data={chartData.trend} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                          <defs>
+                            <linearGradient id="colorScore" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="5%" stopColor="#1d2f62" stopOpacity={0.1}/>
+                              <stop offset="95%" stopColor="#1d2f62" stopOpacity={0}/>
+                            </linearGradient>
+                          </defs>
+                          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                          <XAxis 
+                            dataKey="id" 
+                            axisLine={false} 
+                            tickLine={false} 
+                            tick={{ fill: '#64748b', fontSize: 12, fontWeight: 500 }} 
+                            dy={10}
+                            tickFormatter={(value) => {
+                              const item = chartData.trend.find(i => i.id === value);
+                              return item ? item.date : '';
+                            }}
+                          />
+                          <YAxis 
+                            domain={[0, 10]} 
+                            axisLine={false} 
+                            tickLine={false} 
+                            tick={{ fill: '#64748b', fontSize: 12, fontWeight: 500 }} 
+                          />
+                          <Tooltip 
+                            contentStyle={{ 
+                              backgroundColor: '#fff',
+                              borderRadius: '16px', 
+                              border: 'none', 
+                              boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)',
+                              padding: '16px'
+                            }}
+                            itemStyle={{ color: '#1d2f62', fontWeight: 700, fontSize: '16px' }}
+                            labelStyle={{ color: '#64748b', marginBottom: '8px', fontWeight: 500 }}
+                            cursor={{ stroke: '#1d2f62', strokeWidth: 1, strokeDasharray: '4 4' }}
+                            formatter={(value) => [`${value}/10`, 'Score']}
+                            labelFormatter={(value) => {
+                              const item = chartData.trend.find(i => i.id === value);
+                              return item ? item.fullDate : value;
+                            }}
+                          />
+                          <Area 
+                            type="monotone" 
+                            dataKey="score" 
+                            stroke="#1d2f62" 
+                            strokeWidth={3}
+                            fillOpacity={1} 
+                            fill="url(#colorScore)" 
+                            activeDot={{ r: 6, strokeWidth: 0, fill: '#1d2f62' }}
+                          />
+                        </AreaChart>
+                      </ResponsiveContainer>
+                    </div>
+                  ) : (
+                    <div className="h-64 w-full flex flex-col items-center justify-center bg-slate-50 rounded-3xl border-2 border-dashed border-slate-200">
+                      <div className="text-center px-6">
+                        <div className="h-16 w-16 bg-white rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-sm">
+                          <Activity className="h-8 w-8 text-slate-300" />
+                        </div>
+                        <h4 className="text-lg font-bold text-slate-900 mb-2">No Data Yet</h4>
+                        <p className="text-sm text-slate-500 max-w-sm font-medium">
+                          Complete your first interview to start tracking your performance over time.
+                        </p>
+                        <button 
+                          onClick={handleStartInterview}
+                          className="mt-6 inline-flex items-center gap-2 px-6 py-3 bg-[#1d2f62] text-white rounded-xl font-bold hover:bg-[#1d2f62]/90 transition-all shadow-lg hover:shadow-xl"
+                        >
+                          Start First Interview
+                          <ArrowRight className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </motion.div>
+            </div>
 
-          </div>
-
-          <div className="lg:col-span-1 space-y-6">
-            
-            {/* 1. Stats Stack */}
-            
-            <motion.div variants={itemVariants} className="space-y-4" data-tour="stats-cards">
-              <StatCard
-                title="Credits Left"
-                value={totalCredits === 0 ? `${daysLeftToRefill} Days` : totalCredits}
-                subtitle={totalCredits === 0 ? "Refill in" : "Remaining this month"}
-                icon={CreditCard}
-                color="orange"
-                action={
-                  totalCredits === 0 ? (
-                    <button
-                      onClick={() => setShowPricingModal(true)}
-                      className="text-xs font-semibold text-blue-600 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition-colors w-full flex items-center justify-center gap-1"
-                    >
-                      Buy Credits <ArrowRight className="h-3 w-3" />
-                    </button>
-                  ) : null
-                }
-              />
-              <StatCard
-                title="Total Interviews"
-                value={stats.totalInterviews}
-                subtitle="Lifetime sessions"
-                icon={Briefcase}
-                color="blue"
-              />
-              <StatCard
-                title="Average Score"
-                value={stats.averageScore > 0 ? `${stats.averageScore}/10` : "N/A"}
-                icon={TrendingUp}
-                color="green"
-              />
-
-            </motion.div>
-
-
-            {/* 2. Quick Tips */}
-            <motion.div
-              variants={itemVariants}
-              className="bg-[#1d2f62] rounded-2xl shadow-lg p-6 text-white"
-              data-tour="pro-tips"
-            >
-              <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
-                <Sparkles className="h-5 w-5 text-yellow-400" />
-                Pro Tips
-              </h2>
-              <div className="space-y-4">
-                <Tip
+            {/* Right Column (Stats & Tips) */}
+            <div className="lg:col-span-4 space-y-8">
+              
+              {/* Stats Stack */}
+              <motion.div variants={itemVariants} className="space-y-4" data-tour="stats-cards">
+                <StatCard
+                  title="Credits Left"
+                  value={totalCredits === 0 ? `${daysLeftToRefill} Days` : totalCredits}
+                  subtitle={totalCredits === 0 ? "Refill in" : "Remaining this month"}
+                  icon={CreditCard}
+                  action={
+                    totalCredits === 0 ? (
+                      <button
+                        onClick={() => setShowPricingModal(true)}
+                        className="text-xs font-bold text-white bg-[#1d2f62] hover:bg-[#1d2f62]/90 px-4 py-2 rounded-xl transition-all w-full flex items-center justify-center gap-2 mt-2 shadow-md hover:shadow-lg"
+                      >
+                        Buy Credits <ArrowRight className="h-3 w-3" />
+                      </button>
+                    ) : null
+                  }
+                />
+                <StatCard
+                  title="Total Interviews"
+                  value={stats.totalInterviews}
+                  subtitle="Lifetime sessions"
+                  icon={Briefcase}
+                />
+                <StatCard
+                  title="Average Score"
+                  value={stats.averageScore > 0 ? `${stats.averageScore}/10` : "N/A"}
                   icon={TrendingUp}
-                  text="Consistency is key. Try one short session daily."
                 />
-                <Tip
-                  icon={FileText}
-                  text="Tailor your resume for specific job descriptions."
-                />
-                <Tip
-                  icon={RefreshCw}
-                  text="Revisit old sessions to track your progress."
-                />
-              </div>
-            </motion.div>
+              </motion.div>
+
+              {/* Pro Tips */}
+              <motion.div
+                variants={itemVariants}
+                className="bg-[#1d2f62] rounded-[2rem] shadow-xl shadow-[#1d2f62]/20 p-6 text-white relative overflow-hidden"
+                data-tour="pro-tips"
+              >
+                <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2" />
+                
+                <h2 className="text-xl font-bold mb-4 flex items-center gap-3 relative z-10">
+                  <div className="p-2 bg-white/10 rounded-lg">
+                    <Sparkles className="h-5 w-5 text-yellow-300" />
+                  </div>
+                  Pro Tips
+                </h2>
+                <div className="space-y-4 relative z-10">
+                  <Tip
+                    icon={TrendingUp}
+                    text="Consistency is key. Try one short session daily."
+                  />
+                  <Tip
+                    icon={FileText}
+                    text="Tailor your resume for specific job descriptions."
+                  />
+                  <Tip
+                    icon={RefreshCw}
+                    text="Revisit old sessions to track your progress."
+                  />
+                </div>
+              </motion.div>
+            </div>
           </div>
-        </div>
-      </motion.div>
+        </motion.div>
       </div>
       
       <PricingModal 
@@ -672,52 +532,31 @@ const Dashboard = () => {
 
 /* --- Helper Components --- */
 
-const StatCard = ({ title, value, subtitle, icon: Icon, color, trend, action }) => {
-  const colors = {
-    blue: "bg-blue-50 text-blue-600 border-blue-100",
-    green: "bg-emerald-50 text-emerald-600 border-emerald-100",
-    orange: "bg-amber-50 text-amber-600 border-amber-100",
-  };
-  const [bgColor, textColor, borderColor] = colors[color].split(" ");
-
+const StatCard = ({ title, value, subtitle, icon: Icon, action }) => {
   return (
     <motion.div 
-      className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 transition-all duration-300 hover:shadow-md hover:-translate-y-1 group"
-      whileHover={{ scale: 1.02 }}
-      transition={{ type: "spring", stiffness: 300 }}
+      className="bg-white rounded-[2rem] shadow-xl shadow-slate-200/50 border border-white p-6 transition-all duration-300 hover:scale-[1.02] group"
+      whileHover={{ y: -4 }}
     >
-      <div className="flex items-start justify-between mb-4">
-        <motion.div
-          className={`h-12 w-12 ${bgColor} rounded-xl flex items-center justify-center ${borderColor} border relative`}
-          whileHover={{ rotate: [0, -10, 10, -10, 0] }}
-          transition={{ duration: 0.5 }}
-        >
-          <Icon className={`h-6 w-6 ${textColor}`} />
-          <motion.div
-            className={`absolute inset-0 ${bgColor} rounded-xl opacity-50`}
-            animate={{ scale: [1, 1.2, 1] }}
-            transition={{ duration: 2, repeat: Infinity, repeatDelay: 1 }}
-          />
-        </motion.div>
-        {trend && (
-          <span className="text-xs font-medium bg-slate-100 text-slate-600 px-2 py-1 rounded-full">
-            {trend}
-          </span>
-        )}
+      <div className="flex items-start justify-between mb-3">
+        <div className="p-3 bg-slate-50 rounded-2xl border border-slate-100 group-hover:bg-[#1d2f62] group-hover:border-[#1d2f62] transition-colors duration-300">
+          <Icon className="h-5 w-5 text-[#1d2f62] group-hover:text-white transition-colors duration-300" />
+        </div>
       </div>
       <div>
-        <p className="text-sm font-medium text-slate-500 mb-1">{title}</p>
         <motion.h3 
-          className="text-3xl font-bold text-slate-900 tracking-tight"
+          className="text-3xl font-bold text-slate-900 tracking-tight mb-1"
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
         >
-          {subtitle && <span className="text-sm font-normal text-slate-500 block mb-1">{subtitle}</span>}
           {value}
         </motion.h3>
+        <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">{title}</p>
+        {subtitle && <p className="text-xs font-medium text-slate-400 mt-1">{subtitle}</p>}
+        
         {action && (
-          <div className="mt-3">
+          <div className="mt-4">
             {action}
           </div>
         )}
@@ -726,12 +565,10 @@ const StatCard = ({ title, value, subtitle, icon: Icon, color, trend, action }) 
   );
 };
 
-
-
 const Tip = ({ icon: Icon, text }) => (
-  <div className="flex items-start gap-3 p-3 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 transition-colors">
-    <Icon className="h-5 w-5 text-orange-300 mt-0.5 flex-shrink-0" />
-    <p className="text-sm text-slate-200 leading-relaxed">{text}</p>
+  <div className="flex items-start gap-3 p-3 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-300 hover:scale-[1.02]">
+    <Icon className="h-5 w-5 text-blue-200 mt-0.5 flex-shrink-0" />
+    <p className="text-sm text-blue-50 leading-relaxed font-medium">{text}</p>
   </div>
 );
 

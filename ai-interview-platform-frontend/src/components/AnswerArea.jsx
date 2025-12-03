@@ -42,7 +42,7 @@ const AnswerArea = ({
       {/* Content */}
       <div className="p-4 sm:p-5">
         {isRecording ? (
-          <div className="bg-gradient-to-br from-red-50 to-orange-50/50 rounded-2xl p-6 border-2 border-red-200/60 shadow-lg flex flex-col sm:flex-row items-center justify-between gap-5">
+          <div className="bg-gradient-to-br from-red-50 to-orange-50/50 rounded-3xl p-6 border-2 border-red-200/60 shadow-lg flex flex-col sm:flex-row items-center justify-between gap-5">
             <div className="flex items-center gap-5 text-center sm:text-left">
               <div className="relative flex-shrink-0">
                 <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center shadow-lg shadow-red-500/40">
@@ -65,7 +65,7 @@ const AnswerArea = ({
             </button>
           </div>
         ) : recordedAudio ? (
-          <div className="bg-gradient-to-br from-green-50 to-emerald-50/50 rounded-2xl p-6 border-2 border-green-200/60 shadow-lg space-y-5">
+          <div className="bg-gradient-to-br from-green-50 to-emerald-50/50 rounded-3xl p-6 border-2 border-green-200/60 shadow-lg space-y-5">
             <div className="flex flex-col sm:flex-row items-center justify-between gap-5">
               <div className="flex items-center gap-5 text-center sm:text-left">
                 <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center border-2 border-green-300/50 flex-shrink-0 shadow-lg shadow-green-500/40">
@@ -117,7 +117,7 @@ const AnswerArea = ({
         ) : (
           <div className="space-y-4">
             {/* Primary Action - Voice Recording */}
-            <div className="bg-gradient-to-br from-[#1d2f62]/5 to-[#1d2f62]/10 rounded-2xl p-6 border-2 border-[#1d2f62]/20 shadow-md hover:shadow-xl transition-all duration-300 group flex flex-col sm:flex-row items-center justify-between gap-5 cursor-pointer">
+            <div className="bg-gradient-to-br from-[#1d2f62]/5 to-[#1d2f62]/10 rounded-3xl p-6 border-2 border-[#1d2f62]/20 shadow-md hover:shadow-xl transition-all duration-300 group flex flex-col sm:flex-row items-center justify-between gap-5 cursor-pointer">
               <div className="flex items-center gap-5 text-center sm:text-left">
                 <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#1d2f62] to-[#2a407a] flex items-center justify-center group-hover:scale-110 transition-transform duration-300 flex-shrink-0 shadow-lg shadow-[#1d2f62]/40">
                   <Mic className="h-7 w-7 text-white" />

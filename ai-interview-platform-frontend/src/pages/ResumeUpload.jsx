@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-
 import { getUserProfile } from "../api/userAPI";
 import PricingModal from "../components/PricingModal";
 import axiosInstance from "../api/axiosInstance";
@@ -21,7 +20,6 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import PageLayout from "../components/PageLayout";
-
 import { logEvent } from "../config/amplitude";
 import SEO from "../components/SEO";
 
@@ -68,7 +66,6 @@ const ResumeUpload = () => {
 
   const handleModalClose = () => {
     setShowPricingModal(false);
-    // If they close without paying and have no credits, redirect to dashboard
     navigate("/dashboard");
   };
 
@@ -79,13 +76,6 @@ const ResumeUpload = () => {
 
   const validateAndSetFile = (selectedFile) => {
     if (selectedFile) {
-      console.log(
-        "File selected:",
-        selectedFile.name,
-        selectedFile.type,
-        selectedFile.size
-      );
-
       const isPDF =
         selectedFile.type === "application/pdf" ||
         selectedFile.name.toLowerCase().endsWith(".pdf");
@@ -239,7 +229,6 @@ const ResumeUpload = () => {
     }
   };
 
-  // Animation Variants
   const containerVariants = {
     hidden: { opacity: 0, y: 20 },
     visible: {
@@ -257,314 +246,365 @@ const ResumeUpload = () => {
   return (
     <PageLayout>
       <SEO title="Resume Upload" description="Upload your resume to generate personalized AI interview questions." />
-      <motion.div
-        className="max-w-4xl mx-auto px-4 sm:px-6 py-6 sm:py-12"
-        variants={containerVariants}
-        initial="hidden"
-        animate="visible"
-      >
-        {/* Header */}
-        <motion.div className="text-center mb-6 sm:mb-10" variants={itemVariants}>
-          <div className="inline-flex items-center justify-center p-2 sm:p-3 bg-blue-100 rounded-full mb-3 sm:mb-4">
-            <Sparkles className="h-6 w-6 sm:h-8 sm:w-8 text-[#1d2f62]" />
-          </div>
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-slate-900 mb-3 sm:mb-4 tracking-tight px-2">
-            AI Resume Analysis
-          </h1>
-          <p className="text-base sm:text-lg lg:text-xl text-slate-600 max-w-2xl mx-auto px-4">
-            Upload your resume to unlock personalized interview questions tailored
-            specifically to your experience.
-          </p>
-        </motion.div>
+      
+      <div className="min-h-screen bg-slate-50/50 py-6 lg:py-10 relative overflow-hidden">
+        {/* Background Blobs */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full max-w-7xl pointer-events-none z-0">
+          <div className="absolute top-20 left-20 w-72 h-72 bg-blue-200/20 rounded-full blur-3xl mix-blend-multiply animate-blob" />
+          <div className="absolute top-20 right-20 w-72 h-72 bg-purple-200/20 rounded-full blur-3xl mix-blend-multiply animate-blob animation-delay-2000" />
+          <div className="absolute -bottom-32 left-1/2 -translate-x-1/2 w-96 h-96 bg-emerald-200/20 rounded-full blur-3xl mix-blend-multiply animate-blob animation-delay-4000" />
+        </div>
 
         <motion.div
-          className="bg-white rounded-3xl shadow-xl overflow-hidden border border-slate-100"
-          variants={itemVariants}
+          className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10"
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
         >
-          <div className="p-4 sm:p-8 lg:p-10">
-            <form onSubmit={handleUpload} className="space-y-6 sm:space-y-8" noValidate>
-              {/* File Upload Area */}
-              <div>
-                <label className="block text-sm font-bold text-slate-700 mb-4 ml-1">
-                  Upload Resume (PDF)
-                </label>
+          {/* Header */}
+          <motion.div className="text-center mb-6 lg:mb-6" variants={itemVariants}>
+            <div className="inline-flex items-center justify-center p-2.5 bg-white rounded-2xl shadow-lg shadow-blue-100/50 mb-3 lg:mb-3 border border-slate-100">
+              <Sparkles className="h-5 w-5 lg:h-6 lg:w-6 text-[#1d2f62]" />
+            </div>
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-slate-900 mb-1 lg:mb-1 tracking-tight">
+              Analyze Your Resume
+            </h1>
+            <p className="text-sm text-slate-600 max-w-2xl mx-auto leading-relaxed font-medium">
+              Upload your resume to unlock personalized interview questions tailored
+              specifically to <span className="text-[#1d2f62] font-bold">you</span>.
+            </p>
+          </motion.div>
 
-                <div
-                  className={`relative group flex flex-col items-center justify-center w-full p-6 sm:p-10 border-2 border-dashed rounded-2xl transition-all duration-300 cursor-pointer ${
-                    isDragging
-                      ? "border-[#1d2f62] bg-[#1d2f62] scale-[1.02]"
-                      : file
-                      ? "border-blue-200 bg-blue-50/50"
-                      : "border-slate-300 bg-slate-50 hover:bg-slate-100 hover:border-blue-400"
-                  }`}
-                  onDragOver={(e) => {
-                    e.preventDefault();
-                    setIsDragging(true);
-                  }}
-                  onDragLeave={(e) => {
-                    e.preventDefault();
-                    setIsDragging(false);
-                  }}
-                  onDrop={(e) => {
-                    e.preventDefault();
-                    setIsDragging(false);
-                    const droppedFile = e.dataTransfer.files[0];
-                    validateAndSetFile(droppedFile);
-                  }}
-                  onClick={() => !file && document.getElementById("file-upload")?.click()}
-                >
-                  <AnimatePresence mode="wait">
-                    {file ? (
-                      <motion.div
-                        key="file-selected"
-                        initial={{ opacity: 0, scale: 0.9 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0.9 }}
-                        className="flex flex-col items-center text-center"
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
+            {/* Main Upload Area */}
+            <motion.div 
+              className="lg:col-span-8"
+              variants={itemVariants}
+            >
+              <div className="bg-white rounded-3xl lg:rounded-[2.5rem] shadow-xl lg:shadow-2xl shadow-slate-200/50 border border-white overflow-hidden relative">
+                <div className="absolute top-0 left-0 w-full h-1.5 lg:h-2 bg-gradient-to-r from-blue-500 via-purple-500 to-emerald-500" />
+                
+                <div className="p-5 sm:p-6 lg:p-8">
+                  <form onSubmit={handleUpload} className="space-y-6 lg:space-y-8" noValidate>
+                    <div>
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 lg:mb-6 px-1 gap-2">
+                        <label className="text-lg lg:text-xl font-bold text-slate-900">
+                          Upload Your Resume
+                        </label>
+                        <span className="self-start sm:self-auto text-xs lg:text-sm font-bold px-3 py-1 lg:px-4 lg:py-1.5 bg-slate-100 text-slate-600 rounded-full uppercase tracking-wide">
+                          PDF Only
+                        </span>
+                      </div>
+
+                      <div
+                        className={`relative group flex flex-col items-center justify-center w-full min-h-[220px] lg:min-h-[280px] p-5 lg:p-8 border-2 lg:border-3 border-dashed rounded-2xl lg:rounded-[2rem] transition-all duration-500 cursor-pointer overflow-hidden ${
+                          isDragging
+                            ? "border-[#1d2f62] bg-[#1d2f62] scale-[1.01] shadow-2xl"
+                            : file
+                            ? "border-emerald-200 bg-emerald-50/30"
+                            : "border-slate-200 bg-slate-50/50 hover:bg-white hover:border-blue-400 hover:shadow-xl hover:shadow-blue-100/50"
+                        }`}
+                        onDragOver={(e) => {
+                          e.preventDefault();
+                          setIsDragging(true);
+                        }}
+                        onDragLeave={(e) => {
+                          e.preventDefault();
+                          setIsDragging(false);
+                        }}
+                        onDrop={(e) => {
+                          e.preventDefault();
+                          setIsDragging(false);
+                          const droppedFile = e.dataTransfer.files[0];
+                          validateAndSetFile(droppedFile);
+                        }}
+                        onClick={() => !file && document.getElementById("file-upload")?.click()}
                       >
-                        <div className="h-12 w-12 sm:h-16 sm:w-16 bg-white rounded-2xl shadow-sm flex items-center justify-center mb-3 sm:mb-4">
-                          <FileText className="h-6 w-6 sm:h-8 sm:w-8 text-blue-600" />
-                        </div>
-                        <p className="text-base sm:text-lg font-semibold text-slate-900 mb-1 break-all px-2">
-                          {file.name}
-                        </p>
-                        <p className="text-xs sm:text-sm text-slate-500 mb-3 sm:mb-4">
-                          {(file.size / 1024).toFixed(2)} KB
-                        </p>
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setFile(null);
-                            setQuestions("");
-                            setSuccess(false);
-                            setError("");
-                            const fileInput = document.getElementById("file-upload");
-                            if (fileInput) fileInput.value = "";
-                          }}
-                          className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-red-50 text-red-600 text-sm font-medium hover:bg-red-100 transition-colors"
+                        {/* Background Pattern for Dropzone */}
+                        {!isDragging && !file && (
+                          <div className="absolute inset-0 opacity-[0.03] pointer-events-none" 
+                            style={{ backgroundImage: 'radial-gradient(#1d2f62 1px, transparent 1px)', backgroundSize: '24px 24px' }} 
+                          />
+                        )}
+
+                        <AnimatePresence mode="wait">
+                          {file ? (
+                            <motion.div
+                              key="file-selected"
+                              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                              animate={{ opacity: 1, scale: 1, y: 0 }}
+                              exit={{ opacity: 0, scale: 0.9, y: -20 }}
+                              className="flex flex-col items-center text-center relative z-10"
+                            >
+                              <div className="h-16 w-16 lg:h-20 lg:w-20 bg-white rounded-2xl lg:rounded-[1.5rem] shadow-xl shadow-emerald-100 flex items-center justify-center mb-3 lg:mb-4 border-2 lg:border-4 border-emerald-50">
+                                <FileText className="h-8 w-8 lg:h-10 lg:w-10 text-emerald-600" />
+                              </div>
+                              <h3 className="text-lg lg:text-xl font-bold text-slate-900 mb-1 lg:mb-1 break-all px-2 max-w-xs lg:max-w-lg">
+                                {file.name}
+                              </h3>
+                              <p className="text-xs lg:text-sm text-slate-500 mb-4 lg:mb-6 font-medium bg-slate-100 px-3 py-1 lg:px-4 lg:py-1 rounded-full">
+                                {(file.size / 1024).toFixed(2)} KB
+                              </p>
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setFile(null);
+                                  setQuestions("");
+                                  setSuccess(false);
+                                  setError("");
+                                  const fileInput = document.getElementById("file-upload");
+                                  if (fileInput) fileInput.value = "";
+                                }}
+                                className="inline-flex items-center gap-2 lg:gap-3 px-5 py-2.5 lg:px-6 lg:py-3 rounded-xl lg:rounded-xl bg-white border lg:border-2 border-red-100 text-red-600 text-sm lg:text-base font-bold hover:bg-red-50 hover:border-red-200 transition-all shadow-sm hover:shadow-md"
+                              >
+                                <X className="h-4 w-4 lg:h-5 lg:w-5" />
+                                Remove File
+                              </button>
+                            </motion.div>
+                          ) : (
+                            <motion.div
+                              key="upload-prompt"
+                              initial={{ opacity: 0, y: 10 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              exit={{ opacity: 0, y: -10 }}
+                              className="flex flex-col items-center text-center relative z-10"
+                            >
+                              <div className="h-16 w-16 lg:h-20 lg:w-20 bg-white rounded-full flex items-center justify-center mb-3 lg:mb-4 shadow-xl shadow-blue-100/50 group-hover:scale-110 group-hover:rotate-3 transition-all duration-500 border-2 lg:border-4 border-blue-50">
+                                <Upload className="h-6 w-6 lg:h-10 lg:w-10 text-[#1d2f62]" />
+                              </div>
+                              <h3 className="text-lg lg:text-xl font-bold text-slate-900 mb-1 lg:mb-2">
+                                <span className="text-[#1d2f62] border-b-2 lg:border-b-4 border-[#1d2f62]/20 pb-0.5 lg:pb-1">Click to upload</span>
+                              </h3>
+                              <p className="text-sm lg:text-base text-slate-500 font-medium">
+                                or drag and drop your resume
+                              </p>
+                              <p className="mt-3 lg:mt-4 text-[10px] lg:text-xs text-slate-400 font-medium uppercase tracking-widest">
+                                Max Size: 5MB
+                              </p>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+
+                        <input
+                          id="file-upload"
+                          type="file"
+                          accept="application/pdf"
+                          className="hidden"
+                          onChange={handleFileChange}
+                        />
+                      </div>
+                    </div>
+
+                    <AnimatePresence>
+                      {error && (
+                        <motion.div
+                          initial={{ opacity: 0, height: 0, scale: 0.95 }}
+                          animate={{ opacity: 1, height: "auto", scale: 1 }}
+                          exit={{ opacity: 0, height: 0, scale: 0.95 }}
+                          className="bg-red-50 border lg:border-2 border-red-100 text-red-800 px-4 py-4 lg:px-6 lg:py-4 rounded-2xl lg:rounded-2xl flex items-center gap-3 lg:gap-4 shadow-sm"
                         >
-                          <X className="h-4 w-4" />
-                          Remove File
-                        </button>
-                      </motion.div>
-                    ) : (
-                      <motion.div
-                        key="upload-prompt"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        className="flex flex-col items-center text-center"
-                      >
-                        <div className="h-12 w-12 sm:h-16 sm:w-16 bg-blue-100 rounded-full flex items-center justify-center mb-3 sm:mb-4 group-hover:scale-110 transition-transform duration-300">
-                          <Upload className="h-6 w-6 sm:h-8 sm:w-8 text-[#1d2f62]" />
-                        </div>
-                        <p className="text-base sm:text-lg font-medium text-slate-700 mb-2 px-2">
-                          <span className="text-[#1d2f62] font-bold">Click to upload</span> or drag and drop
-                        </p>
-                        <p className="text-xs sm:text-sm text-slate-400">
-                          PDF files only (Max 5MB)
-                        </p>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
+                          <div className="h-8 w-8 lg:h-10 lg:w-10 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
+                            <AlertCircle className="h-4 w-4 lg:h-5 lg:w-5 text-red-600" />
+                          </div>
+                          <div className="flex-1">
+                            <p className="font-bold text-sm lg:text-base">{error}</p>
+                          </div>
+                          <button
+                            onClick={() => setError("")}
+                            className="p-1.5 lg:p-2 hover:bg-red-100 rounded-full transition-colors"
+                          >
+                            <X className="h-4 w-4 lg:h-5 lg:w-5" />
+                          </button>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
 
-                  <input
-                    id="file-upload"
-                    type="file"
-                    accept="application/pdf"
-                    className="hidden"
-                    onChange={handleFileChange}
+                    <div className="pt-2">
+                      <button
+                        type="submit"
+                        disabled={loading || !file}
+                        className={`relative w-full py-4 lg:py-5 px-6 lg:px-8 rounded-2xl lg:rounded-2xl font-bold text-lg lg:text-xl text-white shadow-lg lg:shadow-xl transition-all duration-300 flex items-center justify-center gap-3 lg:gap-4 overflow-hidden group ${
+                          loading || !file
+                            ? "bg-slate-200 text-slate-400 cursor-not-allowed shadow-none"
+                            : "bg-[#1d2f62] hover:shadow-2xl hover:shadow-[#1d2f62]/30 hover:-translate-y-1 active:translate-y-0"
+                        }`}
+                      >
+                        {loading ? (
+                          <>
+                            <Loader2 className="h-5 w-5 lg:h-6 lg:w-6 animate-spin" />
+                            <span>
+                              {uploadProgress > 0
+                                ? `Analyzing... ${uploadProgress}%`
+                                : "Processing..."}
+                            </span>
+                            <div
+                              className="absolute bottom-0 left-0 h-1.5 lg:h-2 bg-white/20 transition-all duration-300"
+                              style={{ width: `${uploadProgress}%` }}
+                            />
+                          </>
+                        ) : (
+                          <>
+                            <Sparkles className="h-5 w-5 lg:h-6 lg:w-6 group-hover:animate-pulse" />
+                            <span>Generate Interview Questions</span>
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Sidebar / Steps */}
+            <motion.div 
+              className="lg:col-span-4 space-y-6 lg:space-y-6"
+              variants={itemVariants}
+            >
+              <div className="bg-[#1d2f62] rounded-3xl lg:rounded-[2.5rem] p-6 lg:p-8 text-white shadow-xl lg:shadow-2xl shadow-[#1d2f62]/20 relative overflow-hidden">
+                {/* Decorative circles */}
+                <div className="absolute top-0 right-0 w-48 h-48 lg:w-64 lg:h-64 bg-white/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+                <div className="absolute bottom-0 left-0 w-48 h-48 lg:w-64 lg:h-64 bg-blue-500/10 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2" />
+                
+                <h3 className="text-lg lg:text-xl font-bold mb-4 lg:mb-6 flex items-center gap-3 lg:gap-4 relative z-10">
+                  <div className="h-8 w-8 lg:h-10 lg:w-10 bg-white/10 rounded-xl lg:rounded-2xl flex items-center justify-center border border-white/20">
+                    <Target className="h-4 w-4 lg:h-5 lg:w-5 text-blue-300" />
+                  </div>
+                  Your Journey
+                </h3>
+                <div className="space-y-6 lg:space-y-8 relative z-10">
+                  <StepItem
+                    icon={Upload}
+                    step="1"
+                    title="Upload Your Resume"
+                    description="Upload your PDF resume securely."
+                  />
+                  <StepItem
+                    icon={Zap}
+                    step="2"
+                    title="AI Analyzes You"
+                    description="We identify your unique skills & experience."
+                  />
+
+                  <StepItem
+                    icon={Play}
+                    step="3"
+                    title="Practice Your Interview"
+                    description="Answer questions tailored just for you."
                   />
                 </div>
               </div>
 
-              {/* Error Message */}
-              <AnimatePresence>
-                {error && (
-                  <motion.div
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: "auto" }}
-                    exit={{ opacity: 0, height: 0 }}
-                    className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl flex items-start gap-3"
-                  >
-                    <AlertCircle className="h-5 w-5 flex-shrink-0 mt-0.5" />
-                    <div className="flex-1">
-                      <p className="font-medium">{error}</p>
-                    </div>
-                    <button
-                      onClick={() => setError("")}
-                      className="text-red-400 hover:text-red-600 transition-colors"
-                    >
-                      <X className="h-5 w-5" />
-                    </button>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-
-              {/* Analyze Button */}
-              <div className="pt-2">
-                <button
-                  type="submit"
-                  disabled={loading || !file}
-                  className={`relative w-full py-3 sm:py-4 px-4 sm:px-6 rounded-xl font-bold text-base sm:text-lg text-white shadow-lg transition-all duration-300 flex items-center justify-center gap-2 sm:gap-3 overflow-hidden ${
-                    loading || !file
-                      ? "bg-[#1d2f62] cursor-not-allowed shadow-none"
-                      : "bg-[#1d2f62] hover:shadow-xl hover:shadow-[#1d2f62]/40 hover:scale-105 active:scale-95"
-                  }`}
-                >
-                  {loading ? (
-                    <>
-                      <Loader2 className="h-6 w-6 animate-spin" />
-                      <span>
-                        {uploadProgress > 0
-                          ? `Analyzing... ${uploadProgress}%`
-                          : "Processing..."}
-                      </span>
-                      {/* Progress Bar Background */}
-                      <div
-                        className="absolute bottom-0 left-0 h-1 bg-white/30 transition-all duration-300"
-                        style={{ width: `${uploadProgress}%` }}
-                      />
-                    </>
-                  ) : (
-                    <>
-                      <Sparkles className="h-6 w-6" />
-                      <span>Generate Interview Questions</span>
-                    </>
-                  )}
-                </button>
-              </div>
-            </form>
-          </div>
-        </motion.div>
-
-        {/* Results Section */}
-        <AnimatePresence>
-          {success && questions && (
-            <motion.div
-              id="questions-section"
-              initial={{ opacity: 0, y: 40 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ type: "spring", bounce: 0.3 }}
-              className="mt-12"
-            >
-              <div className="bg-emerald-600 rounded-2xl sm:rounded-3xl p-1 shadow-xl">
-                <div className="bg-white rounded-[18px] sm:rounded-[22px] p-4 sm:p-8 lg:p-10">
-                  <div className="flex items-center gap-3 sm:gap-4 mb-6 sm:mb-8">
-                    <div className="h-10 w-10 sm:h-12 sm:w-12 bg-emerald-100 rounded-full flex items-center justify-center flex-shrink-0">
-                      <CheckCircle2 className="h-6 w-6 sm:h-7 sm:w-7 text-emerald-600" />
-                    </div>
-                    <div>
-                      <h2 className="text-xl sm:text-2xl font-bold text-slate-900">
-                        Analysis Complete!
-                      </h2>
-                      <p className="text-sm sm:text-base text-slate-500">
-                        Your personalized questions are ready.
-                      </p>
-                    </div>
+              <div className="bg-emerald-50/50 rounded-3xl lg:rounded-[2.5rem] p-5 lg:p-6 shadow-lg border border-emerald-100/50">
+                <h3 className="text-base lg:text-lg font-bold text-emerald-900 mb-3 lg:mb-3 flex items-center gap-2">
+                  <div className="h-7 w-7 lg:h-8 lg:w-8 bg-emerald-100 rounded-lg lg:rounded-xl flex items-center justify-center">
+                    <Shield className="h-3.5 w-3.5 lg:h-5 lg:w-5 text-emerald-600" />
                   </div>
-
-                  <div className="bg-slate-50 rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-slate-200 mb-6 sm:mb-8">
-                    <h3 className="text-xs sm:text-sm font-bold text-slate-400 uppercase tracking-wider mb-3 sm:mb-4">
-                      Preview Questions
-                    </h3>
-                    <div className="space-y-3">
-                      {questions
-                        .split("\n")
-                        .slice(0, 3)
-                        .map((q, i) => (
-                          <div key={i} className="flex gap-2 sm:gap-3">
-                            <span className="font-mono text-blue-500 font-bold text-sm sm:text-base flex-shrink-0">
-                              {i + 1}.
-                            </span>
-                            <p className="text-slate-700 font-medium line-clamp-2 text-sm sm:text-base">
-                              {q.replace(/^\d+\.\s*/, "")}
-                            </p>
-                          </div>
-                        ))}
-                      {questions.split("\n").length > 3 && (
-                        <p className="text-sm text-slate-400 italic pl-8 pt-2">
-                          ...and more tailored questions.
-                        </p>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
-                    <button
-                      onClick={() => navigate("/interview-flow")}
-                      className="w-full sm:flex-1 py-3 sm:py-4 px-6 sm:px-8 bg-[#1d2f62] text-white rounded-xl font-bold text-base sm:text-lg hover:bg-[#1d2f62] transition-all duration-300 shadow-lg hover:shadow-xl hover:shadow-[#1d2f62]/40 hover:scale-105 active:scale-95 flex items-center justify-center gap-2 group"
-                    >
-                      <Play className="h-4 w-4 sm:h-5 sm:w-5 fill-current" />
-                      <span>Start Full Interview</span>
-                      <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5 group-hover:translate-x-1 transition-transform" />
-                    </button>
-                  </div>
-                </div>
+                  Pro Tip
+                </h3>
+                <p className="text-sm lg:text-base text-emerald-800/80 leading-relaxed font-medium">
+                  "The more detailed your resume, the better we can tailor questions to challenge your specific expertise."
+                </p>
               </div>
             </motion.div>
-          )}
-        </AnimatePresence>
+          </div>
 
-        {/* How It Works Section */}
-        <motion.div
-          className="mt-10 sm:mt-16 grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 lg:gap-8"
-          variants={containerVariants}
-        >
-          <StepCard
-            icon={Upload}
-            step="1"
-            title="Upload Resume"
-            description="Upload your PDF resume. We securely process it to understand your profile."
-          />
-          <StepCard
-            icon={Zap}
-            step="2"
-            title="AI Analysis"
-            description="Our AI identifies your key skills, projects, and experiences instantly."
-          />
-          <StepCard
-            icon={Target}
-            step="3"
-            title="Practice"
-            description="Get challenged with questions that real interviewers would ask you."
-          />
+          {/* Results Section */}
+          <AnimatePresence>
+            {success && questions && (
+              <motion.div
+                id="questions-section"
+                initial={{ opacity: 0, y: 40 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ type: "spring", bounce: 0.3 }}
+                className="mt-12 lg:mt-16"
+              >
+                <div className="bg-gradient-to-br from-emerald-500 to-teal-600 rounded-3xl lg:rounded-[2.5rem] p-1.5 lg:p-2 shadow-2xl">
+                  <div className="bg-white rounded-[1.3rem] lg:rounded-[2.3rem] p-6 sm:p-10 lg:p-12">
+                    <div className="flex flex-col md:flex-row items-center gap-4 lg:gap-8 mb-8 lg:mb-10 text-center md:text-left">
+                      <div className="h-16 w-16 lg:h-20 lg:w-20 bg-emerald-100 rounded-2xl lg:rounded-[1.5rem] flex items-center justify-center flex-shrink-0 shadow-inner">
+                        <CheckCircle2 className="h-8 w-8 lg:h-10 lg:w-10 text-emerald-600" />
+                      </div>
+                      <div>
+                        <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-slate-900 mb-2 lg:mb-2">
+                          Your Analysis is Complete!
+                        </h2>
+                        <p className="text-lg lg:text-xl text-slate-500 font-medium">
+                          Your personalized questions are ready for you.
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="bg-slate-50 rounded-2xl lg:rounded-[2rem] p-6 lg:p-8 border border-slate-200 mb-8 lg:mb-10">
+                      <h3 className="text-xs lg:text-sm font-bold text-slate-400 uppercase tracking-widest mb-4 lg:mb-6 flex items-center gap-2 lg:gap-3">
+                        <span className="w-4 lg:w-8 h-0.5 bg-slate-300"></span>
+                        Your Question Preview
+                      </h3>
+                      <div className="space-y-4 lg:space-y-5">
+                        {questions
+                          .split("\n")
+                          .slice(0, 3)
+                          .map((q, i) => (
+                            <div key={i} className="flex gap-4 lg:gap-5 items-start">
+                              <span className="flex-shrink-0 h-6 w-6 lg:h-8 lg:w-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-xs lg:text-sm mt-0.5 lg:mt-0.5">
+                                {i + 1}
+                              </span>
+                              <p className="text-slate-800 font-medium text-base lg:text-lg leading-relaxed">
+                                {q.replace(/^\d+\.\s*/, "")}
+                              </p>
+                            </div>
+                          ))}
+                        {questions.split("\n").length > 3 && (
+                          <div className="pl-10 lg:pl-14 pt-2">
+                            <span className="inline-flex items-center gap-2 px-3 py-1.5 lg:px-4 lg:py-2 rounded-full bg-slate-200/50 text-slate-500 text-xs lg:text-sm font-bold">
+                              + more questions
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="flex justify-center">
+                      <button
+                        onClick={() => navigate("/interview-flow")}
+                        className="w-full sm:w-auto px-8 lg:px-12 py-4 lg:py-5 bg-[#1d2f62] text-white rounded-2xl lg:rounded-2xl font-bold text-lg lg:text-xl hover:bg-[#1d2f62]/90 transition-all duration-300 shadow-xl lg:shadow-2xl hover:shadow-[#1d2f62]/40 hover:-translate-y-1 active:translate-y-0 flex items-center justify-center gap-3 lg:gap-4 group"
+                      >
+                        <div className="h-8 w-8 lg:h-9 lg:w-9 bg-white/10 rounded-lg lg:rounded-xl flex items-center justify-center">
+                          <Play className="h-4 w-4 lg:h-5 lg:w-5 fill-current" />
+                        </div>
+                        <span>Start Your Interview</span>
+                        <ArrowRight className="h-4 w-4 lg:h-5 lg:w-5 group-hover:translate-x-2 transition-transform" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </motion.div>
-      </motion.div>
 
-
-      <PricingModal 
-        isOpen={showPricingModal} 
-        onClose={handleModalClose}
-        onSuccess={handlePaymentSuccess}
-        userEmail={user?.email}
-        userName={user?.displayName || "User"}
-      />
+        <PricingModal 
+          isOpen={showPricingModal} 
+          onClose={handleModalClose}
+          onSuccess={handlePaymentSuccess}
+          userEmail={user?.email}
+          userName={user?.displayName || "User"}
+        />
+      </div>
     </PageLayout>
   );
 };
 
-const StepCard = ({ icon: Icon, step, title, description }) => (
-  <motion.div
-    variants={{
-      hidden: { opacity: 0, y: 20 },
-      visible: { opacity: 1, y: 0 },
-    }}
-    className="bg-white p-4 sm:p-6 rounded-xl sm:rounded-2xl shadow-sm border border-slate-100 relative overflow-hidden group hover:shadow-md transition-shadow"
-  >
-    <div className="absolute -right-2 sm:-right-4 -top-2 sm:-top-4 text-6xl sm:text-9xl font-bold text-slate-50 opacity-50 group-hover:text-blue-50 transition-colors select-none">
-      {step}
+const StepItem = ({ icon: Icon, step, title, description }) => (
+  <div className="flex items-start gap-3">
+    <div className="h-10 w-10 bg-white/10 rounded-xl flex items-center justify-center flex-shrink-0 border border-white/20">
+      <Icon className="h-5 w-5 text-blue-200" />
     </div>
-    <div className="relative z-10">
-      <div className="h-10 w-10 sm:h-12 sm:w-12 bg-blue-50 rounded-lg sm:rounded-xl flex items-center justify-center mb-3 sm:mb-4 text-blue-600 group-hover:scale-110 transition-transform duration-300">
-        <Icon className="h-5 w-5 sm:h-6 sm:w-6" />
-      </div>
-      <h3 className="text-base sm:text-lg font-bold text-slate-900 mb-2">{title}</h3>
-      <p className="text-sm sm:text-base text-slate-500 leading-relaxed">{description}</p>
+    <div>
+      <h4 className="text-base font-bold text-white mb-0.5">{title}</h4>
+      <p className="text-blue-100 text-xs leading-relaxed opacity-90">{description}</p>
     </div>
-  </motion.div>
+  </div>
 );
 
 export default ResumeUpload;
-

@@ -100,13 +100,13 @@ const Navbar = () => {
         initial={{ y: -100, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.5, ease: "easeOut" }}
-        className={`fixed top-2 sm:top-4 left-1/2 -translate-x-1/2 z-50 transition-all duration-300 rounded-2xl border w-[calc(100%-1rem)] sm:w-[calc(100%-3rem)] lg:w-[calc(100%-4rem)] max-w-7xl ${
+        className={`fixed top-2 sm:top-6 left-1/2 -translate-x-1/2 z-50 transition-all duration-300 rounded-3xl border w-[calc(100%-1rem)] sm:w-[calc(100%-3rem)] lg:w-[calc(100%-4rem)] max-w-screen-2xl ${
           isScrolled
             ? "bg-white/90 backdrop-blur-xl shadow-lg border-white/20"
             : "bg-white/80 backdrop-blur-md shadow-md border-white/40"
         }`}
       >
-        <div className="px-4 sm:px-6 lg:px-8 py-3">
+        <div className="px-5 sm:px-6 lg:px-8 py-3">
           <div className="flex justify-between items-center">
 
             <Link
@@ -121,7 +121,7 @@ const Navbar = () => {
               <img
                 src={logo}
                 alt="PrepHire"
-                className="h-9 w-auto transition-transform duration-300 group-hover:scale-105 -ml-2"
+                className="h-8 w-auto transition-transform duration-300 group-hover:scale-105 -ml-2"
               />
             </Link>
 
@@ -137,7 +137,7 @@ const Navbar = () => {
                         key={link.path}
                         to={link.path}
                         data-tour={`nav-${link.label.toLowerCase()}`}
-                        className={`relative flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-colors duration-200 ${
+                        className={`relative flex items-center gap-2 px-5 py-2 rounded-full text-sm font-medium transition-colors duration-200 ${
                           active ? "text-[#1d2f62]" : "text-[#1d2f62] hover:text-[#1d2f62]"
                         }`}
                       >
@@ -164,9 +164,9 @@ const Navbar = () => {
               {user ? (
                 <div className="flex items-center gap-4">
                   <div className="relative hidden md:block" ref={dropdownRef} data-tour="nav-profile">
-                    <button
+                      <button
                       onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
-                      className={`flex items-center gap-3 pl-2 pr-4 py-2 rounded-full transition-all duration-200 border ${
+                      className={`flex items-center gap-2 pl-2 pr-4 py-2 rounded-full transition-all duration-200 border ${
                         profileDropdownOpen
                           ? "bg-white border-primary-200 ring-2 ring-primary-100 shadow-md"
                           : "bg-white/50 border-transparent hover:bg-white hover:shadow-sm hover:border-gray-200"
@@ -176,10 +176,10 @@ const Navbar = () => {
                         <img
                           src={user.photoURL}
                           alt={userDisplayName}
-                          className="h-8 w-8 rounded-full object-cover border border-gray-200 shadow-sm"
+                          className="h-7 w-7 rounded-full object-cover border border-gray-200 shadow-sm"
                         />
                       ) : (
-                        <div className="h-8 w-8 rounded-full bg-primary-100 text-primary-600 flex items-center justify-center text-sm font-bold shadow-sm">
+                        <div className="h-7 w-7 rounded-full bg-primary-100 text-primary-600 flex items-center justify-center text-xs font-bold shadow-sm">
                           {userInitials}
                         </div>
                       )}

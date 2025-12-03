@@ -27,7 +27,7 @@ const Contact = () => {
         {/* Background Decoration */}
         <div className="absolute top-0 left-0 w-full h-[500px] bg-gradient-to-b from-blue-50 to-slate-50 z-0" />
         
-        <div className="relative z-10 py-20 sm:py-24 px-4 sm:px-6 lg:px-8 max-w-screen-2xl mx-auto">
+        <div className="relative z-10 py-20 sm:py-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
           
           {/* Header */}
           <div className="text-center max-w-2xl mx-auto mb-16">
@@ -42,7 +42,7 @@ const Contact = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
-              className="text-4xl sm:text-5xl font-bold text-slate-900 tracking-tight mb-6"
+              className="text-5xl sm:text-6xl font-bold text-slate-900 tracking-tight mb-6"
             >
               We'd love to hear from you
             </motion.h1>
@@ -120,7 +120,7 @@ const Contact = () => {
                         type="text"
                         id="name"
                         required
-                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none"
+                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-5 py-4 text-slate-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none text-base"
                         placeholder=""
                         value={formData.name}
                         onChange={(e) => setFormData({...formData, name: e.target.value})}
@@ -134,7 +134,7 @@ const Contact = () => {
                         type="email"
                         id="email"
                         required
-                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none"
+                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-5 py-4 text-slate-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none text-base"
                         placeholder=""
                         value={formData.email}
                         onChange={(e) => setFormData({...formData, email: e.target.value})}
