@@ -290,7 +290,7 @@ const Dashboard = () => {
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
               <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-2 tracking-tight">
-                Welcome back, <span className="text-[#1d2f62]">{userDisplayName}</span>! 👋
+                Welcome back, <span className="text-green-600">{userDisplayName}</span>! 👋
               </h1>
               <p className="text-lg text-slate-500">
                 Ready to ace your next interview? Let's get started.
@@ -598,7 +598,7 @@ const Dashboard = () => {
               <StatCard
                 title="Credits Left"
                 value={totalCredits === 0 ? `${daysLeftToRefill} Days` : totalCredits}
-                subtitle={totalCredits === 0 ? "Refill in" : null}
+                subtitle={totalCredits === 0 ? "Refill in" : "Remaining this month"}
                 icon={CreditCard}
                 color="orange"
                 action={
@@ -615,6 +615,7 @@ const Dashboard = () => {
               <StatCard
                 title="Total Interviews"
                 value={stats.totalInterviews}
+                subtitle="Lifetime sessions"
                 icon={Briefcase}
                 color="blue"
               />

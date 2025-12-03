@@ -23,6 +23,7 @@ export const getProfile = async (req, res) => {
         usage: user.usage,
         notifications: user.notifications,
         hasCompletedOnboarding: user.hasCompletedOnboarding,
+        role: (process.env.ADMIN_EMAIL && user.email === process.env.ADMIN_EMAIL) ? "admin" : user.role,
       },
     });
   } catch (error) {

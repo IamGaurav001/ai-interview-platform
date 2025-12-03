@@ -17,6 +17,8 @@ import {
 } from "../api/authAPI";
 import { setUserId, setUserProperties } from "../config/amplitude";
 
+import { getUserProfile } from "../api/userAPI";
+
 export const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
@@ -41,12 +43,26 @@ export const AuthProvider = ({ children }) => {
       if (firebaseUser) {
         await updateToken(firebaseUser);
         
+        // Fetch user profile from backend
+        try {
+          const response = await getUserProfile();
+          if (response.data && response.data.user) {
+             const backendUser = response.data.user;
+             // Merge backend user data with firebase user object
+             // We create a new object to avoid mutating the Firebase UserImpl object directly if it's frozen
+             firebaseUser = { ...firebaseUser, ...backendUser, uid: firebaseUser.uid, email: firebaseUser.email }; 
+          }
+        } catch (error) {
+          console.error("Error fetching user profile:", error);
+        }
+
         // Set Amplitude User Identity
         setUserId(firebaseUser.uid);
         setUserProperties({
           email: firebaseUser.email,
           name: firebaseUser.displayName || 'User',
-          email_verified: firebaseUser.emailVerified
+          email_verified: firebaseUser.emailVerified,
+          role: firebaseUser.role
         });
 
         setUser(firebaseUser);

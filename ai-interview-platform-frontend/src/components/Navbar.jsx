@@ -11,6 +11,7 @@ import {
   FileText,
   ChevronDown,
   Settings,
+  Shield,
 } from "lucide-react";
 import logo from "../assets/intervueai-logo.png";
 import prephireIcon from "../assets/prephire-icon-circle.png";
@@ -88,6 +89,10 @@ const Navbar = () => {
     { path: "/upload-resume", label: "Resume", icon: FileText },
   ];
 
+  if (user?.role === "admin") {
+    navLinks.push({ path: "/admin", label: "Admin", icon: Shield });
+  }
+
   return (
     <>
     
@@ -161,7 +166,7 @@ const Navbar = () => {
                   <div className="relative hidden md:block" ref={dropdownRef} data-tour="nav-profile">
                     <button
                       onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
-                      className={`flex items-center gap-3 pl-1 pr-2 py-1 rounded-full transition-all duration-200 border ${
+                      className={`flex items-center gap-3 pl-2 pr-4 py-2 rounded-full transition-all duration-200 border ${
                         profileDropdownOpen
                           ? "bg-white border-primary-200 ring-2 ring-primary-100 shadow-md"
                           : "bg-white/50 border-transparent hover:bg-white hover:shadow-sm hover:border-gray-200"
@@ -174,12 +179,11 @@ const Navbar = () => {
                           className="h-8 w-8 rounded-full object-cover border border-gray-200 shadow-sm"
                         />
                       ) : (
-                        <div className="h-8 w-8 rounded-full bg-
-                         text-white flex items-center justify-center text-sm font-bold shadow-sm">
+                        <div className="h-8 w-8 rounded-full bg-primary-100 text-primary-600 flex items-center justify-center text-sm font-bold shadow-sm">
                           {userInitials}
                         </div>
                       )}
-                      <span className="text-sm font-medium text-gray-700 max-w-[100px] truncate">
+                      <span className="text-sm font-medium text-gray-700 max-w-[150px] truncate">
                         {userDisplayName}
                       </span>
                       <ChevronDown

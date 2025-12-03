@@ -20,6 +20,7 @@ const userSchema = new mongoose.Schema(
       marketing: { type: Boolean, default: false },
     },
     hasCompletedOnboarding: { type: Boolean, default: false },
+    role: { type: String, enum: ["user", "admin"], default: "user" },
   },
   { timestamps: true }
 );

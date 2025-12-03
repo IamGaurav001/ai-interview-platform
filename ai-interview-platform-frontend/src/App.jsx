@@ -24,6 +24,7 @@ import Pricing from "./pages/Pricing";
 import VerifyEmail from "./pages/VerifyEmail";
 import Refund from "./pages/Refund";
 import Shipping from "./pages/Shipping";
+import AdminDashboard from "./pages/AdminDashboard";
 import { logEvent } from "./config/amplitude";
 
 const Layout = ({ children }) => {
@@ -140,11 +141,19 @@ function App() {
                   </ProtectedRoute>
                 }
               />
-              <Route
+                <Route
                 path="/verify-email"
                 element={
                   <ProtectedRoute requireVerification={false}>
                     <VerifyEmail />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin"
+                element={
+                  <ProtectedRoute>
+                    <AdminDashboard />
                   </ProtectedRoute>
                 }
               />

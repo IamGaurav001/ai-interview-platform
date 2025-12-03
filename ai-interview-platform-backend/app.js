@@ -77,11 +77,14 @@ app.get("/health", async (req, res) => {
 });
 
 
+import adminRoutes from "./routes/adminRoutes.js";
+
 app.use("/api/auth", authRoutes);
 app.use("/api/user", userRoutes);
 app.use("/api/interview", interviewRoutes);
 app.use("/api/resume", resumeRoutes);
 app.use("/api/monetization", monetizationRoutes);
+app.use("/api/admin", adminRoutes);
 
 app.get("/", (req, res) => {
   res.send("IntervueAI Backend is running ✅");
