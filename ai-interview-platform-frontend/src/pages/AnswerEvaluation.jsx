@@ -28,14 +28,18 @@ const AnswerEvaluation = () => {
       });
       const data = await res.json();
       
-      // Try to parse JSON feedback if it's structured
-      try {
-        const parsedFeedback = JSON.parse(data.feedback);
-        setEvaluation(parsedFeedback);
-        setFeedback(data.feedback);
-      } catch {
-        // If not JSON, display as plain text
-        setFeedback(data.feedback);
+      // Handle feedback whether it's an object or string
+      if (typeof data.feedback === "object" && data.feedback !== null) {
+        setEvaluation(data.feedback);
+        setFeedback(JSON.stringify(data.feedback, null, 2));
+      } else {
+        try {
+          const parsedFeedback = JSON.parse(data.feedback);
+          setEvaluation(parsedFeedback);
+          setFeedback(data.feedback);
+        } catch {
+          setFeedback(data.feedback);
+        }
       }
     } catch (err) {
       console.error(err);

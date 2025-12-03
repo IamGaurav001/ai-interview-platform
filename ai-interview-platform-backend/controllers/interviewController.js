@@ -957,26 +957,28 @@ export const endInterview = async (req, res) => {
       if (msg.role === "interviewer") {
         const text = msg.text.trim();
 
-        const isFeedback =
-          text.includes("FEEDBACK:") ||
-          (text.length < 400 &&
-            !text.includes("?") &&
-            !text.includes("INTERVIEW_COMPLETE") &&
-            !text.toLowerCase().includes("thanks for joining"));
-
-        if (!isFeedback) {
-
-          if (
-            currentQuestion !== null &&
-            currentAnswer !== null &&
-            currentAnswer.trim().length > 0
-          ) {
-            questions.push(currentQuestion);
-            answers.push(currentAnswer.trim());
-          }
-          currentQuestion = text;
-          currentAnswer = null;
+        // Skip empty messages or explicit completion signals
+        if (
+          !text ||
+          text.includes("INTERVIEW_COMPLETE") ||
+          text.toLowerCase().includes("thanks for joining") ||
+          text.toLowerCase().includes("interview complete")
+        ) {
+          continue;
         }
+
+        // If we have a pending question/answer pair, push it
+        if (
+          currentQuestion !== null &&
+          currentAnswer !== null &&
+          currentAnswer.trim().length > 0
+        ) {
+          questions.push(currentQuestion);
+          answers.push(currentAnswer.trim());
+        }
+        
+        currentQuestion = text;
+        currentAnswer = null;
       } else if (msg.role === "user") {
         if (currentQuestion !== null) {
           currentAnswer = msg.text.trim();
@@ -1198,7 +1200,7 @@ export const endInterview = async (req, res) => {
         summary: finalSummary,
         all: allFeedbacks.length > 0 ? allFeedbacks : history,
       },
-      score: finalSummary.overallScore || 7,
+      score: finalSummary.overallScore !== undefined ? finalSummary.overallScore : 7,
     });
 
     try {
@@ -1213,7 +1215,8 @@ export const endInterview = async (req, res) => {
       success: true,
       sessionId: interviewSession._id,
       summary: finalSummary,
-      score: finalSummary.overallScore || 7,
+      score: finalSummary.overallScore !== undefined ? finalSummary.overallScore : 7,
+      questionCount: questions.length,
       message: "Interview completed and saved successfully",
     });
   } catch (error) {

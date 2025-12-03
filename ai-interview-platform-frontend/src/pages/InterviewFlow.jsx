@@ -599,9 +599,12 @@ const InterviewFlow = () => {
       const res = await endInterview();
       if (res.data.success) {
         setSummary(res.data.summary);
+        if (res.data.questionCount !== undefined) {
+          setQuestionCount(res.data.questionCount);
+        }
         logEvent('Complete Interview', { 
           type: 'Flow', 
-          questionCount: questionCount,
+          questionCount: res.data.questionCount || questionCount,
           score: res.data.summary.overallScore 
         });
       } else {
