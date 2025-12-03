@@ -114,47 +114,49 @@ const PricingModal = ({ isOpen, onClose, onSuccess, userEmail, userName }) => {
           initial={{ opacity: 0, scale: 0.95, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 20 }}
-          className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden border border-slate-100"
+          className="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-md overflow-hidden border border-white relative"
         >
           {/* Header */}
-          <div className="bg-gradient-to-r from-indigo-600 to-violet-600 p-6 text-white relative overflow-hidden">
-            <div className="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-white/10 rounded-full blur-xl"></div>
+          <div className="bg-gradient-to-br from-[#1d2f62] to-[#2a407a] p-8 text-white relative overflow-hidden">
+            <div className="absolute top-0 right-0 -mt-8 -mr-8 w-32 h-32 bg-white/10 rounded-full blur-2xl"></div>
+            <div className="absolute bottom-0 left-0 -mb-8 -ml-8 w-24 h-24 bg-blue-500/20 rounded-full blur-xl"></div>
+            
             <div className="relative z-10 flex justify-between items-start">
               <div>
-                <h3 className="text-2xl font-bold">Unlock Potential</h3>
-                <p className="text-indigo-100 text-sm mt-1">Get AI-powered interview feedback</p>
+                <h3 className="text-3xl font-bold tracking-tight">Unlock Potential</h3>
+                <p className="text-blue-100 text-sm mt-2 font-medium">Get detailed AI-powered interview feedback</p>
               </div>
               <button
                 onClick={onClose}
-                className="text-white/70 hover:text-white bg-white/10 hover:bg-white/20 rounded-full p-1 transition-colors"
+                className="text-white/70 hover:text-white bg-white/10 hover:bg-white/20 rounded-full p-2 transition-all hover:rotate-90"
               >
                 <X className="h-5 w-5" />
               </button>
             </div>
           </div>
 
-          <div className="p-6">
+          <div className="p-8">
             {/* Plans */}
-            <div className="space-y-4 mb-6">
+            <div className="space-y-5 mb-8">
               {/* Option 1: 1 Interview */}
               <div
                 onClick={() => setSelectedPlan("1_interview")}
-                className={`group relative border-2 rounded-xl p-4 cursor-pointer transition-all duration-200 ${
+                className={`group relative border-2 rounded-2xl p-5 cursor-pointer transition-all duration-300 ${
                   selectedPlan === "1_interview"
-                    ? "border-indigo-600 bg-indigo-50/50"
-                    : "border-slate-100 hover:border-indigo-200 hover:bg-slate-50"
+                    ? "border-[#1d2f62] bg-blue-50/50 shadow-md shadow-blue-100"
+                    : "border-slate-100 hover:border-blue-200 hover:bg-slate-50"
                 }`}
               >
                 <div className="flex justify-between items-center">
-                  <div className="flex items-center gap-3">
-                    <div className={`h-5 w-5 rounded-full border-2 flex items-center justify-center ${
-                      selectedPlan === "1_interview" ? "border-indigo-600" : "border-slate-300"
+                  <div className="flex items-center gap-4">
+                    <div className={`h-6 w-6 rounded-full border-2 flex items-center justify-center transition-colors ${
+                      selectedPlan === "1_interview" ? "border-[#1d2f62]" : "border-slate-300"
                     }`}>
-                      {selectedPlan === "1_interview" && <div className="h-2.5 w-2.5 rounded-full bg-indigo-600" />}
+                      {selectedPlan === "1_interview" && <div className="h-3 w-3 rounded-full bg-[#1d2f62]" />}
                     </div>
-                    <span className="font-semibold text-slate-900">1 Interview Credit</span>
+                    <span className="font-bold text-slate-700 text-lg">1 Interview Credit</span>
                   </div>
-                  <span className="text-xl font-bold text-slate-900">
+                  <span className="text-2xl font-bold text-slate-900">
                     ₹19
                   </span>
                 </div>
@@ -163,30 +165,30 @@ const PricingModal = ({ isOpen, onClose, onSuccess, userEmail, userName }) => {
               {/* Option 2: 3 Interviews */}
               <div
                 onClick={() => setSelectedPlan("3_interviews")}
-                className={`group relative border-2 rounded-xl p-4 cursor-pointer transition-all duration-200 ${
+                className={`group relative border-2 rounded-2xl p-5 cursor-pointer transition-all duration-300 ${
                   selectedPlan === "3_interviews"
-                    ? "border-indigo-600 bg-indigo-50/50 shadow-sm"
-                    : "border-slate-100 hover:border-indigo-200 hover:bg-slate-50"
+                    ? "border-[#1d2f62] bg-blue-50/50 shadow-lg shadow-blue-100 scale-[1.02]"
+                    : "border-slate-100 hover:border-blue-200 hover:bg-slate-50"
                 }`}
               >
-                <div className="absolute -top-3 right-4 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm uppercase tracking-wide">
-                  Most Popular
+                <div className="absolute -top-3 right-6 bg-gradient-to-r from-amber-500 to-orange-600 text-white text-[10px] font-bold px-3 py-1 rounded-full shadow-md uppercase tracking-wider flex items-center gap-1">
+                  <Zap className="h-3 w-3 fill-white" /> Most Popular
                 </div>
                 <div className="flex justify-between items-center">
-                  <div className="flex items-center gap-3">
-                    <div className={`h-5 w-5 rounded-full border-2 flex items-center justify-center ${
-                      selectedPlan === "3_interviews" ? "border-indigo-600" : "border-slate-300"
+                  <div className="flex items-center gap-4">
+                    <div className={`h-6 w-6 rounded-full border-2 flex items-center justify-center transition-colors ${
+                      selectedPlan === "3_interviews" ? "border-[#1d2f62]" : "border-slate-300"
                     }`}>
-                      {selectedPlan === "3_interviews" && <div className="h-2.5 w-2.5 rounded-full bg-indigo-600" />}
+                      {selectedPlan === "3_interviews" && <div className="h-3 w-3 rounded-full bg-[#1d2f62]" />}
                     </div>
                     <div>
-                      <span className="font-semibold text-slate-900">3 Interview Credits</span>
-                      <div className="text-xs text-emerald-600 font-medium mt-0.5 flex items-center gap-1">
-                        <Zap className="h-3 w-3" /> Save 14%
+                      <span className="font-bold text-slate-700 text-lg">3 Interview Credits</span>
+                      <div className="text-xs text-emerald-600 font-bold mt-1 flex items-center gap-1 bg-emerald-50 px-2 py-0.5 rounded-md w-fit">
+                        Save 14%
                       </div>
                     </div>
                   </div>
-                  <span className="text-xl font-bold text-slate-900">
+                  <span className="text-2xl font-bold text-slate-900">
                     ₹49
                   </span>
                 </div>
@@ -203,10 +205,13 @@ const PricingModal = ({ isOpen, onClose, onSuccess, userEmail, userName }) => {
             <button
               onClick={handlePayment}
               disabled={loading}
-              className="w-full py-3.5 px-4 bg-[#1d2f62] hover:bg-[#1d2f62]/90 text-white font-bold rounded-xl shadow-lg hover:shadow-xl hover:shadow-[#1d2f62]/40 hover:scale-105 active:scale-95 transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
+              className="w-full py-4 px-6 bg-[#1d2f62] hover:bg-[#1d2f62]/90 text-white font-bold text-lg rounded-2xl shadow-xl hover:shadow-2xl hover:shadow-[#1d2f62]/30 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-300 flex items-center justify-center gap-3 disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none"
             >
               {loading ? (
-                "Processing..."
+                <>
+                  <div className="h-5 w-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  Processing...
+                </>
               ) : (
                 <>
                   <CreditCard className="h-5 w-5" />
