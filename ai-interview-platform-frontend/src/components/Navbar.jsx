@@ -100,7 +100,7 @@ const Navbar = () => {
         initial={{ y: -100, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.5, ease: "easeOut" }}
-        className={`fixed top-4 left-1/2 -translate-x-1/2 z-50 transition-all duration-300 rounded-2xl border w-[calc(100%-2rem)] sm:w-[calc(100%-3rem)] lg:w-[calc(100%-4rem)] max-w-7xl ${
+        className={`fixed top-2 sm:top-4 left-1/2 -translate-x-1/2 z-50 transition-all duration-300 rounded-2xl border w-[calc(100%-1rem)] sm:w-[calc(100%-3rem)] lg:w-[calc(100%-4rem)] max-w-7xl ${
           isScrolled
             ? "bg-white/90 backdrop-blur-xl shadow-lg border-white/20"
             : "bg-white/80 backdrop-blur-md shadow-md border-white/40"
@@ -276,9 +276,9 @@ const Navbar = () => {
               transition={{ duration: 0.3, ease: "easeInOut" }}
               className="border-t border-gray-100 bg-white/50 backdrop-blur-xl rounded-b-2xl overflow-hidden"
             >
-              <div className="px-4 py-6 space-y-4">
+              <div className="px-4 py-4 space-y-2">
                 {user && (
-                  <div className="flex items-center gap-3 px-2 pb-4 border-b border-gray-200/50">
+                  <div className="flex items-center gap-3 px-2 pb-3 border-b border-gray-200/50">
                     {user.photoURL ? (
                       <img
                         src={user.photoURL}
@@ -335,7 +335,7 @@ const Navbar = () => {
                       
                       <button
                         onClick={handleLogout}
-                        className="w-full flex flex-row items-center gap-3 px-4 py-3 mt-4 rounded-xl text-base font-medium text-red-600 hover:bg-red-50/80 transition-colors"
+                        className="w-full flex flex-row items-center gap-3 px-4 py-3 mt-2 rounded-xl text-base font-medium text-red-600 hover:bg-red-50/80 transition-colors"
                       >
                         <LogOut className="h-5 w-5" />
                         Logout

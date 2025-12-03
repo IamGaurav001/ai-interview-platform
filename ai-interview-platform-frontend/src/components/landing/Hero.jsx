@@ -7,7 +7,7 @@ import icon from "../../assets/prephire-icon-circle.png";
 
 const Hero = () => {
   return (
-    <section className="relative z-10 pt-24 pb-40 overflow-hidden bg-white">
+    <section className="relative z-10 pt-10 pb-40 overflow-hidden bg-white">
       <BackgroundBeams />
       
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
