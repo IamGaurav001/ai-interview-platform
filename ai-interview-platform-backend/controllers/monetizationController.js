@@ -1,6 +1,7 @@
 import Razorpay from "razorpay";
 import crypto from "crypto";
 import User from "../models/User.js";
+import Transaction from "../models/Transaction.js";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -49,6 +50,8 @@ export const createOrder = async (req, res) => {
   }
 };
 
+
+
 export const verifyPayment = async (req, res) => {
   try {
     const { razorpay_order_id, razorpay_payment_id, razorpay_signature } =
@@ -67,6 +70,19 @@ export const verifyPayment = async (req, res) => {
     const isAuthentic = expectedSignature === razorpay_signature;
 
     if (isAuthentic) {
+      // Check for duplicate transaction
+      const existingTransaction = await Transaction.findOne({
+        orderId: razorpay_order_id,
+        status: "success",
+      });
+
+      if (existingTransaction) {
+        return res.status(200).json({
+          success: true,
+          message: "Payment already processed",
+        });
+      }
+
       const order = await razorpay.orders.fetch(razorpay_order_id);
       const creditsToAdd = parseInt(order.notes.credits) || 1;
 
@@ -83,6 +99,17 @@ export const verifyPayment = async (req, res) => {
       user.usage.purchasedCredits =
         (user.usage.purchasedCredits || 0) + creditsToAdd;
       await user.save();
+
+      // Record transaction
+      await Transaction.create({
+        userId: req.user._id,
+        orderId: razorpay_order_id,
+        paymentId: razorpay_payment_id,
+        amount: order.amount,
+        status: "success",
+        creditsAdded: creditsToAdd,
+        planId: order.notes.planId,
+      });
 
       res.json({
         success: true,
