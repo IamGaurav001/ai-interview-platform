@@ -144,12 +144,12 @@ const Navbar = () => {
                         {active && (
                           <motion.div
                             layoutId="navbar-active-pill"
-                            className="absolute inset-0 bg-white rounded-full shadow-sm ring-1 ring-black/5"
+                            className="absolute inset-0 bg-white rounded-full shadow-sm ring-2 ring-emerald-500"
                             transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
                           />
                         )}
                         <span className="relative z-10 flex items-center gap-2">
-                          <Icon className={`h-4 w-4 ${active ? "text-primary-600" : "text-gray-400"}`} />
+                          <Icon className={`h-4 w-4 ${active ? "text-emerald-500" : "text-gray-400"}`} />
                           {link.label}
                         </span>
                       </Link>
