@@ -322,10 +322,13 @@ const Dashboard = () => {
               
               {/* Start Interview Card */}
               <motion.div variants={itemVariants}>
-                <div
+                <motion.div
                   data-tour="start-interview"
                   onClick={handleStartInterview}
-                  className="group relative block overflow-hidden rounded-[2rem] bg-gradient-to-br from-[#f8fbff] via-[#eef7ff] to-[#dbeafe] p-6 sm:p-10 shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer"
+                  className="group relative block overflow-hidden rounded-[2rem] bg-gradient-to-br from-[#f8fbff] via-[#eef7ff] to-[#dbeafe] p-6 sm:p-10 shadow-sm cursor-pointer"
+                  whileHover="hover"
+                  initial="initial"
+                  animate="initial"
                 >
                   <div className="absolute top-0 right-0 -mt-10 -mr-10 h-80 w-80 rounded-full bg-blue-200/20 blur-3xl transition-all duration-500 group-hover:scale-125"></div>
                   <div className="absolute bottom-0 left-0 -mb-10 -ml-10 h-64 w-64 rounded-full bg-blue-200/10 blur-3xl transition-all duration-500 group-hover:scale-125"></div>
@@ -343,16 +346,69 @@ const Dashboard = () => {
                         Practice with personalized AI-generated questions based on your resume. Get instant feedback and improve your confidence.
                       </p>
                       
-                      <div className="mt-6 inline-flex items-center gap-3 px-6 py-3 bg-[#1d2f62] text-white rounded-2xl font-bold text-lg shadow-lg hover:bg-[#1d2f62]/90 transition-colors">
+                      <div className="mt-6 inline-flex items-center gap-3 px-6 py-3 bg-[#1d2f62] text-white rounded-2xl font-bold text-lg shadow-lg group-hover:bg-[#1d2f62]/90 transition-colors">
                         <span>Begin Session</span>
-                        <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                        <motion.div
+                          variants={{
+                            initial: { x: 0 },
+                            hover: { x: 5 }
+                          }}
+                          transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                        >
+                          <ArrowRight className="h-5 w-5" />
+                        </motion.div>
                       </div>
                     </div>
-                    <div className="hidden sm:flex h-32 w-32 items-center justify-center rounded-[2.5rem] bg-white shadow-lg shadow-blue-100/50 transition-transform duration-300 group-hover:rotate-3">
-                      <Mic className="h-12 w-12 text-[#1d2f62]" />
+                    
+                    <div className="hidden sm:block relative">
+                        <motion.div
+                            className="absolute inset-0 bg-[#1d2f62]/5 rounded-[2.5rem] blur-md"
+                            variants={{
+                                initial: { scale: 0.8, opacity: 0 },
+                                hover: { 
+                                    scale: 1.2, 
+                                    opacity: 1,
+                                    transition: { duration: 0.4 }
+                                }
+                            }}
+                        />
+                        <motion.div 
+                            className="h-32 w-32 flex items-center justify-center rounded-[2.5rem] bg-white shadow-lg shadow-blue-100/50 relative z-10"
+                            variants={{
+                                initial: { scale: 1, rotate: 0, y: 0 },
+                                hover: { 
+                                    scale: 1.05, 
+                                    rotate: -3,
+                                    y: -5,
+                                    boxShadow: "0 25px 50px -12px rgba(29, 47, 98, 0.15)"
+                                }
+                            }}
+                            transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                        >
+                            <motion.div
+                                variants={{
+                                    initial: { scale: 1, rotate: 0 },
+                                    hover: { 
+                                        scale: 1.1, 
+                                        rotate: [0, -10, 10, -5, 5, 0],
+                                        transition: { 
+                                            rotate: {
+                                                repeat: Infinity,
+                                                duration: 1.2,
+                                                ease: "easeInOut",
+                                                repeatType: "mirror"
+                                            },
+                                            scale: { duration: 0.2 }
+                                        }
+                                    }
+                                }}
+                            >
+                                <Mic className="h-12 w-12 text-[#1d2f62]" />
+                            </motion.div>
+                        </motion.div>
                     </div>
                   </div>
-                </div>
+                </motion.div>
               </motion.div>
 
               {/* Performance Chart */}
@@ -461,17 +517,28 @@ const Dashboard = () => {
                 <StatCard
                   title="Credits Left"
                   value={totalCredits === 0 ? `${daysLeftToRefill} Days` : totalCredits}
-                  subtitle={totalCredits === 0 ? "Refill in" : "Remaining this month"}
+                  subtitle={
+                    totalCredits === 0 ? "Refill in" : (
+                      <div className="flex items-center gap-3 mt-1">
+                        <div className="flex items-center gap-1.5">
+                          <div className="w-2 h-2 rounded-full bg-blue-400"></div>
+                          <span className="text-slate-500 font-medium">Free: {userUsage.freeInterviewsLeft || 0}</span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <div className="w-2 h-2 rounded-full bg-[#1d2f62]"></div>
+                          <span className="text-slate-500 font-medium">Paid: {userUsage.purchasedCredits || 0}</span>
+                        </div>
+                      </div>
+                    )
+                  }
                   icon={CreditCard}
                   action={
-                    totalCredits === 0 ? (
-                      <button
-                        onClick={() => setShowPricingModal(true)}
-                        className="text-xs font-bold text-white bg-[#1d2f62] hover:bg-[#1d2f62]/90 px-4 py-2 rounded-xl transition-all w-full flex items-center justify-center gap-2 mt-2 shadow-md hover:shadow-lg"
-                      >
-                        Buy Credits <ArrowRight className="h-3 w-3" />
-                      </button>
-                    ) : null
+                    <button
+                      onClick={() => setShowPricingModal(true)}
+                      className="text-xs font-bold text-white bg-[#1d2f62] hover:bg-[#1d2f62]/90 px-4 py-2 rounded-xl transition-all w-full flex items-center justify-center gap-2 mt-2 shadow-md hover:shadow-lg"
+                    >
+                      Buy More Credits <ArrowRight className="h-3 w-3" />
+                    </button>
                   }
                 />
                 <StatCard
@@ -556,7 +623,7 @@ const StatCard = ({ title, value, subtitle, icon: Icon, action }) => {
             {value}
           </motion.h3>
           <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">{title}</p>
-          {subtitle && <p className="text-xs font-medium text-slate-400">{subtitle}</p>}
+          {subtitle && <div className="text-xs font-medium text-slate-400">{subtitle}</div>}
           
           {action && (
             <div className="mt-4">
