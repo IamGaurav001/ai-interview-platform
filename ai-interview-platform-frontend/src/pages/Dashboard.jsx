@@ -297,7 +297,7 @@ const Dashboard = () => {
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
               <div>
                 <h1 className="text-2xl sm:text-4xl font-bold text-slate-900 mb-2 tracking-tight">
-                  Welcome back, <span className="text-[#1d2f62]">{userDisplayName}</span>! 👋
+                  Welcome back, <span className="text-[#1d2f62]">{userDisplayName.toUpperCase()}</span>! 👋
                 </h1>
                 <p className="text-lg text-slate-500 font-medium">
                   Ready to ace your next interview? Let's get started.
@@ -325,31 +325,31 @@ const Dashboard = () => {
                 <div
                   data-tour="start-interview"
                   onClick={handleStartInterview}
-                  className="group relative block overflow-hidden rounded-[2rem] bg-[#1d2f62] p-6 sm:p-10 shadow-xl transition-all duration-300 hover:shadow-2xl hover:scale-[1.01] cursor-pointer"
+                  className="group relative block overflow-hidden rounded-[2rem] bg-gradient-to-br from-[#f8fbff] via-[#eef7ff] to-[#dbeafe] p-6 sm:p-10 shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer"
                 >
-                  <div className="absolute top-0 right-0 -mt-10 -mr-10 h-80 w-80 rounded-full bg-white opacity-5 blur-3xl transition-all duration-500 group-hover:scale-125"></div>
-                  <div className="absolute bottom-0 left-0 -mb-10 -ml-10 h-64 w-64 rounded-full bg-blue-500 opacity-10 blur-3xl transition-all duration-500 group-hover:scale-125"></div>
+                  <div className="absolute top-0 right-0 -mt-10 -mr-10 h-80 w-80 rounded-full bg-blue-200/20 blur-3xl transition-all duration-500 group-hover:scale-125"></div>
+                  <div className="absolute bottom-0 left-0 -mb-10 -ml-10 h-64 w-64 rounded-full bg-blue-200/10 blur-3xl transition-all duration-500 group-hover:scale-125"></div>
                   
                   <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-8">
                     <div className="flex-1">
-                      <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-1.5 text-sm font-bold text-blue-100 backdrop-blur-md mb-4 border border-white/10">
+                      <div className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-1.5 text-sm font-bold text-[#1d2f62] mb-4 shadow-sm">
                         <Sparkles className="h-4 w-4" />
                         <span>AI-Powered Interviewer</span>
                       </div>
-                      <h2 className="text-3xl sm:text-4xl font-bold text-white mb-3 tracking-tight">
+                      <h2 className="text-3xl sm:text-4xl font-bold text-[#1d2f62] mb-3 tracking-tight">
                         Start New Interview
                       </h2>
-                      <p className="text-base sm:text-lg text-blue-100/80 max-w-xl leading-relaxed font-medium">
+                      <p className="text-base sm:text-lg text-slate-600 max-w-xl leading-relaxed font-medium">
                         Practice with personalized AI-generated questions based on your resume. Get instant feedback and improve your confidence.
                       </p>
                       
-                      <div className="mt-6 inline-flex items-center gap-3 px-6 py-3 bg-white text-[#1d2f62] rounded-2xl font-bold text-lg shadow-lg group-hover:bg-blue-50 transition-colors">
+                      <div className="mt-6 inline-flex items-center gap-3 px-6 py-3 bg-[#1d2f62] text-white rounded-2xl font-bold text-lg shadow-lg hover:bg-[#1d2f62]/90 transition-colors">
                         <span>Begin Session</span>
                         <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
                       </div>
                     </div>
-                    <div className="hidden sm:flex h-32 w-32 items-center justify-center rounded-[2rem] bg-white/10 backdrop-blur-md transition-transform duration-300 group-hover:rotate-6 border border-white/20 shadow-inner">
-                      <Mic className="h-14 w-14 text-white" />
+                    <div className="hidden sm:flex h-32 w-32 items-center justify-center rounded-[2.5rem] bg-white shadow-lg shadow-blue-100/50 transition-transform duration-300 group-hover:rotate-3">
+                      <Mic className="h-12 w-12 text-[#1d2f62]" />
                     </div>
                   </div>
                 </div>
@@ -357,7 +357,8 @@ const Dashboard = () => {
 
               {/* Performance Chart */}
               <motion.div variants={itemVariants}>
-                <div className="bg-white p-6 sm:p-8 rounded-[2rem] shadow-xl shadow-slate-200/50 border border-white">
+                <div className="bg-white p-6 sm:p-8 rounded-[2rem] shadow-sm border border-slate-100 relative overflow-hidden">
+                  <div className="relative z-10">
                   <div className="flex items-center justify-between mb-6">
                     <div>
                       <h3 className="text-xl font-bold text-slate-900 flex items-center gap-3">
@@ -447,6 +448,7 @@ const Dashboard = () => {
                       </div>
                     </div>
                   )}
+                  </div>
                 </div>
               </motion.div>
             </div>
@@ -488,14 +490,13 @@ const Dashboard = () => {
               {/* Pro Tips */}
               <motion.div
                 variants={itemVariants}
-                className="bg-[#1d2f62] rounded-[2rem] shadow-xl shadow-[#1d2f62]/20 p-6 text-white relative overflow-hidden"
+                className="bg-white rounded-[2rem] shadow-sm border border-slate-100 p-6 relative overflow-hidden"
                 data-tour="pro-tips"
               >
-                <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2" />
                 
-                <h2 className="text-xl font-bold mb-4 flex items-center gap-3 relative z-10">
-                  <div className="p-2 bg-white/10 rounded-lg">
-                    <Sparkles className="h-5 w-5 text-yellow-300" />
+                <h2 className="text-xl font-bold mb-4 flex items-center gap-3 relative z-10 text-slate-900">
+                  <div className="p-2 bg-blue-100 rounded-lg">
+                    <Sparkles className="h-5 w-5 text-[#1d2f62]" />
                   </div>
                   Pro Tips
                 </h2>
@@ -535,40 +536,43 @@ const Dashboard = () => {
 const StatCard = ({ title, value, subtitle, icon: Icon, action }) => {
   return (
     <motion.div 
-      className="bg-white rounded-[2rem] shadow-xl shadow-slate-200/50 border border-white p-6 transition-all duration-300 hover:scale-[1.02] group"
-      whileHover={{ y: -4 }}
+      className="bg-white rounded-[2rem] p-6 shadow-sm border border-slate-100 transition-all duration-300 hover:shadow-md"
+      whileHover={{ y: -2 }}
     >
-      <div className="flex items-start justify-between mb-3">
-        <div className="p-3 bg-slate-50 rounded-2xl border border-slate-100 group-hover:bg-[#1d2f62] group-hover:border-[#1d2f62] transition-colors duration-300">
-          <Icon className="h-5 w-5 text-[#1d2f62] group-hover:text-white transition-colors duration-300" />
-        </div>
-      </div>
-      <div>
-        <motion.h3 
-          className="text-3xl font-bold text-slate-900 tracking-tight mb-1"
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-        >
-          {value}
-        </motion.h3>
-        <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">{title}</p>
-        {subtitle && <p className="text-xs font-medium text-slate-400 mt-1">{subtitle}</p>}
-        
-        {action && (
-          <div className="mt-4">
-            {action}
+      <div className="flex flex-col h-full justify-between">
+        <div className="flex justify-between items-start mb-6">
+          <div className="p-3 bg-slate-50 rounded-2xl text-[#1d2f62]">
+            <Icon className="h-6 w-6" />
           </div>
-        )}
+        </div>
+        
+        <div>
+          <motion.h3 
+            className="text-4xl font-bold text-slate-900 tracking-tight mb-1"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+          >
+            {value}
+          </motion.h3>
+          <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">{title}</p>
+          {subtitle && <p className="text-xs font-medium text-slate-400">{subtitle}</p>}
+          
+          {action && (
+            <div className="mt-4">
+              {action}
+            </div>
+          )}
+        </div>
       </div>
     </motion.div>
   );
 };
 
 const Tip = ({ icon: Icon, text }) => (
-  <div className="flex items-start gap-3 p-3 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-300 hover:scale-[1.02]">
-    <Icon className="h-5 w-5 text-blue-200 mt-0.5 flex-shrink-0" />
-    <p className="text-sm text-blue-50 leading-relaxed font-medium">{text}</p>
+  <div className="flex items-start gap-3 p-3 rounded-2xl bg-white border border-slate-100 shadow-sm hover:shadow-md transition-all duration-300 hover:scale-[1.02]">
+    <Icon className="h-5 w-5 text-[#1d2f62] mt-0.5 flex-shrink-0" />
+    <p className="text-sm text-slate-600 leading-relaxed font-medium">{text}</p>
   </div>
 );
 
