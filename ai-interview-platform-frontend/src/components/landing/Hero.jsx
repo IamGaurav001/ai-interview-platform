@@ -28,20 +28,20 @@ const Hero = () => {
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
             </span>
-            <span>The Future of Interview Prep</span>
+            <span>#1 AI INTERVIEW COACH</span>
           </motion.div>
           
           {/* Headline */}
           <h1 className="text-6xl sm:text-7xl md:text-8xl font-bold tracking-tight mb-8 text-slate-900 leading-[1.05]">
-            Master your interview. <br />
+            Nail Your Next Interview. <br />
             <span className="text-transparent bg-clip-text bg-[#1d2f62]">
-              Secure your dream job.
+              Get Hired Faster.
             </span>
           </h1>
           
           {/* Subheadline */}
           <p className="text-xl sm:text-2xl text-slate-500 mb-12 leading-relaxed max-w-3xl mx-auto font-light">
-            Experience the most realistic AI interview simulation. Get <span className="text-slate-900 font-medium">real-time feedback</span> on your answers, tone, and body language.
+            Practice with realistic AI interviews tailored to your resume. Get instant, actionable feedback on your answers, tone, and body language.
           </p>
           
           {/* CTAs */}
