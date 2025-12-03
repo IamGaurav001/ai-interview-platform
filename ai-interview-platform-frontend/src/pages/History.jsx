@@ -222,7 +222,7 @@ const History = () => {
           >
             <div className="bg-white/80 backdrop-blur-xl p-8 rounded-3xl shadow-xl border border-slate-200">
               <div className="h-20 w-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                <MessageSquare className="h-10 w-10 text-blue-600" />
+                <MessageSquare className="h-10 w-10 text-[#1d2f62]" />
               </div>
               <h2 className="text-2xl font-bold text-slate-900 mb-3">No Interviews Yet</h2>
               <p className="text-slate-600 mb-8 text-lg">
@@ -230,7 +230,7 @@ const History = () => {
               </p>
               <a
                 href="/upload-resume"
-                className="inline-flex items-center px-8 py-4 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition-all shadow-lg hover:shadow-xl hover:-translate-y-1"
+                className="inline-flex items-center px-8 py-4 bg-[#1d2f62] text-white rounded-xl font-semibold hover:bg-[#1d2f62] hover:shadow-[#1d2f62]/40 hover:-translate-y-0.5 active:translate-y-0 transition-all shadow-lg hover:shadow-xl hover:-translate-y-1"
               >
                 Start Interview <ArrowRight className="ml-2 h-5 w-5" />
               </a>

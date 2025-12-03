@@ -962,7 +962,7 @@ const InterviewFlow = () => {
                       Speaking...
                     </>
                   ) : (
-                    "Waiting"
+                    "Ready"
                   )}
                 </div>
               </div>
@@ -993,7 +993,7 @@ const InterviewFlow = () => {
               >
                 <div className="text-center px-4">
                   <p className="text-lg font-semibold text-slate-700 mb-3">👋 Welcome to your AI Interview</p>
-                  <p className="text-slate-500 leading-relaxed">Listen to the question or read it on the right, then answer using voice or text</p>
+                  <p className="text-slate-500 leading-relaxed">Listen to the question or read it on the right, then answer using voice</p>
                 </div>
               </motion.div>
             )}

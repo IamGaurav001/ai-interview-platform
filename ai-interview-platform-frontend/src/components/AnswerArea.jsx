@@ -22,7 +22,7 @@ const AnswerArea = ({
       data-tour="answer-area"
     >
       {/* Header */}
-      <div className="bg-gradient-to-r from-slate-50 via-white to-slate-50 px-5 sm:px-7 py-4 border-b border-slate-200/80">
+      <div className="bg-gradient-to-r from-slate-50 via-white to-slate-50 px-5 sm:px-7 py-3 border-b border-slate-200/80">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-slate-600 to-slate-700 flex items-center justify-center shadow-md">
@@ -40,7 +40,7 @@ const AnswerArea = ({
       </div>
 
       {/* Content */}
-      <div className="p-4 sm:p-7">
+      <div className="p-4 sm:p-5">
         {isRecording ? (
           <div className="bg-gradient-to-br from-red-50 to-orange-50/50 rounded-2xl p-6 border-2 border-red-200/60 shadow-lg flex flex-col sm:flex-row items-center justify-between gap-5">
             <div className="flex items-center gap-5 text-center sm:text-left">

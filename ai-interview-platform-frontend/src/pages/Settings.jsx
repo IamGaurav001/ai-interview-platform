@@ -97,13 +97,13 @@ const Settings = () => {
                     onClick={() => setActiveTab(item.id)}
                     className={`w-full flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-all duration-200 ${
                       isActive
-                        ? "bg-blue-50 text-blue-700 shadow-sm ring-1 ring-blue-200"
-                        : "text-slate-600 hover:bg-white hover:text-slate-900 hover:shadow-sm"
+                        ? "bg-blue-50 text-blue-700 shadow-sm ring-1 ring-[#1d2f62]"
+                        : "text-[#1d2f62] hover:bg-white hover:text-[#1d2f62] hover:shadow-sm"
                     }`}
                   >
-                    <Icon className={`mr-3 h-5 w-5 ${isActive ? "text-blue-600" : "text-slate-400"}`} />
+                    <Icon className={`mr-3 h-5 w-5 ${isActive ? "text-[#1d2f62]" : "text-[#1d2f62]"}`} />
                     {item.label}
-                    {isActive && <ChevronRight className="ml-auto h-4 w-4 text-primary-400" />}
+                    {isActive && <ChevronRight className="ml-auto h-4 w-4 text-[#1d2f62]" />}
                   </button>
                 );
               })}

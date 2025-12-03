@@ -577,7 +577,7 @@ const Dashboard = () => {
                       </p>
                       <button 
                         onClick={handleStartInterview}
-                        className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors"
+                        className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-[#1d2f62] text-white rounded-lg font-semibold hover:bg-[#1d2f62] hover:shadow-[#1d2f62]/40 hover:-translate-y-0.5 active:translate-y-0 transition-all"
                       >
                         Start First Interview
                         <ArrowRight className="h-4 w-4" />

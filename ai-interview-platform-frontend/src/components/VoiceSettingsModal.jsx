@@ -101,7 +101,7 @@ const VoiceSettingsModal = ({
                 {/* Action */}
                 <button
                   onClick={onClose}
-                  className="w-full py-3.5 bg-[#1d2f62] text-white rounded-xl font-bold shadow-lg shadow-[#1d2f62]/30 hover:bg-[#1d2f62]/5 hover:shadow-[#1d2f62]/40 hover:-translate-y-0.5 active:translate-y-0 transition-all"
+                  className="w-full py-3.5 bg-[#1d2f62] text-white rounded-xl font-bold shadow-lg shadow-[#1d2f62]/30 hover:bg-[#1d2f62] hover:shadow-[#1d2f62]/40 hover:-translate-y-0.5 active:translate-y-0 transition-all"
                 >
                   Done
                 </button>

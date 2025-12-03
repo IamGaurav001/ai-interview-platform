@@ -266,7 +266,7 @@ const ResumeUpload = () => {
         {/* Header */}
         <motion.div className="text-center mb-6 sm:mb-10" variants={itemVariants}>
           <div className="inline-flex items-center justify-center p-2 sm:p-3 bg-blue-100 rounded-full mb-3 sm:mb-4">
-            <Sparkles className="h-6 w-6 sm:h-8 sm:w-8 text-blue-600" />
+            <Sparkles className="h-6 w-6 sm:h-8 sm:w-8 text-[#1d2f62]" />
           </div>
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-slate-900 mb-3 sm:mb-4 tracking-tight px-2">
             AI Resume Analysis
@@ -357,10 +357,10 @@ const ResumeUpload = () => {
                         className="flex flex-col items-center text-center"
                       >
                         <div className="h-12 w-12 sm:h-16 sm:w-16 bg-blue-100 rounded-full flex items-center justify-center mb-3 sm:mb-4 group-hover:scale-110 transition-transform duration-300">
-                          <Upload className="h-6 w-6 sm:h-8 sm:w-8 text-blue-600" />
+                          <Upload className="h-6 w-6 sm:h-8 sm:w-8 text-[#1d2f62]" />
                         </div>
                         <p className="text-base sm:text-lg font-medium text-slate-700 mb-2 px-2">
-                          <span className="text-blue-600 font-bold">Click to upload</span> or drag and drop
+                          <span className="text-[#1d2f62] font-bold">Click to upload</span> or drag and drop
                         </p>
                         <p className="text-xs sm:text-sm text-slate-400">
                           PDF files only (Max 5MB)
