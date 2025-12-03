@@ -71,6 +71,21 @@ const Contact = () => {
               <p className="text-slate-600 mb-8 leading-relaxed">
                 Our team is dedicated to providing the best possible support. Fill out the form and we'll get back to you as soon as possible.
               </p>
+
+              <div className="mb-8 flex items-center gap-4">
+                <div className="h-12 w-12 rounded-2xl bg-blue-100 flex items-center justify-center text-blue-600">
+                  <Mail className="h-6 w-6" />
+                </div>
+                <div>
+                  <p className="text-sm text-slate-500 font-medium mb-1">Email us directly</p>
+                  <a 
+                    href="mailto:contact@prephire.co" 
+                    className="text-lg font-bold text-slate-900 hover:text-blue-600 transition-colors"
+                  >
+                    contact@prephire.co
+                  </a>
+                </div>
+              </div>
               
               <div className="bg-blue-50 rounded-2xl p-8 border border-blue-100">
                 <h4 className="font-bold text-blue-900 mb-2 flex items-center gap-2">
