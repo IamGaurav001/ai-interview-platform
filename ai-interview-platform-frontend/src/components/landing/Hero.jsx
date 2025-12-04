@@ -32,7 +32,7 @@ const Hero = () => {
           </motion.div>
           
           {/* Headline */}
-          <h1 className="text-6xl sm:text-7xl md:text-8xl font-bold tracking-tight mb-8 text-slate-900 leading-[1.05]">
+          <h1 className="text-5xl sm:text-4xl md:text-7xl font-bold tracking-tight mb-8 text-slate-900 leading-[1.05]">
             Nail Your Next Interview. <br />
             <span className="text-transparent bg-clip-text bg-[#1d2f62]">
               Get Hired Faster.
