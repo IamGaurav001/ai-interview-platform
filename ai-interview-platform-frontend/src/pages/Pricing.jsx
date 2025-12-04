@@ -4,6 +4,7 @@ import { Check, Star } from "lucide-react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import SEO from "../components/SEO";
+import Footer from "../components/landing/Footer";
 
 const Pricing = () => {
 
@@ -129,6 +130,7 @@ const Pricing = () => {
           </div>
         </div>
       </div>
+      <Footer />
     </PageLayout>
   );
 };

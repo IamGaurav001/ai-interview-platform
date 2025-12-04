@@ -140,6 +140,20 @@ const ResumeUpload = () => {
       return;
     }
 
+    try {
+      const res = await getUserProfile();
+      const usage = res.data.user?.usage;
+      const totalCredits = (usage?.freeInterviewsLeft || 0) + (usage?.purchasedCredits || 0);
+      
+      if (totalCredits <= 0) {
+        setShowPricingModal(true);
+        setError("You have no credits left. Please purchase more.");
+        return;
+      }
+    } catch (err) {
+      console.error("Error verifying credits:", err);
+    }
+
     setLoading(true);
     setError("");
     setSuccess(false);
@@ -230,9 +244,7 @@ const ResumeUpload = () => {
       console.error("Resume upload error:", err);
       logEvent('Resume Upload', { success: false, error: err.message });
       if (err.networkError || !err.response) {
-        setError(
-          "Cannot connect to server. Please make sure the backend is running."
-        );
+        console.error("Cannot connect to server. Please make sure the backend is running.");
       } else if (err.response?.status === 401) {
         setError("Session expired. Please log in again.");
         localStorage.removeItem("firebaseToken");

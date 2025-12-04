@@ -7,6 +7,7 @@ import { motion } from "framer-motion";
 import logo from "../assets/intervueai-logo.png";
 import PageLayout from "../components/PageLayout";
 import SEO from "../components/SEO";
+import { allowedDomains } from "../utils/allowedDomains";
 
 import { logEvent, setUserId, setUserProperties } from "../config/amplitude";
 
@@ -47,6 +48,12 @@ const Register = () => {
 
     if (formData.password.length < 6) {
       setError("Password must be at least 6 characters");
+      return;
+    }
+
+    const emailDomain = formData.email.split("@")[1].toLowerCase();
+    if (!allowedDomains.includes(emailDomain)) {
+      setError("Please use a valid email provider (Gmail, Yahoo, Outlook, etc.).");
       return;
     }
 
@@ -117,7 +124,8 @@ const Register = () => {
       console.error("Google signup error:", err);
       switch (err.code) {
         case "auth/popup-closed-by-user":
-          setError("Google sign-in was closed before completing.");
+          // setError("Google sign-in was closed before completing.");
+          console.log("Google sign-in was closed before completing.");
           break;
         case "auth/cancelled-popup-request":
           setError("Another sign-in attempt is already in progress.");

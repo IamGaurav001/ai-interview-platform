@@ -2,15 +2,15 @@ import express from "express";
 import multer from "multer";
 import { verifyFirebaseToken } from "../middleware/firebaseAuthMiddleware.js";
 import { analyzeResume } from "../controllers/resumeController.js";
+import { hasCredits } from "../middleware/checkEligibility.js";
 
 const router = express.Router();
 const upload = multer({
   dest: "uploads/",
   limits: {
-    fileSize: 5 * 1024 * 1024, // 5MB limit
+    fileSize: 5 * 1024 * 1024,
   },
   fileFilter: (req, file, cb) => {
-    // Accept PDF files - check both mimetype and extension
     const isPDF =
       file.mimetype === "application/pdf" ||
       file.originalname.toLowerCase().endsWith(".pdf");
@@ -22,7 +22,6 @@ const upload = multer({
   },
 });
 
-// Error handling middleware for multer errors
 const handleMulterError = (err, req, res, next) => {
   if (err instanceof multer.MulterError) {
     console.error("Multer error:", err.code, err.message);
@@ -47,10 +46,12 @@ const handleMulterError = (err, req, res, next) => {
   next();
 };
 
-// Route with proper error handling
+
+
 router.post(
   "/upload",
   verifyFirebaseToken,
+  hasCredits,
   (req, res, next) => {
     upload.single("resume")(req, res, (err) => {
       if (err) {

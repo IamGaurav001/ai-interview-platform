@@ -279,15 +279,15 @@ const History = () => {
             <div className="inline-flex items-center justify-center p-3 bg-white rounded-2xl shadow-sm mb-4 border border-slate-100 lg:hidden">
               <BarChart3 className="h-6 w-6 text-[#1d2f62]" />
             </div>
-            <h1 className="text-4xl lg:text-5xl font-bold text-slate-900 mb-3 tracking-tight">
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-slate-900 mb-3 tracking-tight">
               Interview History
             </h1>
-            <p className="text-lg lg:text-xl text-slate-600 font-medium max-w-2xl">
+            <p className="text-base sm:text-lg lg:text-xl text-slate-600 font-medium max-w-2xl">
               Track your progress, analyze your performance, and review detailed AI feedback.
             </p>
           </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8 mb-12">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 lg:gap-8 mb-8 sm:mb-12">
             <SummaryCard 
               title="Total Interviews" 
               value={stats.total} 
@@ -311,18 +311,18 @@ const History = () => {
             />
           </div>
 
-          <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-8 bg-white p-2 pl-6 rounded-[2rem] shadow-lg shadow-slate-200/50 border border-white">
-            <div className="flex items-center gap-3 w-full sm:w-auto overflow-x-auto pb-2 sm:pb-0">
+          <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-8 bg-white p-4 sm:p-2 sm:pl-6 rounded-[2rem] shadow-lg shadow-slate-200/50 border border-white">
+            <div className="flex items-center gap-3 w-full sm:w-auto overflow-x-auto pb-2 sm:pb-0 no-scrollbar">
               <Filter className="h-5 w-5 text-slate-400 flex-shrink-0" />
-              <span className="text-slate-600 font-bold text-sm uppercase tracking-wider">Filter</span>
+              <span className="text-slate-600 font-bold text-sm uppercase tracking-wider whitespace-nowrap">Filter</span>
             </div>
 
             <div className="flex items-center gap-3 w-full sm:w-auto bg-slate-100/50 p-1.5 rounded-[1.5rem]">
-              <span className="text-sm text-slate-500 font-bold pl-4">Sort by:</span>
+              <span className="text-sm text-slate-500 font-bold pl-4 whitespace-nowrap">Sort by:</span>
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
-                className="px-6 py-2.5 bg-white border border-slate-200 rounded-2xl text-sm font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#1d2f62] shadow-sm cursor-pointer hover:bg-slate-50 transition-colors"
+                className="w-full sm:w-auto px-4 sm:px-6 py-2.5 bg-white border border-slate-200 rounded-2xl text-sm font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#1d2f62] shadow-sm cursor-pointer hover:bg-slate-50 transition-colors appearance-none"
               >
                 <option value="date">Most Recent</option>
                 <option value="score">Highest Score</option>
@@ -365,22 +365,22 @@ const SummaryCard = ({ title, value, suffix, subValue, icon: Icon, delay }) => {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay }}
-      className="relative overflow-hidden rounded-[2.5rem] shadow-xl shadow-slate-200/50 p-8 bg-white border border-white group hover:scale-[1.02] transition-transform duration-300"
+      className="relative overflow-hidden rounded-[2rem] sm:rounded-[2.5rem] shadow-xl shadow-slate-200/50 p-6 sm:p-8 bg-white border border-white group hover:scale-[1.02] transition-transform duration-300"
     >
-      <div className="absolute top-0 right-0 w-32 h-32 bg-slate-50 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2 group-hover:bg-blue-50 transition-colors duration-500" />
+      <div className="absolute top-0 right-0 w-24 h-24 sm:w-32 sm:h-32 bg-slate-50 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2 group-hover:bg-blue-50 transition-colors duration-500" />
       
-      <div className="relative z-10 flex flex-col h-full justify-between">
-        <div className="flex items-start justify-between mb-6">
-          <div className="p-3 bg-slate-50 rounded-2xl border border-slate-100 group-hover:bg-[#1d2f62] group-hover:border-[#1d2f62] transition-colors duration-300">
-            <Icon className="h-6 w-6 text-[#1d2f62] group-hover:text-white transition-colors duration-300" />
+      <div className="relative z-10 flex flex-col h-full justify-between gap-4">
+        <div className="flex items-start justify-between">
+          <div className="p-2.5 sm:p-3 bg-slate-50 rounded-2xl border border-slate-100 group-hover:bg-[#1d2f62] group-hover:border-[#1d2f62] transition-colors duration-300">
+            <Icon className="h-5 w-5 sm:h-6 sm:w-6 text-[#1d2f62] group-hover:text-white transition-colors duration-300" />
           </div>
         </div>
         
         <div>
-          <h3 className="text-5xl font-bold mb-1 tracking-tight text-slate-900">
-            {value}<span className="text-2xl text-slate-400 font-medium">{suffix}</span>
+          <h3 className="text-4xl sm:text-5xl font-bold mb-1 tracking-tight text-slate-900">
+            {value}<span className="text-xl sm:text-2xl text-slate-400 font-medium">{suffix}</span>
           </h3>
-          <p className="text-base font-bold text-slate-500 uppercase tracking-wider">{title}</p>
+          <p className="text-sm sm:text-base font-bold text-slate-500 uppercase tracking-wider">{title}</p>
           {subValue && (
             <div className="mt-3 inline-block px-3 py-1 bg-slate-100 rounded-lg text-xs font-bold text-slate-600 border border-slate-200">
               {subValue}
@@ -396,14 +396,14 @@ const ExecutiveSummarySection = ({ summary, strengths, weaknesses }) => {
   const [isOpen, setIsOpen] = useState(true);
 
   return (
-    <div className="bg-white rounded-[2rem] border border-blue-100 shadow-sm relative overflow-hidden transition-all duration-300">
+    <div className="bg-white rounded-[1.5rem] sm:rounded-[2rem] border border-blue-100 shadow-sm relative overflow-hidden transition-all duration-300">
       <div className="absolute top-0 left-0 w-1.5 h-full bg-blue-500" />
       
       <div 
-        className="p-5 sm:p-6 lg:p-8 cursor-pointer flex justify-between items-center gap-4 group"
+        className="p-4 sm:p-6 lg:p-8 cursor-pointer flex justify-between items-center gap-4 group"
         onClick={() => setIsOpen(!isOpen)}
       >
-        <h4 className="text-sm font-bold text-blue-900 uppercase tracking-wide flex items-center gap-2">
+        <h4 className="text-xs sm:text-sm font-bold text-blue-900 uppercase tracking-wide flex items-center gap-2">
           <Sparkles className="h-4 w-4 text-blue-500" /> Executive Summary
         </h4>
         
@@ -419,8 +419,8 @@ const ExecutiveSummarySection = ({ summary, strengths, weaknesses }) => {
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
           >
-            <div className="px-5 sm:p-6 lg:px-8 pb-6 lg:pb-8 pt-0">
-               <ReadMoreText text={summary} limit={200} className="text-slate-700 leading-relaxed text-base lg:text-lg" />
+            <div className="px-4 sm:px-6 lg:px-8 pb-6 lg:pb-8 pt-0">
+               <ReadMoreText text={summary} limit={200} className="text-slate-700 leading-relaxed text-sm sm:text-base lg:text-lg" />
                
                {(strengths?.length > 0 || weaknesses?.length > 0) && (
                   <div className="mt-6 lg:mt-8 grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6">
@@ -472,26 +472,37 @@ const SessionCard = ({ session, index, isExpanded, onToggle }) => {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.95 }}
       transition={{ delay: index * 0.05 }}
-      className="bg-white rounded-[2.5rem] shadow-xl shadow-slate-200/50 border border-white overflow-hidden hover:shadow-2xl hover:shadow-slate-200/80 transition-all duration-300 hover:scale-[1.005]"
+      className="bg-white rounded-[2rem] sm:rounded-[2.5rem] shadow-xl shadow-slate-200/50 border border-white overflow-hidden hover:shadow-2xl hover:shadow-slate-200/80 transition-all duration-300 hover:scale-[1.005]"
     >
       <div 
         onClick={onToggle}
-        className="p-5 sm:p-6 lg:p-8 cursor-pointer bg-white group"
+        className="p-4 sm:p-6 lg:p-8 cursor-pointer bg-white group"
       >
-        <div className="flex flex-col md:flex-row items-start md:items-center gap-6 lg:gap-8">
+        <div className="flex flex-col md:flex-row items-start md:items-center gap-4 sm:gap-6 lg:gap-8">
           {/* Score Circle */}
-          <div className="flex-shrink-0">
-            <div className={`h-20 w-20 lg:h-24 lg:w-24 rounded-[2rem] flex flex-col items-center justify-center border-4 shadow-inner ${
-              sessionScore >= 8 ? "bg-emerald-50 border-emerald-100 text-emerald-700" :
-              sessionScore >= 5 ? "bg-amber-50 border-amber-100 text-amber-700" :
-              "bg-red-50 border-red-100 text-red-700"
-            }`}>
-              <span className="text-2xl lg:text-3xl font-bold">{sessionScore.toFixed(1)}</span>
-              <span className="text-[10px] lg:text-xs font-bold uppercase opacity-70">Score</span>
+          <div className="flex items-center gap-4 w-full md:w-auto">
+            <div className="flex-shrink-0">
+              <div className={`h-16 w-16 sm:h-20 sm:w-20 lg:h-24 lg:w-24 rounded-[1.5rem] sm:rounded-[2rem] flex flex-col items-center justify-center border-4 shadow-inner ${
+                sessionScore >= 8 ? "bg-emerald-50 border-emerald-100 text-emerald-700" :
+                sessionScore >= 5 ? "bg-amber-50 border-amber-100 text-amber-700" :
+                "bg-red-50 border-red-100 text-red-700"
+              }`}>
+                <span className="text-xl sm:text-2xl lg:text-3xl font-bold">{sessionScore.toFixed(1)}</span>
+                <span className="text-[8px] sm:text-[10px] lg:text-xs font-bold uppercase opacity-70">Score</span>
+              </div>
+            </div>
+            
+            <div className="md:hidden flex-1 min-w-0">
+               <h3 className="text-lg font-bold text-slate-900 truncate group-hover:text-[#1d2f62] transition-colors">
+                {session.domain || "Resume"} Interview
+              </h3>
+              <div className="mt-1">
+                {getConfidenceBadge(sessionScore)}
+              </div>
             </div>
           </div>
             
-          <div className="flex-1 min-w-0 w-full">
+          <div className="hidden md:block flex-1 min-w-0 w-full">
             <div className="flex flex-wrap items-center gap-3 mb-3">
               <h3 className="text-xl lg:text-2xl font-bold text-slate-900 truncate group-hover:text-[#1d2f62] transition-colors">
                 {session.domain || "Resume"} Interview
@@ -511,14 +522,26 @@ const SessionCard = ({ session, index, isExpanded, onToggle }) => {
             </div>
           </div>
 
-          <div className="flex items-center justify-between w-full md:w-auto gap-6 mt-4 md:mt-0">
-            <div className="hidden lg:flex flex-col items-end gap-2">
-              <div className="text-xs font-bold text-slate-400 uppercase tracking-wider">Performance</div>
+          {/* Mobile Meta Data */}
+          <div className="flex md:hidden flex-wrap items-center gap-3 text-xs sm:text-sm text-slate-500 font-medium w-full">
+            <span className="flex items-center gap-1.5 bg-slate-50 px-2.5 py-1 rounded-lg border border-slate-100">
+              <Calendar className="h-3.5 w-3.5 text-slate-400" />
+              {formatSessionDate(session)}
+            </span>
+            <span className="flex items-center gap-1.5 bg-slate-50 px-2.5 py-1 rounded-lg border border-slate-100">
+              <Clock className="h-3.5 w-3.5 text-slate-400" />
+              {questionCount} Qs
+            </span>
+          </div>
+
+          <div className="flex items-center justify-between w-full md:w-auto gap-6 mt-2 md:mt-0">
+            <div className="flex flex-col items-end gap-2">
+              <div className="hidden sm:block text-xs font-bold text-slate-400 uppercase tracking-wider">Performance</div>
               <div className="flex gap-1.5">
                 {[...Array(5)].map((_, i) => (
                   <div 
                     key={i} 
-                    className={`h-2 w-8 rounded-full transition-all duration-500 ${
+                    className={`h-1.5 w-6 sm:h-2 sm:w-8 rounded-full transition-all duration-500 ${
                       (i + 1) * 2 <= sessionScore 
                         ? sessionScore >= 8 ? "bg-emerald-500 shadow-sm shadow-emerald-200" : sessionScore >= 5 ? "bg-amber-500 shadow-sm shadow-amber-200" : "bg-red-500 shadow-sm shadow-red-200"
                         : "bg-slate-100"
@@ -528,12 +551,12 @@ const SessionCard = ({ session, index, isExpanded, onToggle }) => {
               </div>
             </div>
             
-            <div className={`h-12 w-12 rounded-2xl flex items-center justify-center border-2 transition-all duration-300 ${
+            <div className={`h-10 w-10 sm:h-12 sm:w-12 rounded-2xl flex items-center justify-center border-2 transition-all duration-300 ${
               isExpanded 
                 ? "bg-[#1d2f62] border-[#1d2f62] text-white rotate-180 shadow-lg shadow-[#1d2f62]/30" 
                 : "bg-white border-slate-100 text-slate-400 group-hover:border-[#1d2f62] group-hover:text-[#1d2f62]"
             }`}>
-              <ChevronDown className="h-6 w-6" />
+              <ChevronDown className="h-5 w-5 sm:h-6 sm:w-6" />
             </div>
           </div>
         </div>
@@ -547,7 +570,7 @@ const SessionCard = ({ session, index, isExpanded, onToggle }) => {
             exit={{ height: 0, opacity: 0 }}
             className="border-t border-slate-100 bg-slate-50/50"
           >
-            <div className="p-6 lg:p-10 space-y-8 lg:space-y-10">
+            <div className="p-4 sm:p-6 lg:p-10 space-y-6 sm:space-y-8 lg:space-y-10">
 
               {summaryFeedback.summary && (
                 <ExecutiveSummarySection 
@@ -559,7 +582,7 @@ const SessionCard = ({ session, index, isExpanded, onToggle }) => {
 
               {session.questions && session.questions.length > 0 && (
                 <div>
-                  <h4 className="text-xl font-bold text-slate-900 mb-6 flex items-center gap-3">
+                  <h4 className="text-lg sm:text-xl font-bold text-slate-900 mb-4 sm:mb-6 flex items-center gap-3">
                     <div className="h-8 w-8 bg-slate-900 rounded-lg flex items-center justify-center text-white text-xs">Q&A</div>
                     Detailed Analysis
                   </h4>
@@ -598,13 +621,13 @@ const QuestionItem = ({ question, answer, feedback, index }) => {
     <div className={`bg-white rounded-[1.5rem] border transition-all duration-300 overflow-hidden ${isOpen ? 'border-blue-200 shadow-md' : 'border-slate-200 hover:border-blue-200'}`}>
       <div 
         onClick={() => setIsOpen(!isOpen)}
-        className="p-4 sm:p-5 lg:p-6 flex items-start gap-4 lg:gap-5 cursor-pointer hover:bg-slate-50/50 transition-colors"
+        className="p-4 sm:p-5 lg:p-6 flex items-start gap-3 sm:gap-4 lg:gap-5 cursor-pointer hover:bg-slate-50/50 transition-colors"
       >
-        <div className={`h-10 w-10 rounded-xl flex items-center justify-center font-bold text-sm flex-shrink-0 mt-0.5 transition-colors ${isOpen ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-600'}`}>
+        <div className={`h-8 w-8 sm:h-10 sm:w-10 rounded-xl flex items-center justify-center font-bold text-xs sm:text-sm flex-shrink-0 mt-0.5 transition-colors ${isOpen ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-600'}`}>
           Q{index + 1}
         </div>
         <div className="flex-1">
-          <p className="text-slate-900 font-bold text-lg leading-snug">{question}</p>
+          <p className="text-slate-900 font-bold text-base sm:text-lg leading-snug">{question}</p>
         </div>
         <div className={`h-8 w-8 rounded-full flex items-center justify-center bg-slate-50 border border-slate-100 transition-transform duration-300 ${isOpen ? "rotate-180 bg-blue-50 border-blue-100 text-blue-600" : "text-slate-400"}`}>
           <ChevronDown className="h-5 w-5" />
@@ -619,7 +642,7 @@ const QuestionItem = ({ question, answer, feedback, index }) => {
             exit={{ height: 0, opacity: 0 }}
             className="border-t border-slate-100"
           >
-            <div className="p-5 sm:p-6 lg:p-8 lg:pl-20 space-y-6 bg-slate-50/30">
+            <div className="p-4 sm:p-6 lg:p-8 lg:pl-20 space-y-6 bg-slate-50/30">
               <div>
                 <h5 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">Your Answer</h5>
                 <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 text-slate-700 text-base leading-relaxed shadow-sm">

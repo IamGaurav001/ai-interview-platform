@@ -1,6 +1,7 @@
 import User from "../models/User.js";
 import admin from "../config/firebaseAdmin.js";
 import { sendEmail } from "../utils/emailTransporter.js";
+import { passwordResetSchema } from "../validators/authValidators.js";
 
 export const syncUser = async (req, res) => {
   try {
@@ -95,11 +96,16 @@ export const sendVerificationEmail = async (req, res) => {
 
 export const sendPasswordResetEmail = async (req, res) => {
   try {
-    const { email } = req.body;
+    const validation = passwordResetSchema.safeParse(req.body);
 
-    if (!email) {
-      return res.status(400).json({ success: false, message: "Email is required" });
+    if (!validation.success) {
+      return res.status(400).json({ 
+        success: false, 
+        message: validation.error.errors[0].message 
+      });
     }
+
+    const { email } = validation.data;
 
     // Generate password reset link using Firebase Admin SDK
     let link = await admin.auth().generatePasswordResetLink(email);

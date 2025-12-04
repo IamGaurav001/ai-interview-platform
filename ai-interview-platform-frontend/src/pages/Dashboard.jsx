@@ -132,9 +132,8 @@ const Dashboard = () => {
     } catch (err) {
       console.error("Dashboard error:", err);
       if (err.networkError) {
-        setError(
-          "Cannot connect to server. Please make sure the backend is running."
-        );
+
+        console.error("Cannot connect to server. Please make sure the backend is running.");
       } else {
         setError(
           err.response?.data?.error ||
@@ -183,10 +182,8 @@ const Dashboard = () => {
 
     const qaList = [];
     
-    // Iterate through all sessions and extract Q&A pairs
     Object.keys(historyData.groupedHistory).forEach(domain => {
       historyData.groupedHistory[domain].forEach(session => {
-        // Handle feedback structure
         let feedbackArray = [];
         if (session.feedback) {
           if (Array.isArray(session.feedback)) {
@@ -213,14 +210,12 @@ const Dashboard = () => {
       });
     });
 
-    // Return the 5 most recent Q&As
     return qaList.slice(-5);
   };
 
   const processChartData = (historyData) => {
     if (!historyData || !historyData.groupedHistory) return;
 
-    // 1. Trend Data (Last 10 sessions)
     let allSessions = [];
     Object.keys(historyData.groupedHistory).forEach(domain => {
       historyData.groupedHistory[domain].forEach(session => {
@@ -232,7 +227,6 @@ const Dashboard = () => {
       });
     });
 
-    // Sort by date ascending
     allSessions.sort((a, b) => a.date - b.date);
 
     const trend = allSessions.slice(-10).map((s, i) => ({
@@ -284,7 +278,6 @@ const Dashboard = () => {
 
   const totalCredits = (userUsage.freeInterviewsLeft || 0) + (userUsage.purchasedCredits || 0);
 
-  // Calculate days left for refill
   const lastReset = new Date(userUsage.lastMonthlyReset || Date.now());
   const now = new Date();
   const daysSinceReset = (now - lastReset) / (1000 * 60 * 60 * 24);
@@ -296,7 +289,6 @@ const Dashboard = () => {
       <OnboardingTour start={showTour} onFinish={handleTourFinish} />
       
       <div className="min-h-screen bg-slate-50/50 pb-12 relative overflow-hidden">
-        {/* Background Blobs */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full max-w-7xl pointer-events-none z-0">
           <div className="absolute top-20 left-20 w-72 h-72 bg-blue-200/20 rounded-full blur-3xl mix-blend-multiply animate-blob" />
           <div className="absolute top-40 right-20 w-72 h-72 bg-purple-200/20 rounded-full blur-3xl mix-blend-multiply animate-blob animation-delay-2000" />
@@ -332,10 +324,8 @@ const Dashboard = () => {
           )}
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-6">
-            {/* Left Column (Main Actions & Chart) */}
             <div className="lg:col-span-8 space-y-8">
               
-              {/* Start Interview Card */}
               <motion.div variants={itemVariants}>
                 <motion.div
                   data-tour="start-interview"

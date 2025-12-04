@@ -10,6 +10,7 @@ import fs from "fs";
 import path from "path";
 import axios from "axios";
 import * as cheerio from "cheerio";
+import { evaluateAnswerSchema, startInterviewSchema, nextStepSchema } from "../validators/interviewValidators.js";
 
 dotenv.config();
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
@@ -24,12 +25,16 @@ const LEVEL_PROMPTS = {
 
 export const evaluateAnswer = async (req, res) => {
   try {
-    const { domain, question, answer } = req.body;
-    if (!domain || !question || !answer)
+    const validation = evaluateAnswerSchema.safeParse(req.body);
+    
+    if (!validation.success) {
       return res.status(400).json({
         success: false,
-        error: "Domain, question, and answer are required.",
+        error: validation.error.errors[0].message,
       });
+    }
+
+    const { domain, question, answer } = validation.data;
 
     const cacheKey = `eval:${req.user._id}:${domain}:${Buffer.from(question)
       .toString("base64")
@@ -381,22 +386,20 @@ export const saveCompleteSession = async (req, res) => {
 export const startInterview = async (req, res) => {
   try {
     const userId = req.user._id.toString();
-    let { level = "Auto", jobRole, jobDescription = "", jobDescriptionUrl = "" } = req.body;
+    const validation = startInterviewSchema.safeParse(req.body);
+    if (!validation.success) {
+        return res.status(400).json({ 
+            success: false, 
+            error: validation.error.errors[0].message 
+        });
+    }
+
+    let { level = "Auto", jobRole, jobDescription = "", jobDescriptionUrl = "" } = validation.data;
     
-    // Default jobRole if empty
     if (!jobRole || !jobRole.trim()) {
         jobRole = "Software Engineer";
     }
 
-    // Allow "Auto" or valid levels
-    if (level !== "Auto" && !Object.keys(LEVEL_PROMPTS).includes(level)) {
-        return res.status(400).json({ 
-            success: false, 
-            error: "Invalid interview level selected." 
-        });
-    }
-
-    // Fetch JD from URL if provided
     if (jobDescriptionUrl) {
         try {
             console.log(`🌐 Fetching JD from URL: ${jobDescriptionUrl}`);
@@ -408,7 +411,6 @@ export const startInterview = async (req, res) => {
             });
             
             const $ = cheerio.load(response.data);
-            // Remove scripts, styles, and nav/footer elements to reduce noise
             $('script').remove();
             $('style').remove();
             $('nav').remove();
@@ -448,7 +450,7 @@ export const startInterview = async (req, res) => {
 
     if (!user.usage) {
         user.usage = {
-            freeInterviewsLeft: 2,
+            freeInterviewsLeft: 3,
             lastMonthlyReset: new Date(),
             purchasedCredits: 0,
         };
@@ -464,10 +466,6 @@ export const startInterview = async (req, res) => {
             code: "NO_CREDITS",
         });
     }
-
-    // NOTE: Credits are now deducted in endInterview, not startInterview.
-    // This ensures users only pay for completed sessions.
-
 
     let resumeText = "";
     const resumeCacheKey = `resume:${userId}`;
@@ -526,7 +524,6 @@ Generate only the first interview question. Do not include any introduction or e
       firstQuestion = firstQuestion.trim();
     } catch (error) {
       console.error("❌ Error generating first question:", error.message);
-      // No refund needed as we didn't deduct yet
 
       return res.status(503).json({
         success: false,
@@ -559,7 +556,7 @@ Generate only the first interview question. Do not include any introduction or e
 
     await redisClient.hSet(sessionKey, sessionData);
 
-    await redisClient.expire(sessionKey, 172800); // 48 hours expiration
+    await redisClient.expire(sessionKey, 172800);
 
     console.log("✅ Interview session started and stored in Redis");
 
@@ -583,14 +580,15 @@ Generate only the first interview question. Do not include any introduction or e
 export const nextInterviewStep = async (req, res) => {
   try {
     const userId = req.user._id.toString();
-    const { answer } = req.body;
-
-    if (!answer || answer.trim().length < 10) {
+    const validation = nextStepSchema.safeParse(req.body);
+    if (!validation.success) {
       return res.status(400).json({
         success: false,
-        error: "Answer is required and must be at least 10 characters",
+        error: validation.error.errors[0].message,
       });
     }
+
+    const { answer } = validation.data;
 
     const sessionKey = `session:${userId}`;
 
@@ -857,7 +855,6 @@ QUESTION: [next question or "INTERVIEW_COMPLETE" if conditions above are met]
       });
     }
 
-    // Refresh session expiration on every step
     await redisClient.expire(sessionKey, 172800);
 
 
@@ -947,7 +944,6 @@ export const endInterview = async (req, res) => {
       if (msg.role === "interviewer") {
         const text = msg.text.trim();
 
-        // Skip empty messages or explicit completion signals
         if (
           !text ||
           text.includes("INTERVIEW_COMPLETE") ||
@@ -957,7 +953,6 @@ export const endInterview = async (req, res) => {
           continue;
         }
 
-        // If we have a pending question/answer pair, push it
         if (
           currentQuestion !== null &&
           currentAnswer !== null &&
@@ -1012,7 +1007,6 @@ export const endInterview = async (req, res) => {
     if (questions.length === 0) {
       const resetCount = parseInt(session.resetCount || "0");
 
-      // If user hasn't reset, allow free cancellation
       if (resetCount === 0) {
         try {
           await redisClient.del(sessionKey);
@@ -1032,7 +1026,6 @@ export const endInterview = async (req, res) => {
         });
       }
 
-      // If user HAS reset, treat it as a completed (empty) session to prevent infinite reset abuse
       const emptySummary = {
         overallScore: 0,
         strengths: ["N/A"],
@@ -1059,7 +1052,6 @@ export const endInterview = async (req, res) => {
         score: 0,
       });
 
-      // Deduct credit
       const user = await User.findById(userId);
       if (user) {
         if (!user.usage) user.usage = {};
@@ -1178,7 +1170,6 @@ export const endInterview = async (req, res) => {
       });
       summaryText = summaryText.trim();
 
-      // Clean JSON from markdown
       summaryText = summaryText
         .replace(/```(?:json)?\s*([\s\S]*?)```/gi, "$1")
         .trim();
@@ -1234,7 +1225,6 @@ export const endInterview = async (req, res) => {
       score: finalSummary.overallScore !== undefined ? finalSummary.overallScore : 7,
     });
 
-    // Deduct credit on successful completion
     const user = await User.findById(userId);
     if (user) {
         if (!user.usage) user.usage = {};
@@ -1548,7 +1538,6 @@ export const cancelInterview = async (req, res) => {
         const history = JSON.parse(session.history || "[]");
         hasAnswers = history.some(msg => msg.role === "user");
       } catch (e) {
-        // Ignore parse error
       }
 
       if (resetCount > 0 || hasAnswers) {

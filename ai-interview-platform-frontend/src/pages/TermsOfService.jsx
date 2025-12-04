@@ -2,6 +2,7 @@ import React from "react";
 import PageLayout from "../components/PageLayout";
 import { FileText } from "lucide-react";
 import SEO from "../components/SEO";
+import Footer from "../components/landing/Footer";
 
 const TermsOfService = () => {
   return (
@@ -68,6 +69,7 @@ const TermsOfService = () => {
           </div>
         </div>
       </div>
+      <Footer />
     </PageLayout>
   );
 };

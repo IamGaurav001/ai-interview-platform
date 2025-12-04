@@ -42,7 +42,8 @@ const Footer = () => {
             <ul className="space-y-2 md:space-y-4 text-xs md:text-sm">
               <li><FooterLink to="/privacy">Privacy</FooterLink></li>
               <li><FooterLink to="/terms">Terms</FooterLink></li>
-              <li><FooterLink to="/security">Security</FooterLink></li>
+              <li><FooterLink to="/refund">Refund Policy</FooterLink></li>
+              <li><FooterLink to="/shipping">Shipping Policy</FooterLink></li>
             </ul>
           </div>
         </div>

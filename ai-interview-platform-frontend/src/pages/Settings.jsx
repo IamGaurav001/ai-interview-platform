@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { 
   User, 
@@ -10,7 +11,8 @@ import {
   Mail,
   Lock,
   Save,
-  CheckCircle2
+  CheckCircle2,
+  ArrowLeft
 } from "lucide-react";
 import { logEvent } from "../config/amplitude";
 import SEO from "../components/SEO";
@@ -18,6 +20,7 @@ import { motion, AnimatePresence } from "framer-motion";
 
 const Settings = () => {
   const { user, updateUser, logout, resetPassword } = useAuth();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("profile");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState({ type: "", text: "" });
@@ -78,11 +81,65 @@ const Settings = () => {
     <div className="min-h-screen bg-slate-50/50 pb-12">
       <SEO title="Settings" description="Manage your profile, notifications, and security settings." />
       
-      <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+      <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-12">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
           
-          {/* Left Sidebar */}
-          <div className="lg:col-span-3 space-y-8">
+          {/* Mobile Header & Nav */}
+          <div className="lg:hidden space-y-6 mb-2">
+            <div className="flex items-center gap-4">
+              <button 
+                onClick={() => navigate("/dashboard")}
+                className="h-10 w-10 flex-shrink-0 flex items-center justify-center rounded-full bg-white border border-slate-200 shadow-sm active:scale-95 transition-all text-slate-600"
+              >
+                <ArrowLeft className="h-5 w-5" />
+              </button>
+              <div>
+                <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Settings</h1>
+                <p className="text-sm text-slate-500">Manage your account</p>
+              </div>
+            </div>
+
+            <div className="flex overflow-x-auto pb-2 gap-3 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none'] -mx-4 px-4">
+              {menuItems.map((item) => {
+                const Icon = item.icon;
+                const isActive = activeTab === item.id;
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => setActiveTab(item.id)}
+                    className={`flex items-center gap-2 px-5 py-2.5 rounded-full whitespace-nowrap transition-all font-medium text-sm ${
+                      isActive
+                        ? "bg-[#1d2f62] text-white shadow-md shadow-blue-900/20"
+                        : "bg-white text-slate-600 border border-slate-200"
+                    }`}
+                  >
+                    <Icon className="h-4 w-4" />
+                    {item.label}
+                  </button>
+                );
+              })}
+              <button
+                onClick={logout}
+                className="flex items-center gap-2 px-5 py-2.5 rounded-full whitespace-nowrap transition-all font-medium text-sm bg-red-50 text-red-600 border border-red-100"
+              >
+                <LogOut className="h-4 w-4" />
+                Sign Out
+              </button>
+            </div>
+          </div>
+
+          {/* Desktop Sidebar */}
+          <div className="hidden lg:block lg:col-span-3 space-y-8">
+            <button
+              onClick={() => navigate("/dashboard")}
+              className="group flex items-center gap-3 text-slate-500 hover:text-[#1d2f62] transition-colors"
+            >
+              <div className="h-10 w-10 flex items-center justify-center rounded-full bg-white border border-slate-200 shadow-sm group-hover:shadow-md group-hover:border-blue-200 group-hover:-translate-x-1 transition-all">
+                <ArrowLeft className="h-5 w-5" />
+              </div>
+              <span className="font-bold text-lg">Back to Dashboard</span>
+            </button>
+
             <div>
               <h1 className="text-4xl font-bold text-slate-900 tracking-tight">Settings</h1>
               <p className="mt-2 text-lg text-slate-500">Manage your account</p>
@@ -141,7 +198,7 @@ const Settings = () => {
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.3 }}
-              className="bg-white rounded-[2rem] shadow-sm border border-slate-200 overflow-hidden min-h-[600px]"
+              className="bg-white rounded-2xl lg:rounded-[2rem] shadow-sm border border-slate-200 overflow-hidden min-h-[400px] lg:min-h-[600px]"
             >
               {/* Message Alert */}
               <AnimatePresence>
@@ -160,39 +217,39 @@ const Settings = () => {
                 )}
               </AnimatePresence>
 
-              <div className="p-8 sm:p-12">
+              <div className="p-5 sm:p-8 lg:p-12">
                 {/* Profile Section */}
                 {activeTab === "profile" && (
                   <div className="max-w-3xl">
-                    <div className="mb-10">
-                      <h2 className="text-3xl font-bold text-slate-900 mb-2">Profile Information</h2>
-                      <p className="text-xl text-slate-500">Update your photo and personal details.</p>
+                    <div className="mb-8 lg:mb-10">
+                      <h2 className="text-2xl lg:text-3xl font-bold text-slate-900 mb-2">Profile Information</h2>
+                      <p className="text-lg lg:text-xl text-slate-500">Update your photo and personal details.</p>
                     </div>
 
                     <form onSubmit={handleUpdateProfile} className="space-y-8">
                       <div>
-                        <label className="block text-lg font-bold text-slate-700 mb-3">Display Name</label>
+                        <label className="block text-base sm:text-lg font-bold text-slate-700 mb-2 sm:mb-3">Display Name</label>
                         <div className="relative group">
                           <User className="absolute left-4 top-1/2 -translate-y-1/2 h-6 w-6 text-slate-400 group-focus-within:text-blue-500 transition-colors" />
                           <input
                             type="text"
                             value={displayName}
                             onChange={(e) => setDisplayName(e.target.value)}
-                            className="w-full pl-14 pr-6 py-4 rounded-2xl border-2 border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all text-lg font-medium outline-none bg-slate-50 focus:bg-white"
+                            className="w-full pl-12 sm:pl-14 pr-6 py-3 sm:py-4 rounded-2xl border-2 border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all text-base sm:text-lg font-medium outline-none bg-slate-50 focus:bg-white"
                             placeholder="Enter your name"
                           />
                         </div>
                       </div>
 
                       <div>
-                        <label className="block text-lg font-bold text-slate-700 mb-3">Email Address</label>
+                        <label className="block text-base sm:text-lg font-bold text-slate-700 mb-2 sm:mb-3">Email Address</label>
                         <div className="relative">
                           <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-6 w-6 text-slate-400" />
                           <input
                             type="email"
                             value={user?.email || ""}
                             disabled
-                            className="w-full pl-14 pr-6 py-4 rounded-2xl border-2 border-slate-100 bg-slate-50 text-slate-500 text-lg font-medium cursor-not-allowed"
+                            className="w-full pl-12 sm:pl-14 pr-6 py-3 sm:py-4 rounded-2xl border-2 border-slate-100 bg-slate-50 text-slate-500 text-base sm:text-lg font-medium cursor-not-allowed"
                           />
                         </div>
                         <p className="mt-3 text-sm text-slate-400 font-medium flex items-center gap-2">
@@ -227,19 +284,19 @@ const Settings = () => {
                 {/* Notifications Section */}
                 {activeTab === "notifications" && (
                   <div className="max-w-3xl">
-                    <div className="mb-10">
-                      <h2 className="text-3xl font-bold text-slate-900 mb-2">Notifications</h2>
-                      <p className="text-xl text-slate-500">Manage how you receive updates and alerts.</p>
+                    <div className="mb-8 lg:mb-10">
+                      <h2 className="text-2xl lg:text-3xl font-bold text-slate-900 mb-2">Notifications</h2>
+                      <p className="text-lg lg:text-xl text-slate-500">Manage how you receive updates and alerts.</p>
                     </div>
 
                     <div className="space-y-6">
                       {[
                         { id: "email", label: "Email Notifications", desc: "Receive promotional emails and updates" },
                       ].map((item) => (
-                        <div key={item.id} className="flex items-center justify-between p-6 rounded-2xl border-2 border-slate-100 hover:border-blue-100 hover:bg-blue-50/30 transition-all">
-                          <div className="pr-8">
-                            <h3 className="text-xl font-bold text-slate-900 mb-1">{item.label}</h3>
-                            <p className="text-base text-slate-500 font-medium">{item.desc}</p>
+                        <div key={item.id} className="flex items-center justify-between p-4 sm:p-6 rounded-2xl border-2 border-slate-100 hover:border-blue-100 hover:bg-blue-50/30 transition-all">
+                          <div className="pr-4 sm:pr-8">
+                            <h3 className="text-lg sm:text-xl font-bold text-slate-900 mb-1">{item.label}</h3>
+                            <p className="text-sm sm:text-base text-slate-500 font-medium">{item.desc}</p>
                           </div>
                           <button
                             onClick={async () => {
@@ -277,26 +334,26 @@ const Settings = () => {
                 {/* Security Section */}
                 {activeTab === "security" && (
                   <div className="max-w-3xl">
-                    <div className="mb-10">
-                      <h2 className="text-3xl font-bold text-slate-900 mb-2">Security</h2>
-                      <p className="text-xl text-slate-500">Manage your password and account security.</p>
+                    <div className="mb-8 lg:mb-10">
+                      <h2 className="text-2xl lg:text-3xl font-bold text-slate-900 mb-2">Security</h2>
+                      <p className="text-lg lg:text-xl text-slate-500">Manage your password and account security.</p>
                     </div>
 
                     <div className="space-y-6">
-                      <div className="p-8 rounded-3xl bg-slate-50 border-2 border-slate-100">
-                        <div className="flex items-start gap-6">
+                      <div className="p-6 lg:p-8 rounded-3xl bg-slate-50 border-2 border-slate-100">
+                        <div className="flex flex-col sm:flex-row items-start gap-6">
                           <div className="p-4 bg-white rounded-2xl shadow-sm border border-slate-100">
                             <Lock className="h-8 w-8 text-slate-700" />
                           </div>
                           <div className="flex-1">
-                            <h3 className="text-xl font-bold text-slate-900 mb-2">Password</h3>
-                            <p className="text-base text-slate-600 leading-relaxed mb-6">
+                            <h3 className="text-lg sm:text-xl font-bold text-slate-900 mb-2">Password</h3>
+                            <p className="text-sm sm:text-base text-slate-600 leading-relaxed mb-6">
                               Change your password regularly to keep your account secure. We'll send you an email with instructions.
                             </p>
                             <button
                               onClick={handlePasswordReset}
                               disabled={loading}
-                              className="px-6 py-3 text-base font-bold text-slate-700 bg-white border-2 border-slate-200 rounded-xl hover:bg-slate-50 hover:border-slate-300 focus:ring-4 focus:ring-slate-100 transition-all shadow-sm"
+                              className="px-4 py-2.5 sm:px-6 sm:py-3 text-sm sm:text-base font-bold text-slate-700 bg-white border-2 border-slate-200 rounded-xl hover:bg-slate-50 hover:border-slate-300 focus:ring-4 focus:ring-slate-100 transition-all shadow-sm"
                             >
                               Send Password Reset Email
                             </button>

@@ -5,6 +5,7 @@ import SEO from "../components/SEO";
 import Hero from "../components/landing/Hero";
 import SocialProof from "../components/landing/SocialProof";
 import Features from "../components/landing/Features";
+import Testimonials from "../components/landing/Testimonials";
 import CTA from "../components/landing/CTA";
 import Footer from "../components/landing/Footer";
 
@@ -28,6 +29,7 @@ const Landing = () => {
       <Hero />
       <SocialProof />
       <Features />
+      <Testimonials />
       <CTA />
       <Footer />
     </div>

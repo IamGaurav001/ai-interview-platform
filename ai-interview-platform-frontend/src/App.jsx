@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import ProtectedRoute from "./components/ProtectedRoute";
+import CreditGuard from "./components/CreditGuard";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
@@ -55,7 +56,6 @@ const Layout = ({ children }) => {
     '/verify-email': 'Verify Email'
   };
 
-  // Page view tracking is now handled in the SEO component to ensure correct titles and avoid race conditions
 
   return (
     <>
@@ -113,7 +113,9 @@ function App() {
                 path="/interview-flow"
                 element={
                   <ProtectedRoute>
-                    <InterviewFlow />
+                    <CreditGuard>
+                      <InterviewFlow />
+                    </CreditGuard>
                   </ProtectedRoute>
                 }
               />
@@ -129,7 +131,9 @@ function App() {
                 path="/upload-resume"
                 element={
                   <ProtectedRoute>
-                    <ResumeUpload />
+                    <CreditGuard>
+                      <ResumeUpload />
+                    </CreditGuard>
                   </ProtectedRoute>
                 }
               />

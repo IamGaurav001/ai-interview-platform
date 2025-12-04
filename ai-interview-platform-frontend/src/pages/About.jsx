@@ -3,6 +3,7 @@ import PageLayout from "../components/PageLayout";
 import { Users, Target, Shield, Award, ArrowRight, Sparkles } from "lucide-react";
 import { motion } from "framer-motion";
 import SEO from "../components/SEO";
+import Footer from "../components/landing/Footer";
 
 const About = () => {
 
@@ -136,6 +137,7 @@ const About = () => {
           </div>
         </div>
       </div>
+      <Footer />
     </PageLayout>
   );
 };

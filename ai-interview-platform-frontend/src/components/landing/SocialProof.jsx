@@ -1,7 +1,7 @@
 import React from "react";
 import { motion } from "framer-motion";
 
-const companies = ["Google", "Amazon", "Microsoft", "Netflix", "Uber", "Meta", "Apple", "Spotify"];
+const companies = ["Amadeus", "Amazon", "BrowserStack", "Blinkit", "Uber", "Paytm", "Spotify", "PW", "Walmart"];
 
 const SocialProof = () => {
   return (
@@ -9,7 +9,6 @@ const SocialProof = () => {
       <div className="max-w-7xl mx-auto px-4 text-center">
         <p className="text-sm font-semibold text-slate-400 mb-6 md:mb-10 uppercase tracking-[0.2em]">Trusted by top engineering teams</p>
         
-        {/* Auto-scrolling Marquee */}
         <div className="relative w-full overflow-hidden mask-gradient">
           <div className="flex w-max">
             {[...Array(3)].map((_, i) => (

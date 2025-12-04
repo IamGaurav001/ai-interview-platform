@@ -3,6 +3,7 @@ import PageLayout from "../components/PageLayout";
 import { Mic, Brain, TrendingUp, FileText, Zap, Shield, CheckCircle2, ChevronDown } from "lucide-react";
 import { motion } from "framer-motion";
 import SEO from "../components/SEO";
+import Footer from "../components/landing/Footer";
 
 const Features = () => {
   const container = {
@@ -161,6 +162,7 @@ const Features = () => {
           </div>
         </div>
       </div>
+      <Footer />
     </PageLayout>
   );
 };

@@ -3,6 +3,7 @@ import PageLayout from "../components/PageLayout";
 import { Mail, MessageSquare, MapPin, Send, ArrowRight, Phone, Clock } from "lucide-react";
 import { motion } from "framer-motion";
 import SEO from "../components/SEO";
+import Footer from "../components/landing/Footer";
 
 const Contact = () => {
   const [formData, setFormData] = useState({
@@ -199,6 +200,7 @@ const Contact = () => {
           </div>
         </div>
       </div>
+      <Footer />
     </PageLayout>
   );
 };

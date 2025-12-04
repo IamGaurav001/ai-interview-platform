@@ -2,6 +2,7 @@ import React from "react";
 import PageLayout from "../components/PageLayout";
 import { Truck } from "lucide-react";
 import SEO from "../components/SEO";
+import Footer from "../components/landing/Footer";
 
 const Shipping = () => {
   return (
@@ -51,6 +52,7 @@ const Shipping = () => {
           </div>
         </div>
       </div>
+      <Footer />
     </PageLayout>
   );
 };

@@ -1,5 +1,6 @@
 import admin from "../config/firebaseAdmin.js";
 import User from "../models/User.js";
+import { allowedDomains } from "../utils/allowedDomains.js";
 
 export const verifyFirebaseToken = async (req, res, next) => {
   try {
@@ -22,9 +23,17 @@ export const verifyFirebaseToken = async (req, res, next) => {
     const firebaseUid = decodedToken.uid;
     const email = decodedToken.email;
 
+    if (email) {
+      const domain = email.split("@")[1].toLowerCase();
+      if (!allowedDomains.includes(domain)) {
+        return res.status(403).json({
+          message: "Please use a valid email provider (Gmail, Yahoo, Outlook, etc.).",
+        });
+      }
+    }
+
     let user = await User.findOne({ firebaseUid });
 
-    // If not found by UID, try finding by email (to prevent duplicates)
     if (!user && email) {
       user = await User.findOne({ email });
       if (user) {
@@ -42,19 +51,16 @@ export const verifyFirebaseToken = async (req, res, next) => {
           lastLoginAt: new Date(),
         });
       } catch (createError) {
-        // Handle race condition: Duplicate key error (E11000)
         if (createError.code === 11000) {
           console.warn("⚠️ Race condition or duplicate detected, attempting recovery...");
           user = await User.findOne({ $or: [{ firebaseUid }, { email }] });
           
           if (user) {
-             // If found, ensure UID is linked
              if (user.firebaseUid !== firebaseUid) {
                  user.firebaseUid = firebaseUid;
                  await user.save();
              }
           } else {
-             // Still failed? Throw original error
              throw createError;
           }
         } else {
@@ -62,9 +68,6 @@ export const verifyFirebaseToken = async (req, res, next) => {
         }
       }
     } else {
-      // Session expiration check removed to allow persistent login
-      // Firebase token validation handles security
-
       
       let isModified = false;
       if (email && user.email !== email) {
@@ -75,7 +78,6 @@ export const verifyFirebaseToken = async (req, res, next) => {
         user.name = decodedToken.name;
         isModified = true;
       }
-      // Ensure UID is consistent (in case we found by email)
       if (user.firebaseUid !== firebaseUid) {
         user.firebaseUid = firebaseUid;
         isModified = true;

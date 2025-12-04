@@ -18,7 +18,7 @@ import {
   resetInterview,
 } from "../controllers/interviewController.js";
 import { getWeakAreas } from "../controllers/interviewController.js";
-import { checkInterviewEligibility } from "../middleware/checkEligibility.js";
+import { checkInterviewEligibility, hasCredits } from "../middleware/checkEligibility.js";
 
 
 const __filename = fileURLToPath(import.meta.url);
@@ -65,24 +65,25 @@ const upload = multer({
 const router = express.Router();
 
 
-router.post("/evaluate", verifyFirebaseToken, rateLimiter(10, 60), evaluateAnswer);
-router.post("/save-session", verifyFirebaseToken, saveCompleteSession);
+router.post("/evaluate", verifyFirebaseToken, hasCredits, rateLimiter(10, 60), evaluateAnswer);
+router.post("/save-session", verifyFirebaseToken, hasCredits, saveCompleteSession);
 router.get("/history", verifyFirebaseToken, getInterviewHistory);
 router.get("/weak-areas", verifyFirebaseToken, getWeakAreas);
 
 
 
-router.post("/start", verifyFirebaseToken, rateLimiter(5, 60), startInterview);
-router.post("/next", verifyFirebaseToken, rateLimiter(20, 60), nextInterviewStep);
-router.post("/end", verifyFirebaseToken, rateLimiter(5, 60), endInterview);
-router.post("/cancel", verifyFirebaseToken, rateLimiter(5, 60), cancelInterview);
-router.post("/reset", verifyFirebaseToken, rateLimiter(5, 60), resetInterview);
+router.post("/start", verifyFirebaseToken, hasCredits, rateLimiter(5, 60), startInterview);
+router.post("/next", verifyFirebaseToken, hasCredits, rateLimiter(20, 60), nextInterviewStep);
+router.post("/end", verifyFirebaseToken, hasCredits, rateLimiter(5, 60), endInterview);
+router.post("/cancel", verifyFirebaseToken, hasCredits, rateLimiter(5, 60), cancelInterview);
+router.post("/reset", verifyFirebaseToken, hasCredits, rateLimiter(5, 60), resetInterview);
 router.get("/active-session", verifyFirebaseToken, getActiveSession);
 
 
 router.post(
   "/voice-answer",
   verifyFirebaseToken,
+  hasCredits,
   rateLimiter(10, 60),
   upload.single("audio"),
   evaluateVoiceAnswer

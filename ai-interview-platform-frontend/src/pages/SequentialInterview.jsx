@@ -91,6 +91,105 @@ const SequentialInterview = () => {
   const [startTour, setStartTour] = useState(false);
   const [isPlayingQuestion, setIsPlayingQuestion] = useState(false);
   const [isPlayingFeedback, setIsPlayingFeedback] = useState(false);
+  const [voices, setVoices] = useState([]);
+  const [selectedVoice, setSelectedVoice] = useState(null);
+  const [showVoiceSettings, setShowVoiceSettings] = useState(false);
+
+  useEffect(() => {
+    const loadVoices = () => {
+      const availableVoices = window.speechSynthesis.getVoices();
+      const englishVoices = availableVoices.filter(v => v.lang.startsWith('en'));
+      
+      if (englishVoices.length === 0) {
+        setVoices([]);
+        return;
+      }
+
+      let femaleVoice = englishVoices.find(v => v.name === "Google UK English Female");
+      let maleVoice = englishVoices.find(v => v.name === "Google UK English Male");
+
+      if (!femaleVoice) {
+        femaleVoice = englishVoices.find(v => 
+          v.name.includes("Female") || 
+          v.name.includes("Samantha") || 
+          v.name.includes("Victoria") || 
+          v.name.includes("Karen") ||
+          v.name.includes("Zira")
+        );
+      }
+
+      if (!maleVoice) {
+        maleVoice = englishVoices.find(v => 
+          v.name.includes("Male") || 
+          v.name.includes("Daniel") || 
+          v.name.includes("Alex") || 
+          v.name.includes("David") ||
+          v.name.includes("Fred")
+        );
+      }
+
+      if (!femaleVoice && englishVoices.length > 0) femaleVoice = englishVoices[0];
+      if (!maleVoice && englishVoices.length > 1) maleVoice = englishVoices[1];
+      
+      const simplifiedOptions = [];
+      
+      if (femaleVoice) {
+        simplifiedOptions.push({
+          name: "Voice 1 (Female)",
+          originalName: femaleVoice.name,
+          voice: femaleVoice,
+          lang: femaleVoice.lang
+        });
+      }
+      
+      if (maleVoice && maleVoice.name !== femaleVoice?.name) {
+        simplifiedOptions.push({
+          name: "Voice 2 (Male)",
+          originalName: maleVoice.name,
+          voice: maleVoice,
+          lang: maleVoice.lang
+        });
+      }
+
+      setVoices(simplifiedOptions);
+      
+      const savedVoiceName = localStorage.getItem('preferredVoice');
+      
+      if (savedVoiceName) {
+        const savedOption = simplifiedOptions.find(opt => opt.originalName === savedVoiceName);
+        if (savedOption) {
+          setSelectedVoice(savedOption);
+          return;
+        }
+      }
+
+      if (simplifiedOptions.length > 0) {
+        setSelectedVoice(simplifiedOptions[0]);
+      }
+    };
+
+    loadVoices();
+    
+    if (window.speechSynthesis.onvoiceschanged !== undefined) {
+      window.speechSynthesis.onvoiceschanged = loadVoices;
+    }
+
+    return () => {
+      if (window.speechSynthesis.onvoiceschanged !== undefined) {
+        window.speechSynthesis.onvoiceschanged = null;
+      }
+    };
+  }, []);
+
+  const handleVoiceChange = (voiceOption) => {
+    setSelectedVoice(voiceOption);
+    localStorage.setItem('preferredVoice', voiceOption.originalName);
+    
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance("Hello, I am your AI interviewer.");
+    utterance.voice = voiceOption.voice;
+    window.speechSynthesis.speak(utterance);
+  };
 
   useEffect(() => {
     if (questions.length > 0) {
@@ -270,7 +369,8 @@ const SequentialInterview = () => {
     } catch (err) {
       console.error("Evaluate voice error:", err);
       if (err.networkError) {
-        toastError("Cannot connect to server. Please make sure the backend is running.");
+        // toastError("Cannot connect to server. Please make sure the backend is running.");
+        console.error("Cannot connect to server. Please make sure the backend is running.");
       } else {
         toastError(err.response?.data?.error || err.message || "Failed to evaluate voice answer");
       }
@@ -322,7 +422,8 @@ const SequentialInterview = () => {
     } catch (err) {
       console.error("Evaluate error:", err);
       if (err.networkError) {
-        toastError("Cannot connect to server. Please make sure the backend is running.");
+        // toastError("Cannot connect to server. Please make sure the backend is running.");
+        console.error("Cannot connect to server. Please make sure the backend is running.");
       } else {
         toastError(err.response?.data?.error || err.message || "Failed to evaluate answer");
       }
@@ -484,17 +585,23 @@ const SequentialInterview = () => {
     utterance.volume = 1.0;
 
     // Try to find a good voice
+    // Try to find a good voice
     const voices = window.speechSynthesis.getVoices();
-    const preferredVoice = voices.find(
-      (voice) =>
-        voice.lang.includes("en") &&
-        (voice.name.includes("Samantha") ||
-          voice.name.includes("Karen") ||
-          voice.name.includes("Victoria") ||
-          voice.voiceURI.includes("Neural"))
-    );
-    if (preferredVoice) {
-      utterance.voice = preferredVoice;
+    
+    if (selectedVoice) {
+      utterance.voice = selectedVoice.voice;
+    } else {
+      const preferredVoice = voices.find(
+        (voice) =>
+          voice.lang.includes("en") &&
+          (voice.name.includes("Samantha") ||
+            voice.name.includes("Karen") ||
+            voice.name.includes("Victoria") ||
+            voice.voiceURI.includes("Neural"))
+      );
+      if (preferredVoice) {
+        utterance.voice = preferredVoice;
+      }
     }
 
     if (type === "question") {

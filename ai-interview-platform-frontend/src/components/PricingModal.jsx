@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { X, CheckCircle2, AlertCircle, CreditCard, Zap, ShieldCheck } from "lucide-react";
+import { X, Check, Zap, ShieldCheck, Sparkles, AlertCircle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import axios from "axios";
 import { auth } from "../config/firebase";
@@ -8,11 +8,23 @@ import { logEvent } from "../config/amplitude";
 const PricingModal = ({ isOpen, onClose, onSuccess, userEmail, userName }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [selectedPlan, setSelectedPlan] = useState("1_interview");
+  const [selectedPlan, setSelectedPlan] = useState("3_interviews"); // Default to popular
 
   const plans = {
-    "1_interview": { price: 19, currency: "₹", label: "1 Interview Credit" },
-    "3_interviews": { price: 49, currency: "₹", label: "3 Interview Credits" },
+    "1_interview": { 
+      id: "1_interview",
+      price: 19, 
+      currency: "₹", 
+      label: "1 Interview Credit",
+      save: null
+    },
+    "3_interviews": { 
+      id: "3_interviews",
+      price: 49, 
+      currency: "₹", 
+      label: "3 Interview Credits",
+      save: "Save 14%"
+    },
   };
 
   const currentPlan = plans[selectedPlan];
@@ -89,7 +101,7 @@ const PricingModal = ({ isOpen, onClose, onSuccess, userEmail, userName }) => {
           }
         },
         prefill: { name: userName, email: userEmail },
-        theme: { color: "#4F46E5" },
+        theme: { color: "#1d2f62" },
       };
 
       const rzp1 = new window.Razorpay(options);
@@ -111,118 +123,108 @@ const PricingModal = ({ isOpen, onClose, onSuccess, userEmail, userName }) => {
     <AnimatePresence>
       <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
         <motion.div
-          initial={{ opacity: 0, scale: 0.95, y: 20 }}
+          initial={{ opacity: 0, scale: 0.9, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.95, y: 20 }}
-          className="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-md overflow-hidden border border-white relative"
+          exit={{ opacity: 0, scale: 0.9, y: 20 }}
+          className="bg-white rounded-[2rem] shadow-2xl w-full max-w-md overflow-hidden relative"
         >
-          {/* Header */}
-          <div className="bg-gradient-to-br from-[#1d2f62] to-[#2a407a] p-8 text-white relative overflow-hidden">
-            <div className="absolute top-0 right-0 -mt-8 -mr-8 w-32 h-32 bg-white/10 rounded-full blur-2xl"></div>
-            <div className="absolute bottom-0 left-0 -mb-8 -ml-8 w-24 h-24 bg-blue-500/20 rounded-full blur-xl"></div>
+          {/* Decorative Header */}
+          <div className="bg-[#1d2f62] p-8 pb-12 relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+            <div className="absolute bottom-0 left-0 w-40 h-40 bg-blue-400/10 rounded-full blur-2xl translate-y-1/2 -translate-x-1/2" />
             
-            <div className="relative z-10 flex justify-between items-start">
-              <div>
-                <h3 className="text-3xl font-bold tracking-tight">Unlock Potential</h3>
-                <p className="text-blue-100 text-sm mt-2 font-medium">Get detailed AI-powered interview feedback</p>
+            <button
+              onClick={onClose}
+              className="absolute top-4 right-4 text-white/60 hover:text-white hover:bg-white/10 p-2 rounded-full transition-all"
+            >
+              <X className="h-5 w-5" />
+            </button>
+
+            <div className="relative z-10 text-center">
+              <div className="inline-flex items-center justify-center p-3 bg-white/10 rounded-2xl mb-4 backdrop-blur-md border border-white/10 shadow-inner">
+                <Sparkles className="h-6 w-6 text-blue-200" />
               </div>
-              <button
-                onClick={onClose}
-                className="text-white/70 hover:text-white bg-white/10 hover:bg-white/20 rounded-full p-2 transition-all hover:rotate-90"
-              >
-                <X className="h-5 w-5" />
-              </button>
+              <h3 className="text-3xl font-bold text-white mb-2 tracking-tight">Unlock Potential</h3>
+              <p className="text-blue-100/80 font-medium">Get detailed AI-powered interview feedback</p>
             </div>
           </div>
 
-          <div className="p-8">
-            {/* Plans */}
-            <div className="space-y-5 mb-8">
-              {/* Option 1: 1 Interview */}
-              <div
-                onClick={() => setSelectedPlan("1_interview")}
-                className={`group relative border-2 rounded-2xl p-5 cursor-pointer transition-all duration-300 ${
-                  selectedPlan === "1_interview"
-                    ? "border-[#1d2f62] bg-blue-50/50 shadow-md shadow-blue-100"
-                    : "border-slate-100 hover:border-blue-200 hover:bg-slate-50"
-                }`}
-              >
-                <div className="flex justify-between items-center">
-                  <div className="flex items-center gap-4">
-                    <div className={`h-6 w-6 rounded-full border-2 flex items-center justify-center transition-colors ${
-                      selectedPlan === "1_interview" ? "border-[#1d2f62]" : "border-slate-300"
-                    }`}>
-                      {selectedPlan === "1_interview" && <div className="h-3 w-3 rounded-full bg-[#1d2f62]" />}
+          <div className="px-6 pb-8 -mt-6 relative z-20">
+            <div className="bg-white rounded-[1.5rem] shadow-xl shadow-slate-200/50 border border-slate-100 p-2 space-y-3">
+              {Object.values(plans).map((plan) => (
+                <div
+                  key={plan.id}
+                  onClick={() => setSelectedPlan(plan.id)}
+                  className={`relative p-4 rounded-2xl border-2 cursor-pointer transition-all duration-300 group ${
+                    selectedPlan === plan.id
+                      ? "border-[#1d2f62] bg-blue-50/30"
+                      : "border-transparent hover:bg-slate-50"
+                  }`}
+                >
+                  {plan.id === "3_interviews" && (
+                    <div className="absolute -top-3 right-4 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-[10px] font-bold px-2.5 py-0.5 rounded-full shadow-sm flex items-center gap-1">
+                      <Zap className="h-3 w-3 fill-white" /> POPULAR
                     </div>
-                    <span className="font-bold text-slate-700 text-lg">1 Interview Credit</span>
-                  </div>
-                  <span className="text-2xl font-bold text-slate-900">
-                    ₹19
-                  </span>
-                </div>
-              </div>
-
-              {/* Option 2: 3 Interviews */}
-              <div
-                onClick={() => setSelectedPlan("3_interviews")}
-                className={`group relative border-2 rounded-2xl p-5 cursor-pointer transition-all duration-300 ${
-                  selectedPlan === "3_interviews"
-                    ? "border-[#1d2f62] bg-blue-50/50 shadow-lg shadow-blue-100 scale-[1.02]"
-                    : "border-slate-100 hover:border-blue-200 hover:bg-slate-50"
-                }`}
-              >
-                <div className="absolute -top-3 right-6 bg-gradient-to-r from-amber-500 to-orange-600 text-white text-[10px] font-bold px-3 py-1 rounded-full shadow-md uppercase tracking-wider flex items-center gap-1">
-                  <Zap className="h-3 w-3 fill-white" /> Most Popular
-                </div>
-                <div className="flex justify-between items-center">
-                  <div className="flex items-center gap-4">
-                    <div className={`h-6 w-6 rounded-full border-2 flex items-center justify-center transition-colors ${
-                      selectedPlan === "3_interviews" ? "border-[#1d2f62]" : "border-slate-300"
-                    }`}>
-                      {selectedPlan === "3_interviews" && <div className="h-3 w-3 rounded-full bg-[#1d2f62]" />}
-                    </div>
-                    <div>
-                      <span className="font-bold text-slate-700 text-lg">3 Interview Credits</span>
-                      <div className="text-xs text-emerald-600 font-bold mt-1 flex items-center gap-1 bg-emerald-50 px-2 py-0.5 rounded-md w-fit">
-                        Save 14%
+                  )}
+                  
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <div className={`h-6 w-6 rounded-full border-2 flex items-center justify-center transition-all ${
+                        selectedPlan === plan.id 
+                          ? "border-[#1d2f62] bg-[#1d2f62]" 
+                          : "border-slate-300 group-hover:border-slate-400"
+                      }`}>
+                        {selectedPlan === plan.id && <Check className="h-3.5 w-3.5 text-white stroke-[3]" />}
+                      </div>
+                      <div>
+                        <div className="font-bold text-slate-900">{plan.label}</div>
+                        {plan.save && (
+                          <div className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md w-fit mt-1">
+                            {plan.save}
+                          </div>
+                        )}
                       </div>
                     </div>
+                    <div className="text-right">
+                      <div className="text-2xl font-bold text-slate-900">{plan.currency}{plan.price}</div>
+                      <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Total</div>
+                    </div>
                   </div>
-                  <span className="text-2xl font-bold text-slate-900">
-                    ₹49
-                  </span>
                 </div>
-              </div>
+              ))}
             </div>
 
             {error && (
-              <div className="mb-4 text-sm text-red-600 bg-red-50 p-3 rounded-lg flex items-start gap-2">
-                <AlertCircle className="h-4 w-4 mt-0.5 flex-shrink-0" />
+              <motion.div 
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mt-4 p-3 bg-red-50 text-red-600 text-sm rounded-xl flex items-center gap-2 border border-red-100"
+              >
+                <AlertCircle className="h-4 w-4 flex-shrink-0" />
                 {error}
-              </div>
+              </motion.div>
             )}
 
             <button
               onClick={handlePayment}
               disabled={loading}
-              className="w-full py-4 px-6 bg-[#1d2f62] hover:bg-[#1d2f62]/90 text-white font-bold text-lg rounded-2xl shadow-xl hover:shadow-2xl hover:shadow-[#1d2f62]/30 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-300 flex items-center justify-center gap-3 disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none"
+              className="w-full mt-6 py-4 bg-[#1d2f62] text-white rounded-xl font-bold text-lg shadow-lg shadow-blue-900/20 hover:shadow-xl hover:shadow-blue-900/30 hover:-translate-y-0.5 active:translate-y-0 transition-all disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               {loading ? (
-                <>
-                  <div className="h-5 w-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  Processing...
-                </>
+                <div className="h-5 w-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
               ) : (
                 <>
-                  <CreditCard className="h-5 w-5" />
-                  Pay {currentPlan.currency}{currentPlan.price}
+                  <span>Pay Securely</span>
+                  <span className="bg-white/20 px-2 py-0.5 rounded text-sm">
+                    {currentPlan.currency}{currentPlan.price}
+                  </span>
                 </>
               )}
             </button>
-            
-            <div className="mt-4 flex items-center justify-center gap-2 text-xs text-slate-400">
-              <ShieldCheck className="h-3 w-3" />
-              <span>Secured by Razorpay</span>
+
+            <div className="mt-4 flex items-center justify-center gap-2 text-xs font-medium text-slate-400">
+              <ShieldCheck className="h-3.5 w-3.5" />
+              Secured by Razorpay
             </div>
           </div>
         </motion.div>
