@@ -1,6 +1,6 @@
 import admin from "../config/firebaseAdmin.js";
 import User from "../models/User.js";
-import { allowedDomains } from "../utils/allowedDomains.js";
+import { disposableDomains } from "../utils/disposableDomains.js";
 
 export const verifyFirebaseToken = async (req, res, next) => {
   try {
@@ -25,9 +25,9 @@ export const verifyFirebaseToken = async (req, res, next) => {
 
     if (email) {
       const domain = email.split("@")[1].toLowerCase();
-      if (!allowedDomains.includes(domain)) {
+      if (disposableDomains.includes(domain)) {
         return res.status(403).json({
-          message: "Please use a valid email provider (Gmail, Yahoo, Outlook, etc.).",
+          message: "Disposable email addresses are not allowed. Please use a valid email provider.",
         });
       }
     }

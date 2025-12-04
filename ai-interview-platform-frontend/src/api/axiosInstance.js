@@ -72,6 +72,13 @@ axiosInstance.interceptors.response.use(
       auth.signOut().catch(err => console.error("Error signing out on 401:", err));
     }
 
+    if (error.response.status === 429) {
+      return Promise.reject({
+        message: "You are making too many requests. Please wait a moment and try again.",
+        status: 429,
+      });
+    }
+
     return Promise.reject(error);
   }
 );

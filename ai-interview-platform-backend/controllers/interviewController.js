@@ -1,15 +1,19 @@
-import redisClient from "../config/redis.js";
-import { GoogleGenerativeAI } from "@google/generative-ai";
-import dotenv from "dotenv";
-import InterviewSession from "../models/InterviewSession.js";
-import User from "../models/User.js";
-import { parseFeedbackSafely, calculateSafeScore } from "../utils/aiHelper.js";
-import { callGeminiWithRetry } from "../utils/geminiHelper.js";
-import { geminiSpeechToText } from "../utils/geminiSTT.js";
 import fs from "fs";
 import path from "path";
 import axios from "axios";
 import * as cheerio from "cheerio";
+import dotenv from "dotenv";
+import { GoogleGenerativeAI } from "@google/generative-ai";
+
+import redisClient from "../config/redis.js";
+
+import InterviewSession from "../models/InterviewSession.js";
+import User from "../models/User.js";
+
+import { parseFeedbackSafely, calculateSafeScore } from "../utils/aiHelper.js";
+import { callGeminiWithRetry } from "../utils/geminiHelper.js";
+import { geminiSpeechToText } from "../utils/geminiSTT.js";
+
 import { evaluateAnswerSchema, startInterviewSchema, nextStepSchema } from "../validators/interviewValidators.js";
 
 dotenv.config();

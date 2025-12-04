@@ -6,7 +6,6 @@ export const getDashboardStats = async (req, res) => {
     const totalUsers = await User.countDocuments();
     const totalInterviews = await InterviewSession.countDocuments();
     
-    // Active users in last 30 days
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
     const activeUsers = await User.countDocuments({ lastLoginAt: { $gte: thirtyDaysAgo } });
@@ -24,7 +23,7 @@ export const getDashboardStats = async (req, res) => {
 export const getAllUsers = async (req, res) => {
   try {
     const users = await User.find()
-      .select("-password") // Exclude password if it existed (though we use firebaseUid)
+      .select("-password")
       .sort({ createdAt: -1 });
     res.status(200).json(users);
   } catch (error) {

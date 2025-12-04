@@ -1,7 +1,9 @@
 import fs from "fs";
-import { GoogleGenerativeAI } from "@google/generative-ai";
 import dotenv from "dotenv";
+import { GoogleGenerativeAI } from "@google/generative-ai";
+
 import redisClient from "../config/redis.js";
+
 import { callGeminiWithRetry } from "../utils/geminiHelper.js";
 
 dotenv.config();

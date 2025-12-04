@@ -42,10 +42,8 @@ export const sendVerificationEmail = async (req, res) => {
       return res.status(400).json({ success: false, message: "User email not found" });
     }
 
-    // Generate verification link using Firebase Admin SDK
     let link = await admin.auth().generateEmailVerificationLink(email);
 
-    // Use custom domain if configured
     if (process.env.AUTH_DOMAIN) {
       const url = new URL(link);
       link = link.replace(url.hostname, process.env.AUTH_DOMAIN);
