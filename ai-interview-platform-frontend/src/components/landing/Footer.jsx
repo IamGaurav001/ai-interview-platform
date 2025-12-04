@@ -1,7 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { Twitter, Linkedin, Instagram, Github } from "lucide-react";
-import logo from "../../assets/intervueai-logo.png";
+import { X, Linkedin, Instagram } from "lucide-react";
 
 const Footer = () => {
   return (
@@ -16,10 +15,9 @@ const Footer = () => {
               The smartest way to prepare for your next interview. AI-powered feedback, real-time analysis, and personalized coaching to help you land your dream job.
             </p>
             <div className="flex gap-4 md:gap-6">
-              <SocialLink href="#" icon={<Twitter className="h-4 w-4 md:h-5 md:w-5" />} />
+              <SocialLink href="#" icon={<X className="h-4 w-4 md:h-5 md:w-5" />} />
               <SocialLink href="#" icon={<Linkedin className="h-4 w-4 md:h-5 md:w-5" />} />
               <SocialLink href="#" icon={<Instagram className="h-4 w-4 md:h-5 md:w-5" />} />
-              <SocialLink href="#" icon={<Github className="h-4 w-4 md:h-5 md:w-5" />} />
             </div>
           </div>
           

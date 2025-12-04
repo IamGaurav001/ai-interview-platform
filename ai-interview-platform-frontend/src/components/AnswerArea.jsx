@@ -1,5 +1,5 @@
-import React from 'react';
-import { User, Mic, Square, CheckCircle2, Send, Loader2, Sparkles } from 'lucide-react';
+import React, { useState } from 'react';
+import { User, Mic, Square, CheckCircle2, Send, Loader2, Sparkles, Keyboard, X } from 'lucide-react';
 
 const AnswerArea = ({
   isRecording,
@@ -16,6 +16,8 @@ const AnswerArea = ({
   onAnswerChange,
   onSubmitText
 }) => {
+  const [showTextInput, setShowTextInput] = useState(false);
+
   return (
     <div 
       className="bg-gradient-to-br from-white via-white to-slate-50/50 rounded-3xl border border-slate-200/80 shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300" 
@@ -114,6 +116,60 @@ const AnswerArea = ({
               </div>
             )}
           </div>
+        ) : showTextInput ? (
+          <div className="bg-white rounded-3xl p-6 border-2 border-slate-200 shadow-lg space-y-4">
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-600">
+                  <Keyboard className="h-5 w-5" />
+                </div>
+                <h3 className="text-lg font-bold text-slate-900">Type Your Answer</h3>
+              </div>
+              <button 
+                onClick={() => setShowTextInput(false)}
+                className="p-2 hover:bg-slate-100 rounded-full transition-colors text-slate-500 hover:text-slate-700"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            
+            <textarea
+              value={currentAnswer}
+              onChange={(e) => onAnswerChange(e.target.value)}
+              placeholder="Type your answer here..."
+              className="w-full h-40 p-4 rounded-xl border border-slate-200 focus:border-[#1d2f62] focus:ring-2 focus:ring-[#1d2f62]/20 resize-none text-slate-700 font-medium placeholder:text-slate-400 transition-all"
+              autoFocus
+            />
+            
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setShowTextInput(false)}
+                className="px-5 py-2.5 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 font-semibold text-sm transition-all"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  onSubmitText();
+                  setShowTextInput(false);
+                }}
+                disabled={loading || !currentAnswer.trim()}
+                className="px-7 py-2.5 bg-[#1d2f62] text-white rounded-xl hover:bg-[#1d2f62]/90 transition-all shadow-lg hover:shadow-xl font-bold text-sm flex items-center justify-center gap-2 disabled:opacity-50 disabled:shadow-none"
+              >
+                {loading ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Submitting...
+                  </>
+                ) : (
+                  <>
+                    <Send className="h-4 w-4" />
+                    Submit Answer
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
         ) : (
           <div className="space-y-4">
             {/* Primary Action - Voice Recording */}
@@ -136,6 +192,27 @@ const AnswerArea = ({
               >
                 <Mic className="h-4 w-4" />
                 Start Recording
+              </button>
+            </div>
+
+            {/* Secondary Action - Text Input */}
+             <div className="bg-white rounded-3xl p-4 border border-slate-200 shadow-sm hover:shadow-md transition-all duration-300 group flex flex-col sm:flex-row items-center justify-between gap-4 cursor-pointer">
+              <div className="flex items-center gap-4 text-center sm:text-left">
+                <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-600 group-hover:bg-slate-200 transition-colors">
+                  <Keyboard className="h-5 w-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-slate-900">Text Answer</h3>
+                  <p className="text-xs text-slate-500">Type your response manually</p>
+                </div>
+              </div>
+              
+              <button
+                onClick={() => setShowTextInput(true)}
+                disabled={loading}
+                className="w-full sm:w-auto px-5 py-2 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 hover:border-slate-300 transition-all font-semibold text-sm disabled:opacity-50"
+              >
+                Type Answer
               </button>
             </div>
           </div>

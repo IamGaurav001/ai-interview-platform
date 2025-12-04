@@ -234,7 +234,7 @@ const Settings = () => {
 
                     <div className="space-y-6">
                       {[
-                        { id: "email", label: "Email Notifications", desc: "Receive updates about your interview progress via email" },
+                        { id: "email", label: "Email Notifications", desc: "Receive promotional emails and updates" },
                       ].map((item) => (
                         <div key={item.id} className="flex items-center justify-between p-6 rounded-2xl border-2 border-slate-100 hover:border-blue-100 hover:bg-blue-50/30 transition-all">
                           <div className="pr-8">

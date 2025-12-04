@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { getHistory } from "../api/interviewAPI";
+import { getHistory, getActiveSession } from "../api/interviewAPI";
 import { getUserProfile, updateUserProfile } from "../api/userAPI";
 import PricingModal from "../components/PricingModal";
 import OnboardingTour from "../components/OnboardingTour";
@@ -17,7 +17,8 @@ import {
   Activity,
   MessageCircle,
   Brain,
-  CreditCard
+  CreditCard,
+  PlayCircle
 } from "lucide-react";
 import {
   AreaChart,
@@ -48,6 +49,7 @@ const Dashboard = () => {
   const [chartData, setChartData] = useState({
     trend: []
   });
+  const [activeSession, setActiveSession] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [currentQAIndex, setCurrentQAIndex] = useState(0);
@@ -72,13 +74,20 @@ const Dashboard = () => {
   const fetchDashboardData = async () => {
     try {
       setLoading(true);
-      const [historyRes, profileRes] = await Promise.all([
+      const [historyRes, profileRes, sessionRes] = await Promise.all([
         getHistory(),
         getUserProfile(),
+        getActiveSession(),
       ]);
 
       const history = historyRes.data;
       const userProfile = profileRes.data.user;
+      
+      if (sessionRes.data && sessionRes.data.hasActiveSession) {
+        setActiveSession(sessionRes.data);
+      } else {
+        setActiveSession(null);
+      }
 
       if (userProfile && userProfile.usage) {
         setUserUsage(userProfile.usage);
@@ -139,6 +148,12 @@ const Dashboard = () => {
   };
 
   const handleStartInterview = () => {
+    if (activeSession) {
+      logEvent('Resume Interview', { source: 'Dashboard' });
+      navigate("/interview-flow");
+      return;
+    }
+
     logEvent('Click Start Interview', { source: 'Dashboard' });
     const totalCredits = (userUsage.freeInterviewsLeft || 0) + (userUsage.purchasedCredits || 0);
     if (totalCredits > 0) {
@@ -337,17 +352,20 @@ const Dashboard = () => {
                     <div className="flex-1">
                       <div className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-1.5 text-sm font-bold text-[#1d2f62] mb-4 shadow-sm">
                         <Sparkles className="h-4 w-4" />
-                        <span>AI-Powered Interviewer</span>
+                        <span>{activeSession ? "Session In Progress" : "AI-Powered Interviewer"}</span>
                       </div>
                       <h2 className="text-3xl sm:text-4xl font-bold text-[#1d2f62] mb-3 tracking-tight">
-                        Start New Interview
+                        {activeSession ? "Resume Interview" : "Start New Interview"}
                       </h2>
                       <p className="text-base sm:text-lg text-slate-600 max-w-xl leading-relaxed font-medium">
-                        Practice with personalized AI-generated questions based on your resume. Get instant feedback and improve your confidence.
+                        {activeSession 
+                          ? `You are currently on question ${activeSession.questionCount}. Continue where you left off.`
+                          : "Practice with personalized AI-generated questions based on your resume. Get instant feedback and improve your confidence."
+                        }
                       </p>
                       
                       <div className="mt-6 inline-flex items-center gap-3 px-6 py-3 bg-[#1d2f62] text-white rounded-2xl font-bold text-lg shadow-lg group-hover:bg-[#1d2f62]/90 transition-colors">
-                        <span>Begin Session</span>
+                        <span>{activeSession ? "Resume Session" : "Begin Session"}</span>
                         <motion.div
                           variants={{
                             initial: { x: 0 },
@@ -355,7 +373,7 @@ const Dashboard = () => {
                           }}
                           transition={{ type: "spring", stiffness: 400, damping: 10 }}
                         >
-                          <ArrowRight className="h-5 w-5" />
+                          {activeSession ? <PlayCircle className="h-5 w-5" /> : <ArrowRight className="h-5 w-5" />}
                         </motion.div>
                       </div>
                     </div>

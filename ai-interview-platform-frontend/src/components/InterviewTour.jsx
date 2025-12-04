@@ -84,21 +84,21 @@ const InterviewTour = ({ start, onFinish, type = 'sequential' }) => {
         placement: 'top',
       },
       {
+        target: '[data-tour="pause-interview"]',
+        title: 'Pause & Resume',
+        content: 'Need a break? Click here to pause the interview. You can resume whenever you are ready.',
+        placement: 'bottom',
+      },
+      {
         target: '[data-tour="reset-interview"]',
         title: 'Reset Interview',
         content: 'Made a mistake? Click here to reset the interview and start fresh. Note: This can only be done once!',
         placement: 'bottom',
       },
       {
-        target: '[data-tour="exit-interview"]',
-        title: 'Exit',
-        content: 'Need to leave? Click here to exit the interview. Your progress will not be saved. If you exit now, your credit will be refunded. However, if you have given more than 5 answers, the credit will not be refunded, but the interview will still not be saved.',
-        placement: 'bottom',
-      },
-      {
         target: '[data-tour="end-interview"]',
         title: 'Finish',
-        content: 'Click here when you want to end the interview and get your full report.',
+        content: 'Click here when you want to end the interview. Your results will be saved and a credit will be deducted. If you haven\'t answered any questions, no credit will be deducted.',
         placement: 'bottom',
       },
     ];

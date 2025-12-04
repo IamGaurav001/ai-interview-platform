@@ -70,9 +70,10 @@ const InterviewFlow = () => {
   const feedbackRef = useRef(null);
 
   const [showEndModal, setShowEndModal] = useState(false);
-  const [showExitModal, setShowExitModal] = useState(false);
+
   const [showResetModal, setShowResetModal] = useState(false);
   const [showLimitModal, setShowLimitModal] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
   const [showTips, setShowTips] = useState(false);
   const [startTour, setStartTour] = useState(false);
   const [showScrollIndicator, setShowScrollIndicator] = useState(false);
@@ -82,6 +83,7 @@ const InterviewFlow = () => {
   const [selectedVoice, setSelectedVoice] = useState(null);
   const [showVoiceSettings, setShowVoiceSettings] = useState(false);
   const [showSetupModal, setShowSetupModal] = useState(false);
+  const [hasReset, setHasReset] = useState(false);
 
   useEffect(() => {
     const loadVoices = () => {
@@ -226,17 +228,15 @@ const InterviewFlow = () => {
 
   useEffect(() => {
     let interval = null;
-    if (isRecording) {
+    if (isRecording && !isPaused) {
       interval = setInterval(() => {
         setRecordingTime((time) => time + 1);
       }, 1000);
-    } else {
-      setRecordingTime(0);
     }
     return () => {
       if (interval) clearInterval(interval);
     };
-  }, [isRecording]);
+  }, [isRecording, isPaused]);
 
   const checkActiveSession = async () => {
     try {
@@ -246,6 +246,9 @@ const InterviewFlow = () => {
         setCurrentQuestion(res.data.currentQuestion);
         setQuestionCount(res.data.questionCount);
         setConversationHistory(res.data.history || []);
+        if (res.data.hasReset) {
+          setHasReset(true);
+        }
         setLoading(false);
       } else {
         setShowSetupModal(true);
@@ -588,6 +591,24 @@ const InterviewFlow = () => {
     }
   };
 
+  const togglePause = () => {
+    if (isPaused) {
+      // Resuming
+      setIsPaused(false);
+      window.speechSynthesis.resume();
+      if (mediaRecorder && mediaRecorder.state === 'paused') {
+        mediaRecorder.resume();
+      }
+    } else {
+      // Pausing
+      setIsPaused(true);
+      window.speechSynthesis.pause();
+      if (mediaRecorder && mediaRecorder.state === 'recording') {
+        mediaRecorder.pause();
+      }
+    }
+  };
+
   const handleEndInterview = async (skipConfirm = false) => {
 
     if (!skipConfirm) {
@@ -603,6 +624,12 @@ const InterviewFlow = () => {
     try {
       const res = await endInterview();
       if (res.data.success) {
+        if (res.data.isCancelled) {
+          toastSuccess(res.data.message || "Interview cancelled. No credits deducted.");
+          navigate("/dashboard");
+          return;
+        }
+
         setSummary(res.data.summary);
         if (res.data.questionCount !== undefined) {
           setQuestionCount(res.data.questionCount);
@@ -647,6 +674,8 @@ const InterviewFlow = () => {
         
 
         
+        
+        setHasReset(true);
         toastSuccess("Interview reset successfully");
       } else {
         toastError(res.data.error || "Failed to reset interview");
@@ -664,17 +693,7 @@ const InterviewFlow = () => {
     }
   };
 
-  const handleExitInterview = async () => {
-    try {
-      await cancelInterview();
-      console.log("✅ Interview session cancelled");
-    } catch (err) {
-      console.error("❌ Error cancelling interview:", err);
-      toastError("Failed to cancel interview");
-    } finally {
-      navigate("/dashboard");
-    }
-  };
+
 
   if (saving) {
     return (
@@ -963,13 +982,13 @@ const InterviewFlow = () => {
               <span className="hidden sm:inline">Reset</span>
             </button>
             <button
-              onClick={() => setShowExitModal(true)}
+              onClick={togglePause}
               className="flex items-center gap-1.5 px-3 py-1.5 text-slate-600 hover:text-[#1d2f62] hover:bg-[#1d2f62]/10 rounded-lg transition-colors text-xs sm:text-sm font-medium"
-              title="Exit without completing"
-              data-tour="exit-interview"
+              title="Pause Interview"
+              data-tour="pause-interview"
             >
-              <LogOut className="h-4 w-4" />
-              <span className="hidden sm:inline">Exit</span>
+              <Pause className="h-4 w-4" />
+              <span className="hidden sm:inline">Pause</span>
             </button>
             <div className="h-4 w-px bg-slate-300 mx-1"></div>
             <button
@@ -985,7 +1004,7 @@ const InterviewFlow = () => {
         </header>
 
         <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-4 lg:h-[calc(100vh-120px)]">
-          <div className="lg:col-span-3 bg-white rounded-3xl shadow-sm border border-slate-100 p-4 flex flex-col relative overflow-hidden order-last lg:order-first">
+          <div className="lg:col-span-3 bg-white rounded-3xl shadow-sm border border-slate-100 p-4 flex flex-col relative overflow-hidden lg:order-first">
             <div className="absolute inset-0 bg-gradient-to-b from-transparent to-slate-50/50 pointer-events-none"></div>
             
             <div className="relative z-10 flex flex-col items-center">
@@ -1261,32 +1280,24 @@ const InterviewFlow = () => {
         onClose={() => setShowEndModal(false)}
         onConfirm={confirmEndInterview}
         title="End Interview?"
-        message={`Are you sure you want to end the interview? You've answered ${questionCount} questions. This action cannot be undone.`}
+        message={
+          questionCount <= 1 && hasReset
+            ? "You have reset this interview. Ending it now will still deduct a credit even if you haven't answered any questions. Are you sure?"
+            : questionCount <= 1
+            ? "You haven't answered any questions. Ending now will cancel the session and NO credit will be deducted."
+            : `Are you sure you want to end the interview? You've answered ${Math.max(0, questionCount - 1)} questions. This action cannot be undone.`
+        }
         confirmText="End Interview"
         cancelText="Continue Interview"
         type="warning"
         isDestructive={true}
         stats={{
-          "Questions Answered": questionCount,
+          "Questions Answered": Math.max(0, questionCount - 1),
           "Status": "In Progress"
         }}
       />
 
-      <ConfirmModal
-        isOpen={showExitModal}
-        onClose={() => setShowExitModal(false)}
-        onConfirm={handleExitInterview}
-        title="Exit Interview?"
-        message={
-          questionCount > 5 
-            ? "⚠️ WARNING: You have progressed significantly in the interview. If you exit now, you will LOSE your interview credit. Are you sure?" 
-            : "Are you sure you want to exit? Since you are still in the early stages, your credit will be REFUNDED."
-        }
-        confirmText="Exit without Saving"
-        cancelText="Continue Interview"
-        type="warning"
-        isDestructive={true}
-      />
+
       
       {showResetModal && (
         <ConfirmModal
@@ -1323,6 +1334,42 @@ const InterviewFlow = () => {
         selectedVoice={selectedVoice}
         onVoiceSelect={handleVoiceChange}
       />
+
+      {/* Pause Overlay */}
+      {isPaused && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4 text-center border border-white/20"
+          >
+            <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-6">
+              <Pause className="h-8 w-8 text-amber-600" />
+            </div>
+            <h2 className="text-2xl font-bold text-slate-900 mb-2">Interview Paused</h2>
+            <p className="text-slate-600 mb-8">
+              Your interview is currently paused. Take a break and resume when you're ready.
+            </p>
+            <button
+              onClick={togglePause}
+              className="w-full py-3.5 bg-[#1d2f62] text-white rounded-xl font-semibold text-lg hover:bg-[#1d2f62]/90 transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center gap-2 mb-3"
+            >
+              <Play className="h-5 w-5 fill-current" />
+              Resume Interview
+            </button>
+            <button
+              onClick={() => {
+                toastSuccess("Session saved. You can resume anytime from the dashboard.");
+                navigate("/dashboard");
+              }}
+              className="w-full py-3.5 bg-white border-2 border-slate-200 text-slate-600 rounded-xl font-semibold text-lg hover:bg-slate-50 hover:border-slate-300 transition-all flex items-center justify-center gap-2"
+            >
+              <LogOut className="h-5 w-5" />
+              Resume Later
+            </button>
+          </motion.div>
+        </div>
+      )}
     </PageLayout>
   );
 };

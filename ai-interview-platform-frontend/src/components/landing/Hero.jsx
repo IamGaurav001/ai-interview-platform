@@ -40,7 +40,7 @@ const Hero = () => {
           </h1>
           
           {/* Subheadline */}
-          <p className="text-xl sm:text-2xl text-slate-500 mb-12 leading-relaxed max-w-3xl mx-auto font-light">
+          <p className="text-xl sm:text-2xl text-slate-700 mb-12 leading-relaxed max-w-3xl mx-auto font-light">
             Practice with realistic AI interviews tailored to your resume. Get instant, actionable feedback on your answers, tone, and body language.
           </p>
           
@@ -170,7 +170,7 @@ const HeroDashboardPreview = () => {
         <div className="flex items-center gap-3">
            <div className="flex items-center gap-2 px-3 py-1.5 bg-red-50 border border-red-100 rounded-full">
             <div className="h-2 w-2 rounded-full bg-red-500 animate-pulse" />
-            <span className="text-[10px] font-bold text-red-600 uppercase tracking-wider">Live Rec</span>
+            <span className="text-[10px] font-bold text-red-600 uppercase tracking-wider">Analyzing </span>
           </div>
         </div>
       </div>

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { getUserProfile } from "../api/userAPI";
+import { getActiveSession } from "../api/interviewAPI";
 import PricingModal from "../components/PricingModal";
 import axiosInstance from "../api/axiosInstance";
 import {
@@ -17,6 +18,8 @@ import {
   Zap,
   Shield,
   Target,
+  PlayCircle,
+  ExternalLink
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import PageLayout from "../components/PageLayout";
@@ -32,6 +35,7 @@ const ResumeUpload = () => {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [activeSession, setActiveSession] = useState(null);
 
   const [isDragging, setIsDragging] = useState(false);
   const [showPricingModal, setShowPricingModal] = useState(false);
@@ -39,7 +43,19 @@ const ResumeUpload = () => {
 
   useEffect(() => {
     checkCredits();
+    checkActiveSession();
   }, []);
+
+  const checkActiveSession = async () => {
+    try {
+      const res = await getActiveSession();
+      if (res.data && res.data.hasActiveSession) {
+        setActiveSession(res.data);
+      }
+    } catch (err) {
+      console.error("Error checking active session:", err);
+    }
+  };
 
   const checkCredits = async () => {
     try {
@@ -113,6 +129,12 @@ const ResumeUpload = () => {
 
   const handleUpload = async (e) => {
     e.preventDefault();
+
+    if (activeSession) {
+      setError("You have an active interview session. Please complete or cancel it before uploading a new resume.");
+      return;
+    }
+
     if (!file) {
       setError("Please select a PDF file");
       return;
@@ -275,6 +297,63 @@ const ResumeUpload = () => {
             </p>
           </motion.div>
 
+          {/* Active Session Alert */}
+          {activeSession && (
+            <motion.div 
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mb-8 bg-blue-50 border border-blue-100 rounded-2xl p-4 sm:p-6 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm"
+            >
+              <div className="flex items-center gap-4">
+                <div className="h-12 w-12 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                  <PlayCircle className="h-6 w-6 text-[#1d2f62]" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-[#1d2f62]">Interview in Progress</h3>
+                  <p className="text-slate-600 font-medium">
+                    You have an active session (Question {activeSession.questionCount}).
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => navigate("/interview-flow")}
+                className="w-full sm:w-auto px-6 py-3 bg-[#1d2f62] text-white rounded-xl font-bold hover:bg-[#1d2f62]/90 transition-all shadow-md flex items-center justify-center gap-2"
+              >
+                <Play className="h-4 w-4 fill-current" />
+                Resume Session
+              </button>
+            </motion.div>
+          )}
+
+          {/* Current Resume Display */}
+          {user?.resumeUrl && !file && (
+            <motion.div 
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mb-8 bg-white border border-slate-200 rounded-2xl p-4 flex items-center justify-between gap-4 shadow-sm max-w-3xl mx-auto"
+            >
+              <div className="flex items-center gap-3 overflow-hidden">
+                <div className="h-10 w-10 bg-emerald-50 rounded-lg flex items-center justify-center flex-shrink-0 border border-emerald-100">
+                  <FileText className="h-5 w-5 text-emerald-600" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-sm font-bold text-slate-700 truncate">Current Resume Uploaded</p>
+                  <a 
+                    href={user.resumeUrl} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-xs text-blue-600 hover:text-blue-800 hover:underline flex items-center gap-1 font-medium"
+                  >
+                    View Resume <ExternalLink className="h-3 w-3" />
+                  </a>
+                </div>
+              </div>
+              <div className="text-xs text-slate-400 font-medium hidden sm:block">
+                Upload new file below to update
+              </div>
+            </motion.div>
+          )}
+
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
             {/* Main Upload Area */}
             <motion.div 
@@ -297,16 +376,18 @@ const ResumeUpload = () => {
                       </div>
 
                       <div
-                        className={`relative group flex flex-col items-center justify-center w-full min-h-[220px] lg:min-h-[280px] p-5 lg:p-8 border-2 lg:border-3 border-dashed rounded-2xl lg:rounded-[2rem] transition-all duration-500 cursor-pointer overflow-hidden ${
-                          isDragging
-                            ? "border-[#1d2f62] bg-[#1d2f62] scale-[1.01] shadow-2xl"
+                        className={`relative group flex flex-col items-center justify-center w-full min-h-[220px] lg:min-h-[280px] p-5 lg:p-8 border-2 lg:border-3 border-dashed rounded-2xl lg:rounded-[2rem] transition-all duration-500 overflow-hidden ${
+                          activeSession
+                            ? "border-slate-200 bg-slate-50 opacity-60 cursor-not-allowed"
+                            : isDragging
+                            ? "border-[#1d2f62] bg-[#1d2f62] scale-[1.01] shadow-2xl cursor-pointer"
                             : file
-                            ? "border-emerald-200 bg-emerald-50/30"
-                            : "border-slate-200 bg-slate-50/50 hover:bg-white hover:border-blue-400 hover:shadow-xl hover:shadow-blue-100/50"
+                            ? "border-emerald-200 bg-emerald-50/30 cursor-pointer"
+                            : "border-slate-200 bg-slate-50/50 hover:bg-white hover:border-blue-400 hover:shadow-xl hover:shadow-blue-100/50 cursor-pointer"
                         }`}
                         onDragOver={(e) => {
                           e.preventDefault();
-                          setIsDragging(true);
+                          if (!activeSession) setIsDragging(true);
                         }}
                         onDragLeave={(e) => {
                           e.preventDefault();
@@ -315,10 +396,11 @@ const ResumeUpload = () => {
                         onDrop={(e) => {
                           e.preventDefault();
                           setIsDragging(false);
+                          if (activeSession) return;
                           const droppedFile = e.dataTransfer.files[0];
                           validateAndSetFile(droppedFile);
                         }}
-                        onClick={() => !file && document.getElementById("file-upload")?.click()}
+                        onClick={() => !file && !activeSession && document.getElementById("file-upload")?.click()}
                       >
                         {/* Background Pattern for Dropzone */}
                         {!isDragging && !file && (
@@ -377,7 +459,7 @@ const ResumeUpload = () => {
                                 <span className="text-[#1d2f62] border-b-2 lg:border-b-4 border-[#1d2f62]/20 pb-0.5 lg:pb-1">Click to upload</span>
                               </h3>
                               <p className="text-sm lg:text-base text-slate-500 font-medium">
-                                or drag and drop your resume
+                                {activeSession ? "Upload disabled during active session" : "or drag and drop your resume"}
                               </p>
                               <p className="mt-3 lg:mt-4 text-[10px] lg:text-xs text-slate-400 font-medium uppercase tracking-widest">
                                 Max Size: 5MB
@@ -392,6 +474,7 @@ const ResumeUpload = () => {
                           accept="application/pdf"
                           className="hidden"
                           onChange={handleFileChange}
+                          disabled={!!activeSession}
                         />
                       </div>
                     </div>
@@ -423,9 +506,9 @@ const ResumeUpload = () => {
                     <div className="pt-2">
                       <button
                         type="submit"
-                        disabled={loading || !file}
+                        disabled={loading || !file || !!activeSession}
                         className={`relative w-full py-4 lg:py-5 px-6 lg:px-8 rounded-2xl lg:rounded-2xl font-bold text-lg lg:text-xl text-white shadow-lg lg:shadow-xl transition-all duration-300 flex items-center justify-center gap-3 lg:gap-4 overflow-hidden group ${
-                          loading || !file
+                          loading || !file || activeSession
                             ? "bg-slate-200 text-slate-400 cursor-not-allowed shadow-none"
                             : "bg-[#1d2f62] hover:shadow-2xl hover:shadow-[#1d2f62]/30 hover:-translate-y-1 active:translate-y-0"
                         }`}

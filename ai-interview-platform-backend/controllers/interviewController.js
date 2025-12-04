@@ -458,23 +458,15 @@ export const startInterview = async (req, res) => {
     const lastReset = new Date(user.usage.lastMonthlyReset);
     const daysSinceReset = (now - lastReset) / (1000 * 60 * 60 * 24);
 
-    if (daysSinceReset >= 30) {
-        user.usage.freeInterviewsLeft = 2;
-        user.usage.lastMonthlyReset = now;
-    }
-
-    if (user.usage.freeInterviewsLeft > 0) {
-        user.usage.freeInterviewsLeft -= 1;
-        await user.save();
-    } else if (user.usage.purchasedCredits > 0) {
-        user.usage.purchasedCredits -= 1;
-        await user.save();
-    } else {
+    if (user.usage.freeInterviewsLeft <= 0 && user.usage.purchasedCredits <= 0) {
         return res.status(403).json({
             message: "No interview credits left. Please purchase more.",
             code: "NO_CREDITS",
         });
     }
+
+    // NOTE: Credits are now deducted in endInterview, not startInterview.
+    // This ensures users only pay for completed sessions.
 
 
     let resumeText = "";
@@ -534,12 +526,7 @@ Generate only the first interview question. Do not include any introduction or e
       firstQuestion = firstQuestion.trim();
     } catch (error) {
       console.error("❌ Error generating first question:", error.message);
-      if (user.usage.freeInterviewsLeft < 3) { 
-          user.usage.freeInterviewsLeft += 1;
-      } else {
-          user.usage.purchasedCredits += 1;
-      }
-      await user.save();
+      // No refund needed as we didn't deduct yet
 
       return res.status(503).json({
         success: false,
@@ -572,7 +559,7 @@ Generate only the first interview question. Do not include any introduction or e
 
     await redisClient.hSet(sessionKey, sessionData);
 
-    await redisClient.expire(sessionKey, 7200);
+    await redisClient.expire(sessionKey, 172800); // 48 hours expiration
 
     console.log("✅ Interview session started and stored in Redis");
 
@@ -870,6 +857,9 @@ QUESTION: [next question or "INTERVIEW_COMPLETE" if conditions above are met]
       });
     }
 
+    // Refresh session expiration on every step
+    await redisClient.expire(sessionKey, 172800);
+
 
     const currentCount = parseInt(session.questionCount || "0");
 
@@ -1020,12 +1010,37 @@ export const endInterview = async (req, res) => {
     });
 
     if (questions.length === 0) {
+      const resetCount = parseInt(session.resetCount || "0");
+
+      // If user hasn't reset, allow free cancellation
+      if (resetCount === 0) {
+        try {
+          await redisClient.del(sessionKey);
+          await redisClient.del(`feedback:${userId}`);
+        } catch (redisError) {
+          console.warn("⚠️ Failed to cleanup Redis:", redisError.message);
+        }
+
+        return res.json({
+          success: true,
+          sessionId: null,
+          summary: null,
+          score: 0,
+          message:
+            "Interview ended without answering any questions. No credits deducted and not saved to history.",
+          isCancelled: true,
+        });
+      }
+
+      // If user HAS reset, treat it as a completed (empty) session to prevent infinite reset abuse
       const emptySummary = {
         overallScore: 0,
         strengths: ["N/A"],
         weaknesses: ["No questions answered"],
         summary: "The interview was ended before any questions were answered.",
-        recommendations: ["Please complete at least one question to get an evaluation."],
+        recommendations: [
+          "Please complete at least one question to get an evaluation.",
+        ],
         technicalDepth: 0,
         problemSolving: 0,
         communication: 0,
@@ -1043,6 +1058,22 @@ export const endInterview = async (req, res) => {
         },
         score: 0,
       });
+
+      // Deduct credit
+      const user = await User.findById(userId);
+      if (user) {
+        if (!user.usage) user.usage = {};
+
+        if ((user.usage.freeInterviewsLeft || 0) > 0) {
+          user.usage.freeInterviewsLeft -= 1;
+        } else if ((user.usage.purchasedCredits || 0) > 0) {
+          user.usage.purchasedCredits -= 1;
+        }
+        await user.save();
+        console.log(
+          `✅ Credit deducted for user ${userId} (Interview Completed - Empty after Reset)`
+        );
+      }
 
       try {
         await redisClient.del(sessionKey);
@@ -1202,6 +1233,20 @@ export const endInterview = async (req, res) => {
       },
       score: finalSummary.overallScore !== undefined ? finalSummary.overallScore : 7,
     });
+
+    // Deduct credit on successful completion
+    const user = await User.findById(userId);
+    if (user) {
+        if (!user.usage) user.usage = {};
+        
+        if ((user.usage.freeInterviewsLeft || 0) > 0) {
+            user.usage.freeInterviewsLeft -= 1;
+        } else if ((user.usage.purchasedCredits || 0) > 0) {
+            user.usage.purchasedCredits -= 1;
+        }
+        await user.save();
+        console.log(`✅ Credit deducted for user ${userId} (Interview Completed)`);
+    }
 
     try {
       await redisClient.del(sessionKey);
@@ -1476,6 +1521,7 @@ export const getActiveSession = async (req, res) => {
       questionCount: parseInt(session.questionCount || "0"),
       history: history,
       stage: session.stage,
+      hasReset: parseInt(session.resetCount || "0") > 0,
     });
   } catch (error) {
     console.error("❌ Error getting active session:", error.message);
@@ -1493,26 +1539,24 @@ export const cancelInterview = async (req, res) => {
     const feedbackKey = `feedback:${userId}`;
 
     const session = await redisClient.hGetAll(sessionKey);
-    if (session && session.history) {
-        try {
-            const history = JSON.parse(session.history);
-            if (history.length <= 10) {
-                const user = await User.findById(userId);
-                if (user) {
-                    if (!user.usage) user.usage = {};
-                    
-                    if ((user.usage.freeInterviewsLeft || 0) < 3) {
-                        user.usage.freeInterviewsLeft = (user.usage.freeInterviewsLeft || 0) + 1;
-                    } else {
-                        user.usage.purchasedCredits = (user.usage.purchasedCredits || 0) + 1;
-                    }
-                    await user.save();
-                    console.log(`✅ Credit refunded for user ${userId} (Early cancellation)`);
-                }
-            }
-        } catch (e) {
-            console.warn("Failed to parse history for refund check", e);
-        }
+    
+    if (session && session.stage) {
+      const resetCount = parseInt(session.resetCount || "0");
+      let hasAnswers = false;
+      
+      try {
+        const history = JSON.parse(session.history || "[]");
+        hasAnswers = history.some(msg => msg.role === "user");
+      } catch (e) {
+        // Ignore parse error
+      }
+
+      if (resetCount > 0 || hasAnswers) {
+        return res.status(400).json({
+          success: false,
+          error: "Cannot cancel an active interview with progress. Please use the End Interview option to save your results."
+        });
+      }
     }
 
     try {
