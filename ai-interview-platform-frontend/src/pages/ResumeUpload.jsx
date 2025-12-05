@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { getUserProfile } from "../api/userAPI";
@@ -127,6 +127,14 @@ const ResumeUpload = () => {
     }
   };
 
+  const progressInterval = useRef(null);
+
+  useEffect(() => {
+    return () => {
+      if (progressInterval.current) clearInterval(progressInterval.current);
+    };
+  }, []);
+
   const handleUpload = async (e) => {
     e.preventDefault();
 
@@ -159,6 +167,9 @@ const ResumeUpload = () => {
     setSuccess(false);
     setQuestions("");
     setUploadProgress(0);
+    
+    // Clear any existing interval
+    if (progressInterval.current) clearInterval(progressInterval.current);
 
     try {
       if (!user) {
@@ -186,7 +197,25 @@ const ResumeUpload = () => {
             const percentCompleted = Math.round(
               (progressEvent.loaded * 100) / progressEvent.total
             );
-            setUploadProgress(percentCompleted);
+            // Map upload (0-100) to first 60% of total progress
+            const visualProgress = Math.min(Math.round(percentCompleted * 0.6), 60);
+            setUploadProgress(visualProgress);
+
+            // If upload is complete, start the "processing" simulation
+            if (percentCompleted === 100) {
+              if (progressInterval.current) clearInterval(progressInterval.current);
+              progressInterval.current = setInterval(() => {
+                setUploadProgress((prev) => {
+                  if (prev >= 98) {
+                    clearInterval(progressInterval.current);
+                    return 98;
+                  }
+                  // Slow down as we get closer to 98%
+                  const increment = prev > 80 ? 0.2 : 0.5;
+                  return prev + increment;
+                });
+              }, 100);
+            }
           }
         },
       });
@@ -220,19 +249,20 @@ const ResumeUpload = () => {
         const questionsText = questionsData
           .map((q, idx) => `${idx + 1}. ${q}`)
           .join("\n");
-        setQuestions(questionsText);
-        setSuccess(true);
-        setError("");
+        
+        // Complete the progress bar
+        if (progressInterval.current) clearInterval(progressInterval.current);
         setUploadProgress(100);
-
+        
+        // Small delay to let the user see 100%
         setTimeout(() => {
-          const questionsSection = document.getElementById("questions-section");
-          if (questionsSection) {
-            questionsSection.scrollIntoView({
-              behavior: "smooth",
-              block: "start",
-            });
-          }
+          setQuestions(questionsText);
+          setSuccess(true);
+          setError("");
+          
+          setQuestions(questionsText);
+          setSuccess(true);
+          setError("");
         }, 500);
       } else {
         logEvent('Resume Upload', { success: false, error: 'No questions generated' });
@@ -259,9 +289,27 @@ const ResumeUpload = () => {
         );
       }
     } finally {
+      if (progressInterval.current) clearInterval(progressInterval.current);
       setLoading(false);
     }
   };
+
+  // Auto-scroll to questions when they are generated
+  useEffect(() => {
+    if (success && questions) {
+      // Small timeout to ensure DOM is rendered and animation has started
+      const timer = setTimeout(() => {
+        const questionsSection = document.getElementById("questions-section");
+        if (questionsSection) {
+          questionsSection.scrollIntoView({
+            behavior: "smooth",
+            block: "center", // Changed to center for better visibility
+          });
+        }
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [success, questions]);
 
   const containerVariants = {
     hidden: { opacity: 0, y: 20 },
@@ -373,7 +421,14 @@ const ResumeUpload = () => {
               variants={itemVariants}
             >
               <div className="bg-white rounded-3xl lg:rounded-[2.5rem] shadow-xl lg:shadow-2xl shadow-slate-200/50 border border-white overflow-hidden relative">
-                <div className="absolute top-0 left-0 w-full h-1.5 lg:h-2 bg-gradient-to-r from-blue-500 via-purple-500 to-emerald-500" />
+                <div 
+                  className={`absolute top-0 left-0 h-1.5 lg:h-2 bg-gradient-to-r from-blue-500 via-purple-500 to-emerald-500 transition-all duration-700 ease-out ${
+                    loading ? "animate-gradient-x shadow-[0_0_20px_rgba(59,130,246,0.5)]" : ""
+                  }`}
+                  style={{ 
+                    width: loading ? `${Math.max(uploadProgress, 5)}%` : "100%" 
+                  }}
+                />
                 
                 <div className="p-5 sm:p-6 lg:p-8">
                   <form onSubmit={handleUpload} className="space-y-6 lg:space-y-8" noValidate>

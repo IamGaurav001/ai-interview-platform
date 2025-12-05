@@ -1,6 +1,8 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { X, Linkedin, Instagram } from "lucide-react";
+import { Linkedin, Instagram } from "lucide-react";
+
+import ProductHuntBadge from "./ProductHuntBadge";
 
 const Footer = () => {
   return (
@@ -14,10 +16,19 @@ const Footer = () => {
             <p className="text-slate-400 text-sm md:text-base leading-relaxed max-w-sm mb-6 md:mb-8">
               The smartest way to prepare for your next interview. AI-powered feedback, real-time analysis, and personalized coaching to help you land your dream job.
             </p>
+            
+            <div className="mb-8">
+              <ProductHuntBadge darkMode={true} />
+            </div>
+
             <div className="flex gap-4 md:gap-6">
-              <SocialLink href="#" icon={<X className="h-4 w-4 md:h-5 md:w-5" />} />
-              <SocialLink href="#" icon={<Linkedin className="h-4 w-4 md:h-5 md:w-5" />} />
-              <SocialLink href="#" icon={<Instagram className="h-4 w-4 md:h-5 md:w-5" />} />
+              <SocialLink href="https://x.com/prephire" icon={
+                <svg viewBox="0 0 24 24" aria-hidden="true" className="h-4 w-4 md:h-5 md:w-5" fill="currentColor">
+                  <path d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932ZM17.61 20.644h2.039L6.486 3.24H4.298Z" />
+                </svg>
+              } />
+              <SocialLink href="https://www.linkedin.com/company/prephire/?viewAsMember=true" icon={<Linkedin className="h-4 w-4 md:h-5 md:w-5" />} />
+              <SocialLink href="https://www.instagram.com/prephire/" icon={<Instagram className="h-4 w-4 md:h-5 md:w-5" />} />
             </div>
           </div>
           
