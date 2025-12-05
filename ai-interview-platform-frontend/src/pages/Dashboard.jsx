@@ -2,9 +2,9 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { getHistory, getActiveSession } from "../api/interviewAPI";
-import { getUserProfile, updateUserProfile } from "../api/userAPI";
+import { getUserProfile } from "../api/userAPI";
 import PricingModal from "../components/PricingModal";
-import OnboardingTour from "../components/OnboardingTour";
+
 import {
   Briefcase,
   TrendingUp,
@@ -55,7 +55,7 @@ const Dashboard = () => {
   const [currentQAIndex, setCurrentQAIndex] = useState(0);
   const [recentQAs, setRecentQAs] = useState([]);
   const [showPricingModal, setShowPricingModal] = useState(false);
-  const [showTour, setShowTour] = useState(false);
+
 
   // Auto-rotate Q&A preview every 5 seconds
   useEffect(() => {
@@ -93,9 +93,7 @@ const Dashboard = () => {
         setUserUsage(userProfile.usage);
       }
 
-      if (userProfile && userProfile.hasCompletedOnboarding === false) {
-        setShowTour(true);
-      }
+
 
       // Calculate stats
       const totalInterviews = history.total || 0;
@@ -166,14 +164,7 @@ const Dashboard = () => {
     fetchDashboardData();
   };
 
-  const handleTourFinish = async () => {
-    try {
-      await updateUserProfile({ hasCompletedOnboarding: true });
-      setShowTour(false);
-    } catch (error) {
-      console.error("Failed to update onboarding status:", error);
-    }
-  };
+
 
   const extractRecentQAs = (historyData) => {
     if (!historyData || !historyData.groupedHistory) {
@@ -286,7 +277,7 @@ const Dashboard = () => {
   return (
     <PageLayout>
       <SEO title="Dashboard" description="Track your interview progress, view recent sessions, and start new practice interviews." />
-      <OnboardingTour start={showTour} onFinish={handleTourFinish} />
+
       
       <div className="min-h-screen bg-slate-50/50 pb-12 relative overflow-hidden">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full max-w-7xl pointer-events-none z-0">
@@ -328,7 +319,6 @@ const Dashboard = () => {
               
               <motion.div variants={itemVariants}>
                 <motion.div
-                  data-tour="start-interview"
                   onClick={handleStartInterview}
                   className="group relative block overflow-hidden rounded-[2rem] bg-gradient-to-br from-[#f8fbff] via-[#eef7ff] to-[#dbeafe] p-6 sm:p-10 shadow-sm cursor-pointer"
                   whileHover="hover"
@@ -521,7 +511,7 @@ const Dashboard = () => {
             <div className="lg:col-span-4 space-y-8">
               
               {/* Stats Stack */}
-              <motion.div variants={itemVariants} className="space-y-4" data-tour="stats-cards">
+              <motion.div variants={itemVariants} className="space-y-4">
                 <StatCard
                   title="Credits Left"
                   value={totalCredits === 0 ? `${daysLeftToRefill} Days` : totalCredits}
@@ -568,7 +558,6 @@ const Dashboard = () => {
               <motion.div
                 variants={itemVariants}
                 className="bg-white rounded-[2rem] shadow-sm border border-slate-100 p-6 relative overflow-hidden"
-                data-tour="pro-tips"
               >
                 
                 <h2 className="text-xl font-bold mb-4 flex items-center gap-3 relative z-10 text-slate-900">
