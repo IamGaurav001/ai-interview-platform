@@ -76,6 +76,8 @@ const Footer = () => {
 const SocialLink = ({ href, icon }) => (
   <a 
     href={href} 
+    target="_blank"
+    rel="noopener noreferrer"
     className="h-8 w-8 md:h-10 md:w-10 rounded-full bg-slate-900 flex items-center justify-center text-slate-400 hover:bg-white hover:text-slate-950 transition-all duration-300"
   >
     {icon}
