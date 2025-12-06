@@ -14,6 +14,7 @@ const AdminDashboard = () => {
   const [activity, setActivity] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
+  const [visibleCount, setVisibleCount] = useState(10);
 
   if (user?.role !== "admin") {
     return <Navigate to="/dashboard" />;
@@ -40,6 +41,11 @@ const AdminDashboard = () => {
   useEffect(() => {
     fetchData();
   }, []);
+
+  // Reset visible count when search term changes
+  useEffect(() => {
+    setVisibleCount(10);
+  }, [searchTerm]);
 
   const filteredUsers = users.filter(
     (user) =>
@@ -110,7 +116,7 @@ const AdminDashboard = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
-                  {filteredUsers.slice(0, 10).map((user) => (
+                  {filteredUsers.slice(0, visibleCount).map((user) => (
                     <tr key={user._id} className="hover:bg-gray-50/50 transition-colors">
                       <td className="px-6 py-4 font-medium text-gray-900">{user.name}</td>
                       <td className="px-6 py-4 text-gray-600">{user.email}</td>
@@ -132,9 +138,12 @@ const AdminDashboard = () => {
                 </tbody>
               </table>
             </div>
-            {filteredUsers.length > 10 && (
+            {filteredUsers.length > visibleCount && (
               <div className="p-4 border-t border-gray-100 text-center">
-                <button className="text-sm text-primary-600 font-medium hover:text-primary-700">
+                <button
+                  onClick={() => setVisibleCount(filteredUsers.length)}
+                  className="text-sm text-primary-600 font-medium hover:text-primary-700"
+                >
                   View All Users
                 </button>
               </div>
