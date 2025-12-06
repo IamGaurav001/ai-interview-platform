@@ -24,13 +24,7 @@ const createTransporter = () => {
 export const sendEmail = async (to, subject, html) => {
   const emailTransporter = createTransporter();
 
-  // Verify connection configuration (optional, can be removed for performance if confident)
-  try {
-    await emailTransporter.verify();
-  } catch (error) {
-    console.error("SMTP Connection Error:", error);
-    throw new Error("SMTP Connection failed: " + error.message);
-  }
+
 
   const mailOptions = {
     from: `"PrepHire Support" <${process.env.SMTP_USER}>`,

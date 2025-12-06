@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { X, Check, Zap, ShieldCheck, Sparkles, AlertCircle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import axios from "axios";
@@ -6,6 +6,17 @@ import { auth } from "../config/firebase";
 import { logEvent } from "../config/amplitude";
 
 const PricingModal = ({ isOpen, onClose, onSuccess, userEmail, userName }) => {
+  useEffect(() => {
+    if (isOpen) {
+      document.body.classList.add('hide-navbar-on-modal');
+    } else {
+      document.body.classList.remove('hide-navbar-on-modal');
+    }
+    return () => {
+      document.body.classList.remove('hide-navbar-on-modal');
+    };
+  }, [isOpen]);
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [selectedPlan, setSelectedPlan] = useState("3_interviews"); // Default to popular
@@ -121,11 +132,15 @@ const PricingModal = ({ isOpen, onClose, onSuccess, userEmail, userName }) => {
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+      <div 
+        className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm"
+        onClick={onClose}
+      >
         <motion.div
           initial={{ opacity: 0, scale: 0.9, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.9, y: 20 }}
+          onClick={(e) => e.stopPropagation()}
           className="bg-white rounded-[2rem] shadow-2xl w-full max-w-md overflow-hidden relative"
         >
           {/* Decorative Header */}

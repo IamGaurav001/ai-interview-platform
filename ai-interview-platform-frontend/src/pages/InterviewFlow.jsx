@@ -1232,7 +1232,7 @@ const InterviewFlow = () => {
           </div>
 
           {/* Right Column - Interaction Area */}
-          <div className="lg:col-span-9 flex flex-col gap-4 h-full overflow-hidden">
+          <div className="lg:col-span-9 flex flex-col gap-6 h-full overflow-hidden">
              {/* Question Section - Flexible */}
              <div className="flex-1 min-h-0 flex flex-col">
                 <QuestionCard
@@ -1245,7 +1245,7 @@ const InterviewFlow = () => {
                       playBrowserTTS(currentQuestion, "question");
                     }
                   }}
-                  className="max-h-full"
+                  className="h-full"
                 />
              </div>
 

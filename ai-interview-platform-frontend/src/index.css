@@ -44,6 +44,15 @@ body {
   overflow-x: hidden;
 }
 
+/* Hide Navbar when class is present on body */
+body.hide-navbar-on-modal nav,
+body.hide-navbar-on-modal .fixed.top-2.sm\:top-6.left-1\/2.-translate-x-1\/2 {
+  opacity: 0 !important;
+  pointer-events: none !important;
+  visibility: hidden !important;
+  transition: opacity 0.3s ease-in-out;
+}
+
 * {
   box-sizing: border-box;
 }
@@ -179,6 +188,7 @@ button[class*="bg-primary"]:not([disabled]) {
 .bg-primary-700,
 .bg-primary-800 {
   color: white !important;
+  font-weight: 500;
 }
 
 .text-primary-100 {

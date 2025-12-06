@@ -69,13 +69,11 @@ const Register = () => {
           user_id: userCredential.user.uid
         });
         logEvent('Sign Up', { method: 'Email' });
-        navigate("/dashboard");
+
       }
-      // Sync user to MongoDB backend
       try {
         await syncUser();
       } catch (syncError) {
-        // Continue even if sync fails - middleware will handle it on first API call
       }
       navigate("/verify-email");
     } catch (err) {
@@ -112,7 +110,7 @@ const Register = () => {
           user_id: user.uid
         });
         logEvent('Sign Up', { method: 'Google' });
-        navigate("/dashboard");
+
         try {
           await syncUser();
         } catch (syncError) {

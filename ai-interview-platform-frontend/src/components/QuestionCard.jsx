@@ -39,7 +39,7 @@ const QuestionCard = ({
         </div>
 
         {/* Audio Control Button */}
-        <div className="flex items-center gap-3 pt-2 flex-shrink-0">
+        <div className="flex items-center gap-3 pt-4 border-t border-[#1d2f62]/10 flex-shrink-0">
           <button
             onClick={onPlayToggle}
             className={`flex items-center gap-2.5 px-5 py-2.5 rounded-xl font-semibold text-sm transition-all duration-300 shadow-md hover:shadow-lg transform hover:scale-105 active:scale-95 ${
