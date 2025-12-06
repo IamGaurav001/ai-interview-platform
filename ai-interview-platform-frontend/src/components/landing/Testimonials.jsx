@@ -19,7 +19,7 @@ const testimonials = [
   },
   {
     name: "Manish Kumar",
-    role: "Software Engineer at Google",
+    role: "Software Engineer at NetApp",
     image: Manish,
     content: "I was always nervous about technical interviews. PrepHire's coding challenges and real-time hints gave me the confidence I needed."
   },
