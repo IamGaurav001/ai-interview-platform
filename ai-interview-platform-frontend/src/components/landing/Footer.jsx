@@ -1,8 +1,8 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { Linkedin, Instagram } from "lucide-react";
+import { Linkedin, Instagram, Youtube } from "lucide-react";
 
-import ProductHuntBadge from "./ProductHuntBadge";
+
 
 const Footer = () => {
   return (
@@ -17,9 +17,7 @@ const Footer = () => {
               The smartest way to prepare for your next interview. AI-powered feedback, real-time analysis, and personalized coaching to help you land your dream job.
             </p>
             
-            <div className="mb-8">
-              <ProductHuntBadge darkMode={true} />
-            </div>
+
 
             <div className="flex gap-4 md:gap-6">
               <SocialLink href="https://x.com/prephire" icon={
@@ -29,6 +27,7 @@ const Footer = () => {
               } />
               <SocialLink href="https://www.linkedin.com/company/prephire/?viewAsMember=true" icon={<Linkedin className="h-4 w-4 md:h-5 md:w-5" />} />
               <SocialLink href="https://www.instagram.com/prephire/" icon={<Instagram className="h-4 w-4 md:h-5 md:w-5" />} />
+              <SocialLink href="https://www.youtube.com/@PrepHire" icon={<Youtube className="h-4 w-4 md:h-5 md:w-5" />} />
             </div>
           </div>
           
