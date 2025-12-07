@@ -56,6 +56,18 @@ const Hero = () => {
                 Start Practicing Free <ArrowRight className="ml-2 h-5 w-5" />
               </span>
             </Link>
+            
+            <button
+              onClick={() => {
+                const element = document.getElementById('demo-video');
+                element?.scrollIntoView({ behavior: 'smooth' });
+                logEvent('Click CTA', { location: 'Hero', text: 'Watch Demo' });
+              }}
+              className="inline-flex h-14 items-center justify-center rounded-full bg-white px-8 text-lg font-medium text-slate-700 shadow-sm ring-1 ring-inset ring-slate-300 hover:bg-slate-50 hover:text-slate-900 transition-all duration-300 hover:scale-105 active:scale-95"
+            >
+              <Play className="mr-2 h-5 w-5 fill-slate-400" />
+              Watch Demo
+            </button>
           </div>
 
           {/* 3D Tilt Dashboard Preview */}

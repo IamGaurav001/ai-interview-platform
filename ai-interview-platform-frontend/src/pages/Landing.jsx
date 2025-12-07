@@ -4,6 +4,7 @@ import { useAuth } from "../context/AuthContext";
 import SEO from "../components/SEO";
 import Hero from "../components/landing/Hero";
 import SocialProof from "../components/landing/SocialProof";
+import DemoVideo from "../components/landing/DemoVideo";
 import Features from "../components/landing/Features";
 import Testimonials from "../components/landing/Testimonials";
 import CTA from "../components/landing/CTA";
@@ -28,6 +29,7 @@ const Landing = () => {
       
       <Hero />
       <SocialProof />
+      <DemoVideo />
       <Features />
       <Testimonials />
       <CTA />
