@@ -123,6 +123,7 @@ const InterviewTour = ({ start, onFinish, type = 'sequential' }) => {
     backProps,
     closeProps,
     primaryProps,
+    skipProps,
     tooltipProps,
   }) => (
     <div
@@ -142,6 +143,14 @@ const InterviewTour = ({ start, onFinish, type = 'sequential' }) => {
 
         <div className="flex items-center justify-between mt-4 border-t border-slate-100 pt-4">
           <div className="flex gap-2">
+            <button
+              {...skipProps}
+              className="px-4 py-2 text-sm font-medium text-slate-400 hover:text-slate-600 transition-colors"
+            >
+              Skip
+            </button>
+          </div>
+          <div className="flex gap-2">
             {index > 0 && (
               <button
                 {...backProps}
@@ -150,13 +159,6 @@ const InterviewTour = ({ start, onFinish, type = 'sequential' }) => {
                 Back
               </button>
             )}
-          </div>
-          <div className="flex gap-2">
-             {!continuous && (
-               <button {...closeProps} className="px-4 py-2 text-sm font-medium text-slate-400 hover:text-slate-600">
-                 Close
-               </button>
-             )}
             {continuous && (
               <button
                 {...primaryProps}

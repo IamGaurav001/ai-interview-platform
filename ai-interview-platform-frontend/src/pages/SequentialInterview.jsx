@@ -369,7 +369,6 @@ const SequentialInterview = () => {
     } catch (err) {
       console.error("Evaluate voice error:", err);
       if (err.networkError) {
-        // toastError("Cannot connect to server. Please make sure the backend is running.");
         console.error("Cannot connect to server. Please make sure the backend is running.");
       } else {
         toastError(err.response?.data?.error || err.message || "Failed to evaluate voice answer");
