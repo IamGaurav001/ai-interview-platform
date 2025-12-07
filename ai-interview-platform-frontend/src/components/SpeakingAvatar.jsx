@@ -95,4 +95,4 @@ const SpeakingAvatar = ({ isSpeaking, size = "large", Icon = Bot, color = "indig
   );
 };
 
-export default SpeakingAvatar;
+export default React.memo(SpeakingAvatar);

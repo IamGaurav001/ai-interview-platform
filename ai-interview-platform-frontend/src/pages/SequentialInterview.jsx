@@ -379,8 +379,10 @@ const SequentialInterview = () => {
     }
   };
 
-  const handleSubmitAnswer = async () => {
-    if (!currentAnswer.trim()) {
+  const handleSubmitAnswer = async (answerText) => {
+    const finalAnswer = typeof answerText === 'string' ? answerText : currentAnswer;
+    
+    if (!finalAnswer.trim()) {
       toastError("Please provide an answer");
       return;
     }
@@ -389,10 +391,10 @@ const SequentialInterview = () => {
 
     try {
       const question = questions[currentQuestionIndex];
-      const res = await evaluateAnswer(domain, question, currentAnswer);
+      const res = await evaluateAnswer(domain, question, finalAnswer);
 
       if (res.data && res.data.feedback) {
-        const newAnswers = [...answers, currentAnswer];
+        const newAnswers = [...answers, finalAnswer];
         const newFeedbacks = [...feedbacks, res.data.feedback];
 
 

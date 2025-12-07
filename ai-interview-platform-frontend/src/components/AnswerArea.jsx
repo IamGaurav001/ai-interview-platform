@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { User, Mic, Square, CheckCircle2, Send, Loader2, Sparkles, Keyboard, X } from 'lucide-react';
 
 const AnswerArea = ({
@@ -17,6 +17,24 @@ const AnswerArea = ({
   onSubmitText
 }) => {
   const [showTextInput, setShowTextInput] = useState(false);
+  const [localAnswer, setLocalAnswer] = useState(currentAnswer);
+  const debounceRef = useRef(null);
+
+  useEffect(() => {
+    setLocalAnswer(currentAnswer);
+  }, [currentAnswer]);
+
+  const handleAnswerChange = (text) => {
+    setLocalAnswer(text);
+    
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current);
+    }
+
+    debounceRef.current = setTimeout(() => {
+      onAnswerChange(text);
+    }, 300);
+  };
 
   return (
     <div 
@@ -134,8 +152,8 @@ const AnswerArea = ({
             </div>
             
             <textarea
-              value={currentAnswer}
-              onChange={(e) => onAnswerChange(e.target.value)}
+              value={localAnswer}
+              onChange={(e) => handleAnswerChange(e.target.value)}
               placeholder="Type your answer here..."
               className="w-full h-40 p-4 rounded-xl border border-slate-200 focus:border-[#1d2f62] focus:ring-2 focus:ring-[#1d2f62]/20 resize-none text-slate-700 font-medium placeholder:text-slate-400 transition-all"
               autoFocus
@@ -150,10 +168,10 @@ const AnswerArea = ({
               </button>
               <button
                 onClick={() => {
-                  onSubmitText();
+                  onSubmitText(localAnswer);
                   setShowTextInput(false);
                 }}
-                disabled={loading || !currentAnswer.trim()}
+                disabled={loading || !localAnswer.trim()}
                 className="px-7 py-2.5 bg-[#1d2f62] text-white rounded-xl hover:bg-[#1d2f62]/90 transition-all shadow-lg hover:shadow-xl font-bold text-sm flex items-center justify-center gap-2 disabled:opacity-50 disabled:shadow-none"
               >
                 {loading ? (

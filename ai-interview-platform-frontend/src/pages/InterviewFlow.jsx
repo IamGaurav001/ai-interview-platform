@@ -326,8 +326,10 @@ const InterviewFlow = () => {
 
 
 
-  const handleSubmitAnswer = async () => {
-    if (!currentAnswer.trim() || currentAnswer.trim().length < 2) {
+  const handleSubmitAnswer = async (answerText) => {
+    const finalAnswer = typeof answerText === 'string' ? answerText : currentAnswer;
+
+    if (!finalAnswer.trim() || finalAnswer.trim().length < 2) {
       toastError("Please provide an answer");
       return;
     }
@@ -336,14 +338,14 @@ const InterviewFlow = () => {
     setFeedback("");
 
     try {
-      const res = await nextInterviewStep(currentAnswer.trim());
+      const res = await nextInterviewStep(finalAnswer.trim());
       
       if (res.data.success) {
         const result = res.data;
         
         const updatedHistory = [
           ...conversationHistory,
-          { role: "user", text: currentAnswer.trim(), timestamp: new Date().toISOString() }
+          { role: "user", text: finalAnswer.trim(), timestamp: new Date().toISOString() }
         ];
         setConversationHistory(updatedHistory);
 
