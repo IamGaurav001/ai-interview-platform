@@ -323,6 +323,12 @@ const SequentialInterview = () => {
       return;
     }
 
+    // Safety check for file size (50MB limit to match backend)
+    if (recordedAudio.size > 50 * 1024 * 1024) {
+      toastError("Recording is too large (max 50MB). Please provide a shorter answer.");
+      return;
+    }
+
     setLoading(true);
     setTranscribedText("");
 

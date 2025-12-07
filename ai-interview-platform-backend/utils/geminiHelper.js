@@ -14,8 +14,8 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
  */
 export const callGeminiWithRetry = async (prompt, options = {}) => {
   const {
-    model = "gemini-2.0-flash-lite", // Switched to lite version for better quota management
-    maxRetries = 10, // Increased from 7 to 10 for better rate limit handling
+    model = "gemini-3.0-pro-exp", // Default to Gemini 3.0 Pro
+    maxRetries = 10,
     initialDelay = 2000,
     generationConfig = {
       temperature: 0.7,
@@ -58,9 +58,9 @@ export const callGeminiWithRetry = async (prompt, options = {}) => {
         console.warn(`⚠️ Rate limit error (429) on attempt ${attempt}/${maxRetries} with model ${currentModel}`);
 
         // Strategy: Switch to fallback model immediately on first rate limit
-        if (!hasTriedFallback && currentModel === "gemini-2.0-flash-lite") {
-             console.log("🔄 gemini-2.0-flash-lite rate limited, switching to gemini-2.0-flash...");
-             currentModel = "gemini-2.0-flash";
+        if (!hasTriedFallback && currentModel === "gemini-3.0-pro-exp") {
+             console.log("🔄 gemini-3.0-pro-exp rate limited, switching to gemini-2.0-flash-lite...");
+             currentModel = "gemini-2.0-flash-lite";
              hasTriedFallback = true;
              // Small delay before trying new model
              await new Promise((resolve) => setTimeout(resolve, 1500));
@@ -85,7 +85,12 @@ export const callGeminiWithRetry = async (prompt, options = {}) => {
 
       // If model not found, try fallback model (only once)
       if (isModelNotFound && attempt === 1) {
-        if (currentModel === "gemini-2.0-flash-lite") {
+        if (currentModel === "gemini-3.0-pro-exp") {
+          console.log("🔄 gemini-3.0-pro-exp not available, trying gemini-2.0-flash-lite as fallback...");
+          currentModel = "gemini-2.0-flash-lite";
+          hasTriedFallback = true;
+          continue;
+        } else if (currentModel === "gemini-2.0-flash-lite") {
           console.log("🔄 gemini-2.0-flash-lite not available, trying gemini-2.0-flash as fallback...");
           currentModel = "gemini-2.0-flash";
           hasTriedFallback = true;
@@ -135,7 +140,7 @@ export const callGeminiWithRetry = async (prompt, options = {}) => {
  * @param {string} preferredModel - Preferred model name
  * @returns {Object} Gemini model instance
  */
-export const getGeminiModel = (preferredModel = "gemini-2.0-flash-lite") => {
+export const getGeminiModel = (preferredModel = "gemini-3.0-pro-exp") => {
   return genAI.getGenerativeModel({ model: preferredModel });
 };
 
