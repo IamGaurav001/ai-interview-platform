@@ -27,7 +27,7 @@ const Footer = () => {
               } />
               <SocialLink href="https://www.linkedin.com/company/prephire/?viewAsMember=true" icon={<Linkedin className="h-4 w-4 md:h-5 md:w-5" />} />
               <SocialLink href="https://www.instagram.com/prephire/" icon={<Instagram className="h-4 w-4 md:h-5 md:w-5" />} />
-              <SocialLink href="https://www.youtube.com/@PrepHire" icon={<Youtube className="h-4 w-4 md:h-5 md:w-5" />} />
+              <SocialLink href="https://www.youtube.com/@PrepHire-AI" icon={<Youtube className="h-4 w-4 md:h-5 md:w-5" />} />
             </div>
           </div>
           
@@ -36,6 +36,21 @@ const Footer = () => {
             <ul className="space-y-2 md:space-y-4 text-xs md:text-sm">
               <li><FooterLink to="/features">Features</FooterLink></li>
               <li><FooterLink to="/pricing">Pricing</FooterLink></li>
+              <li>
+                <button 
+                  onClick={() => {
+                    const element = document.getElementById('demo-video');
+                    if (element) {
+                      element.scrollIntoView({ behavior: 'smooth' });
+                    } else {
+                      window.location.href = '/#demo-video';
+                    }
+                  }}
+                  className="text-slate-400 hover:text-white transition-colors duration-200 text-left"
+                >
+                  Watch Demo
+                </button>
+              </li>
             </ul>
           </div>
           
