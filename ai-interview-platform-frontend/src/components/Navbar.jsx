@@ -47,12 +47,16 @@ const Navbar = () => {
 
   useEffect(() => {
     const handleScroll = () => {
-      if (window.scrollY > 10) {
+      if (window.scrollY > 20) {
         setIsScrolled(true);
       } else {
         setIsScrolled(false);
       }
     };
+    
+    // Set initial state
+    handleScroll();
+    
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
@@ -100,13 +104,13 @@ const Navbar = () => {
         initial={{ y: -100, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.5, ease: "easeOut" }}
-        className={`fixed top-2 sm:top-6 left-1/2 -translate-x-1/2 z-50 transition-all duration-300 rounded-3xl border w-[calc(100%-1rem)] sm:w-[calc(100%-3rem)] lg:w-[calc(100%-4rem)] max-w-screen-2xl ${
+        className={`fixed left-1/2 -translate-x-1/2 z-50 transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] rounded-full border ${
           isScrolled
-            ? "bg-white/90 backdrop-blur-xl shadow-lg border-white/20"
-            : "bg-white/80 backdrop-blur-md shadow-md border-white/40"
+            ? "top-2 w-[calc(100%-1rem)] md:w-[calc(100%-3rem)] max-w-5xl bg-white shadow-md border-gray-200/50 py-1.5"
+            : "top-4 w-[calc(100%-2rem)] max-w-screen-2xl bg-white/60 backdrop-blur-md shadow-sm border-transparent py-2.5"
         }`}
       >
-        <div className="px-5 sm:px-6 lg:px-8 py-3">
+        <div className="px-4 sm:px-6 py-1">
           <div className="flex justify-between items-center">
 
             <Link
@@ -128,7 +132,7 @@ const Navbar = () => {
 
             {user && (
               <div className="hidden md:flex items-center justify-center absolute left-1/2 -translate-x-1/2">
-                <div className="flex items-center gap-1 bg-gray-100/50 p-1.5 rounded-full border border-gray-200/50 backdrop-blur-sm">
+                <div className="flex items-center gap-1 p-1">
                   {navLinks.map((link) => {
                     const Icon = link.icon;
                     const active = isActive(link.path);
@@ -138,18 +142,18 @@ const Navbar = () => {
                         to={link.path}
                         data-tour={`nav-${link.label.toLowerCase()}`}
                         className={`relative flex items-center gap-2 px-5 py-2 rounded-full text-sm font-medium transition-colors duration-200 ${
-                          active ? "text-[#1d2f62]" : "text-[#1d2f62] hover:text-[#1d2f62]"
+                          active ? "text-[#1d2f62]" : "text-gray-500 hover:text-[#1d2f62]"
                         }`}
                       >
                         {active && (
                           <motion.div
                             layoutId="navbar-active-pill"
-                            className="absolute inset-0 bg-white rounded-full shadow-sm ring-2 ring-emerald-500"
-                            transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                            className="absolute inset-0 bg-white rounded-full shadow-sm ring-1 ring-black/5"
+                            transition={{ type: "spring", stiffness: 380, damping: 30 }}
                           />
                         )}
                         <span className="relative z-10 flex items-center gap-2">
-                          <Icon className={`h-4 w-4 ${active ? "text-emerald-500" : "text-gray-400"}`} />
+                          <Icon className={`h-4 w-4 ${active ? "text-primary-600" : "text-gray-400"}`} />
                           {link.label}
                         </span>
                       </Link>
