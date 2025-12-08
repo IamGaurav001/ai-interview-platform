@@ -97,7 +97,7 @@ export const analyzeResume = async (req, res) => {
       throw new Error("Resume text too short after cleaning.");
     }
 
-    // ✅ Stage 1: Cache resume text in Redis (TTL: 1 hour)
+    
     try {
       const resumeCacheKey = `resume:${req.user._id}`;
       await redisClient.setEx(resumeCacheKey, 3600, cleanResumeText);
@@ -142,7 +142,7 @@ export const analyzeResume = async (req, res) => {
     let responseText;
     try {
       responseText = await callGeminiWithRetry(prompt, {
-        model: "gemini-3.0-pro-exp", // Updated to Gemini 3.0 Pro for Hackathon
+        model: "gemini-3.0-pro-exp", 
         maxRetries: 10,
         initialDelay: 2000,
         generationConfig,
@@ -151,7 +151,6 @@ export const analyzeResume = async (req, res) => {
     } catch (apiError) {
       console.error("❌ Error calling Gemini API:", apiError.message);
       
-      // Check if it's a rate limit error
       if (apiError.message && apiError.message.includes("Rate limit exceeded")) {
         throw new Error(
           "The AI service is experiencing high demand and rate limits. Please wait 2-3 minutes and try uploading your resume again. " +
@@ -189,7 +188,6 @@ export const analyzeResume = async (req, res) => {
     for (const line of lines) {
       const cleaned = line.replace(/^\d+[\.\)]\s*/, "").trim();
       
-      // Improved filtering to remove introductory/concluding text
       const isIntro = /^(here are|based on|sure|okay|i have generated|following are)/i.test(cleaned);
       const isTooShort = cleaned.length < 15;
       const isMeta = /^(question|answer|note|tip)/i.test(cleaned);

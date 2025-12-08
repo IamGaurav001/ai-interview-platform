@@ -1,6 +1,6 @@
 import User from "../models/User.js";
 
-// Get user profile
+
 export const getProfile = async (req, res) => {
   try {
     const userId = req.user._id;
@@ -32,7 +32,7 @@ export const getProfile = async (req, res) => {
   }
 };
 
-// Update user profile
+
 export const updateProfile = async (req, res) => {
   try {
     const { name } = req.body;

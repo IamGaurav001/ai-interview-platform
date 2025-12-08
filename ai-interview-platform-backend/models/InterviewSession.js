@@ -36,7 +36,7 @@ const interviewSessionSchema = new mongoose.Schema(
       default: 0,
       validate: {
         validator: function (value) {
-          return !isNaN(value); // ✅ Prevent NaN
+          return !isNaN(value); 
         },
         message: "Score must be a valid number",
       },
@@ -47,7 +47,7 @@ const interviewSessionSchema = new mongoose.Schema(
 
 
 
-// ✅ Sanitize score before save
+
 interviewSessionSchema.pre("save", function (next) {
   if (isNaN(this.score) || this.score === null || this.score === undefined) {
     this.score = 0;

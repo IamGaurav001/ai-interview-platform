@@ -49,7 +49,7 @@ export const sendVerificationEmail = async (req, res) => {
       link = link.replace(url.hostname, process.env.AUTH_DOMAIN);
     }
 
-    // Email Template
+    
     const html = `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 10px;">
           <div style="text-align: center; margin-bottom: 20px;">
@@ -78,7 +78,7 @@ export const sendVerificationEmail = async (req, res) => {
         </div>
       `;
 
-    // Send Email
+    
     await sendEmail(email, "Verify your email for PrepHire", html);
 
     res.json({ success: true, message: "Verification email sent successfully" });
@@ -105,16 +105,16 @@ export const sendPasswordResetEmail = async (req, res) => {
 
     const { email } = validation.data;
 
-    // Generate password reset link using Firebase Admin SDK
+    
     let link = await admin.auth().generatePasswordResetLink(email);
     
-    // Use custom domain if configured
+    
     if (process.env.AUTH_DOMAIN) {
       const url = new URL(link);
       link = link.replace(url.hostname, process.env.AUTH_DOMAIN);
     }
     
-    // Email Template
+    
     const html = `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 10px;">
           <div style="text-align: center; margin-bottom: 20px;">
@@ -146,7 +146,7 @@ export const sendPasswordResetEmail = async (req, res) => {
         </div>
       `;
 
-    // Send Email
+    
     await sendEmail(email, "Reset your password for PrepHire", html);
 
     res.json({ success: true, message: "Password reset email sent successfully" });

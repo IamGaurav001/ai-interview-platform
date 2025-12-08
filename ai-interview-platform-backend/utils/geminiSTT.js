@@ -6,34 +6,29 @@ dotenv.config();
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
-// Configuration constants
-const DEFAULT_MODEL = "gemini-3.0-pro-exp"; // Gemini 3.0 Pro for STT
-const FALLBACK_MODEL = "gemini-2.0-flash-lite"; // Fallback to lite
-const MAX_RETRIES = 10; // Increased from 7 to 10 for better rate limit handling
+
+const DEFAULT_MODEL = "gemini-3.0-pro-exp"; 
+const FALLBACK_MODEL = "gemini-2.0-flash-lite"; 
+const MAX_RETRIES = 10; 
 const INITIAL_DELAY_MS = 2000;
 
-/**
- * Transcribe audio to text using Gemini
- * @param {string} audioFilePath - Path to the audio file
- * @param {string} mimeType - MIME type of the audio (e.g., "audio/webm", "audio/wav")
- * @returns {Promise<string>} Transcribed text
- */
+
 export async function geminiSpeechToText(audioFilePath, mimeType = "audio/webm") {
   if (!fs.existsSync(audioFilePath)) {
     throw new Error("Audio file not found");
   }
 
-  // Read audio file and convert to base64
+  
   const audioFile = fs.readFileSync(audioFilePath);
   const base64Audio = audioFile.toString("base64");
 
   let currentModel = DEFAULT_MODEL;
   let lastError = null;
-  let hasTriedFallback = false; // Track if we've already switched models
+  let hasTriedFallback = false; 
   const maxRetries = MAX_RETRIES;
   const initialDelay = INITIAL_DELAY_MS;
 
-  // Prepare the prompt
+  
   const prompt =
     "Transcribe this audio into clean, accurate English text. Return only the transcribed text, no additional commentary or formatting.";
 
@@ -42,7 +37,7 @@ export async function geminiSpeechToText(audioFilePath, mimeType = "audio/webm")
       console.log(`🔄 STT Attempt ${attempt}/${maxRetries} with model: ${currentModel}`);
       const model = genAI.getGenerativeModel({ model: currentModel });
 
-      // Send audio to Gemini for transcription
+      
       const result = await model.generateContent({
         contents: [
           {
@@ -88,11 +83,11 @@ export async function geminiSpeechToText(audioFilePath, mimeType = "audio/webm")
         message.includes("not found") ||
         message.includes("unsupported");
 
-      // Handle Rate Limits with Fallback
+      
       if (isRateLimit) {
          console.warn(`⚠️ Rate limit error (429) on attempt ${attempt}/${maxRetries} with model ${currentModel}`);
          
-         // Switch to fallback model immediately on first rate limit
+         
          if (!hasTriedFallback && currentModel === "gemini-3.0-pro-exp") {
              console.log("🔄 gemini-3.0-pro-exp rate limited, switching to gemini-2.0-flash-lite...");
              currentModel = "gemini-2.0-flash-lite";
@@ -101,11 +96,11 @@ export async function geminiSpeechToText(audioFilePath, mimeType = "audio/webm")
              continue;
          }
 
-         // Use exponential backoff with cap
+         
          if (attempt < maxRetries) {
            const delay = Math.min(
              initialDelay * Math.pow(2, Math.min(attempt - 1, 6)) + Math.random() * 1000,
-             60000 // Cap at 60 seconds
+             60000 
            );
            console.log(`⏳ Waiting ${Math.round(delay)}ms before retry ${attempt + 1}...`);
            await new Promise((resolve) => setTimeout(resolve, delay));
@@ -117,7 +112,7 @@ export async function geminiSpeechToText(audioFilePath, mimeType = "audio/webm")
          }
       }
 
-      // Handle Model Not Found with Fallback
+      
       if (isModelNotFound && attempt === 1) {
         if (currentModel === "gemini-3.0-pro-exp") {
           console.log("🔄 gemini-3.0-pro-exp not available, trying gemini-2.0-flash-lite as fallback...");

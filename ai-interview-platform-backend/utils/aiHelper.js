@@ -1,4 +1,4 @@
-// utils/aiHelper.js
+
 export const parseFeedbackSafely = (text = "") => {
   if (!text || typeof text !== "string") {
     return { parsingFailed: true, raw: text || "" };
@@ -6,10 +6,10 @@ export const parseFeedbackSafely = (text = "") => {
 
   const original = text.trim();
 
-  // Remove code fences and markdown
+  
   let cleaned = original.replace(/```(?:json)?\s*([\s\S]*?)```/gi, "$1").trim();
 
-  // Find JSON substring
+  
   const jsonStart = cleaned.indexOf("{");
   const jsonEnd = cleaned.lastIndexOf("}");
   if (jsonStart !== -1 && jsonEnd !== -1 && jsonEnd > jsonStart) {
@@ -22,11 +22,11 @@ export const parseFeedbackSafely = (text = "") => {
       parsed.parsingFailed = false;
       return parsed;
     } catch (e) {
-      // Fall through to heuristics
+      
     }
   }
 
-  // Fallback: Extract numeric scores heuristically
+  
   const nums = cleaned.match(/(\d+(?:\.\d+)?)/g) || [];
   const fb = {
     correctness: Number(nums[0]) || 0,

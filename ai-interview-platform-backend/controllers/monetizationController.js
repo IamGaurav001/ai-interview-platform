@@ -70,7 +70,7 @@ export const verifyPayment = async (req, res) => {
     const isAuthentic = expectedSignature === razorpay_signature;
 
     if (isAuthentic) {
-      // Check for duplicate transaction
+      
       const existingTransaction = await Transaction.findOne({
         orderId: razorpay_order_id,
         status: "success",
@@ -100,7 +100,7 @@ export const verifyPayment = async (req, res) => {
         (user.usage.purchasedCredits || 0) + creditsToAdd;
       await user.save();
 
-      // Record transaction
+      
       await Transaction.create({
         userId: req.user._id,
         orderId: razorpay_order_id,
@@ -126,5 +126,20 @@ export const verifyPayment = async (req, res) => {
     res
       .status(500)
       .json({ success: false, message: "Payment verification failed" });
+  }
+};
+
+export const getTransactionHistory = async (req, res) => {
+  try {
+    const transactions = await Transaction.find({ userId: req.user._id })
+      .sort({ createdAt: -1 });
+
+    res.json({
+      success: true,
+      transactions,
+    });
+  } catch (error) {
+    console.error("Get transaction history error:", error);
+    res.status(500).json({ success: false, message: "Failed to fetch transaction history" });
   }
 };

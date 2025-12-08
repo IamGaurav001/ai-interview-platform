@@ -12,8 +12,10 @@ import {
   Lock,
   Save,
   CheckCircle2,
-  ArrowLeft
+  ArrowLeft,
+  CreditCard
 } from "lucide-react";
+import { getTransactionHistory } from "../api/monetizationAPI";
 import { logEvent } from "../config/amplitude";
 import SEO from "../components/SEO";
 import { motion, AnimatePresence } from "framer-motion";
@@ -26,6 +28,7 @@ const Settings = () => {
   const [message, setMessage] = useState({ type: "", text: "" });
 
   // Form states
+  const [transactions, setTransactions] = useState([]);
   const [displayName, setDisplayName] = useState("");
   const [notifications, setNotifications] = useState({
     email: true
@@ -39,6 +42,27 @@ const Settings = () => {
       }
     }
   }, [user]);
+
+  useEffect(() => {
+    if (activeTab === "billing") {
+      const fetchTransactions = async () => {
+        setLoading(true);
+        try {
+          const data = await getTransactionHistory();
+          if (data.success) {
+            setTransactions(data.transactions);
+          }
+        } catch (error) {
+          console.error("Failed to fetch transactions", error);
+          setMessage({ type: "error", text: "Failed to load payment history" });
+        } finally {
+          setLoading(false);
+        }
+      };
+      
+      fetchTransactions();
+    }
+  }, [activeTab]);
 
   const handleUpdateProfile = async (e) => {
     e.preventDefault();
@@ -74,32 +98,34 @@ const Settings = () => {
   const menuItems = [
     { id: "profile", label: "Profile", icon: User, description: "Personal info" },
     { id: "notifications", label: "Notifications", icon: Bell, description: "Alert preferences" },
+    { id: "billing", label: "Billing", icon: CreditCard, description: "Payment history" },
     { id: "security", label: "Security", icon: Shield, description: "Password & safety" },
   ];
 
   return (
-    <div className="min-h-screen bg-slate-50/50 pb-12">
+    <div className="min-h-screen bg-gray-50/50 pb-12">
       <SEO title="Settings" description="Manage your profile, notifications, and security settings." />
       
-      <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-12">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
-          
-          {/* Mobile Header & Nav */}
-          <div className="lg:hidden space-y-6 mb-2">
-            <div className="flex items-center gap-4">
-              <button 
-                onClick={() => navigate("/dashboard")}
-                className="h-10 w-10 flex-shrink-0 flex items-center justify-center rounded-full bg-white border border-slate-200 shadow-sm active:scale-95 transition-all text-slate-600"
-              >
-                <ArrowLeft className="h-5 w-5" />
-              </button>
-              <div>
-                <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Settings</h1>
-                <p className="text-sm text-slate-500">Manage your account</p>
-              </div>
-            </div>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        <div className="mb-8 flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Settings</h1>
+            <p className="mt-1 text-sm text-slate-500">Manage your account preferences and details.</p>
+          </div>
+          <button
+            onClick={() => navigate("/dashboard")}
+            className="group flex items-center gap-2 text-sm font-medium text-slate-600 hover:text-blue-600 transition-colors px-4 py-2 rounded-lg hover:bg-white hover:shadow-sm ring-1 ring-transparent hover:ring-slate-200"
+          >
+            <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" />
+            Back to Dashboard
+          </button>
+        </div>
 
-            <div className="flex overflow-x-auto pb-2 gap-3 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none'] -mx-4 px-4">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          
+          {/* Mobile Tab Nav */}
+          <div className="lg:hidden col-span-1 overflow-x-auto pb-4 -mx-4 px-4 scrollbar-hide">
+            <div className="flex gap-2">
               {menuItems.map((item) => {
                 const Icon = item.icon;
                 const isActive = activeTab === item.id;
@@ -107,10 +133,10 @@ const Settings = () => {
                   <button
                     key={item.id}
                     onClick={() => setActiveTab(item.id)}
-                    className={`flex items-center gap-2 px-5 py-2.5 rounded-full whitespace-nowrap transition-all font-medium text-sm ${
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg whitespace-nowrap text-sm font-medium transition-all ${
                       isActive
-                        ? "bg-[#1d2f62] text-white shadow-md shadow-blue-900/20"
-                        : "bg-white text-slate-600 border border-slate-200"
+                        ? "bg-white text-blue-600 shadow-sm ring-1 ring-slate-200"
+                        : "text-slate-600 hover:text-slate-900 hover:bg-white/50"
                     }`}
                   >
                     <Icon className="h-4 w-4" />
@@ -118,34 +144,12 @@ const Settings = () => {
                   </button>
                 );
               })}
-              <button
-                onClick={logout}
-                className="flex items-center gap-2 px-5 py-2.5 rounded-full whitespace-nowrap transition-all font-medium text-sm bg-red-50 text-red-600 border border-red-100"
-              >
-                <LogOut className="h-4 w-4" />
-                Sign Out
-              </button>
             </div>
           </div>
 
           {/* Desktop Sidebar */}
-          <div className="hidden lg:block lg:col-span-3 space-y-8">
-            <button
-              onClick={() => navigate("/dashboard")}
-              className="group flex items-center gap-3 text-slate-500 hover:text-[#1d2f62] transition-colors"
-            >
-              <div className="h-10 w-10 flex items-center justify-center rounded-full bg-white border border-slate-200 shadow-sm group-hover:shadow-md group-hover:border-blue-200 group-hover:-translate-x-1 transition-all">
-                <ArrowLeft className="h-5 w-5" />
-              </div>
-              <span className="font-bold text-lg">Back to Dashboard</span>
-            </button>
-
-            <div>
-              <h1 className="text-4xl font-bold text-slate-900 tracking-tight">Settings</h1>
-              <p className="mt-2 text-lg text-slate-500">Manage your account</p>
-            </div>
-
-            <nav className="space-y-3">
+          <div className="hidden lg:block lg:col-span-3">
+            <nav className="space-y-1">
               {menuItems.map((item) => {
                 const Icon = item.icon;
                 const isActive = activeTab === item.id;
@@ -153,125 +157,118 @@ const Settings = () => {
                   <button
                     key={item.id}
                     onClick={() => setActiveTab(item.id)}
-                    className={`w-full flex items-center p-4 rounded-2xl transition-all duration-300 group ${
+                    className={`w-full flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg transition-all duration-200 ${
                       isActive
-                        ? "bg-white shadow-md border border-blue-100 text-blue-600"
-                        : "hover:bg-white hover:shadow-sm text-slate-600 border border-transparent"
+                        ? "bg-white text-blue-600 shadow-sm ring-1 ring-slate-200"
+                        : "text-slate-600 hover:bg-white/50 hover:text-slate-900"
                     }`}
                   >
-                    <div className={`h-12 w-12 rounded-xl flex items-center justify-center mr-4 transition-colors ${
-                      isActive ? "bg-blue-50 text-blue-600" : "bg-slate-100 text-slate-500 group-hover:bg-blue-50 group-hover:text-blue-600"
-                    }`}>
-                      <Icon className="h-6 w-6" />
-                    </div>
-                    <div className="text-left">
-                      <span className={`block text-lg font-bold ${isActive ? "text-slate-900" : "text-slate-700"}`}>
-                        {item.label}
-                      </span>
-                      <span className="text-sm text-slate-500 font-medium">
-                        {item.description}
-                      </span>
-                    </div>
-                    {isActive && <ChevronRight className="ml-auto h-5 w-5 text-blue-500" />}
+                    <Icon className={`h-5 w-5 ${isActive ? "text-blue-600" : "text-slate-400"}`} />
+                    {item.label}
+                    {isActive && <ChevronRight className="ml-auto h-4 w-4 text-slate-400" />}
                   </button>
                 );
               })}
-              
-              <div className="pt-6 mt-6 border-t border-slate-200/60">
-                <button
-                  onClick={logout}
-                  className="w-full flex items-center p-4 rounded-2xl text-red-600 hover:bg-red-50 transition-all duration-300 group"
-                >
-                  <div className="h-12 w-12 rounded-xl bg-red-50 flex items-center justify-center mr-4 group-hover:bg-red-100 transition-colors">
-                    <LogOut className="h-6 w-6" />
-                  </div>
-                  <span className="text-lg font-bold">Sign Out</span>
-                </button>
-              </div>
             </nav>
+
+            <div className="mt-8 pt-8 border-t border-slate-200/60">
+              <button
+                onClick={logout}
+                className="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-red-600 rounded-lg hover:bg-red-50 transition-colors"
+              >
+                <LogOut className="h-5 w-5" />
+                Sign Out
+              </button>
+            </div>
           </div>
 
-          {/* Right Content Area */}
-          <div className="lg:col-span-9">
+          {/* Content Area */}
+          <div className="col-span-1 lg:col-span-9">
             <motion.div
               key={activeTab}
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.3 }}
-              className="bg-white rounded-2xl lg:rounded-[2rem] shadow-sm border border-slate-200 overflow-hidden min-h-[400px] lg:min-h-[600px]"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.2 }}
+              className="bg-white rounded-xl shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] ring-1 ring-slate-200 overflow-hidden"
             >
-              {/* Message Alert */}
               <AnimatePresence>
                 {message.text && (
                   <motion.div
                     initial={{ opacity: 0, height: 0 }}
                     animate={{ opacity: 1, height: "auto" }}
                     exit={{ opacity: 0, height: 0 }}
-                    className={`px-8 py-4 ${message.type === "success" ? "bg-green-50 text-green-700 border-b border-green-100" : "bg-red-50 text-red-700 border-b border-red-100"}`}
+                    className={`border-b ${message.type === "success" ? "bg-green-50 border-green-100" : "bg-red-50 border-red-100"}`}
                   >
-                    <div className="flex items-center gap-3">
-                      {message.type === "success" ? <CheckCircle2 className="h-5 w-5" /> : <Shield className="h-5 w-5" />}
-                      <p className="font-medium text-lg">{message.text}</p>
+                    <div className="px-6 py-3 flex items-center gap-3">
+                      {message.type === "success" ? (
+                        <CheckCircle2 className="h-5 w-5 text-green-600" />
+                      ) : (
+                        <Shield className="h-5 w-5 text-red-600" />
+                      )}
+                      <p className={`text-sm font-medium ${message.type === "success" ? "text-green-700" : "text-red-700"}`}>
+                        {message.text}
+                      </p>
                     </div>
                   </motion.div>
                 )}
               </AnimatePresence>
 
-              <div className="p-5 sm:p-8 lg:p-12">
+              <div className="p-6 lg:p-10">
                 {/* Profile Section */}
                 {activeTab === "profile" && (
-                  <div className="max-w-3xl">
-                    <div className="mb-8 lg:mb-10">
-                      <h2 className="text-2xl lg:text-3xl font-bold text-slate-900 mb-2">Profile Information</h2>
-                      <p className="text-lg lg:text-xl text-slate-500">Update your photo and personal details.</p>
+                  <div className="max-w-2xl">
+                    <div className="mb-8 border-b border-slate-100 pb-6">
+                      <h2 className="text-lg font-semibold text-slate-900">Profile Information</h2>
+                      <p className="mt-1 text-sm text-slate-500">Update your photo and personal details.</p>
                     </div>
 
-                    <form onSubmit={handleUpdateProfile} className="space-y-8">
+                    <form onSubmit={handleUpdateProfile} className="space-y-6">
                       <div>
-                        <label className="block text-base sm:text-lg font-bold text-slate-700 mb-2 sm:mb-3">Display Name</label>
-                        <div className="relative group">
-                          <User className="absolute left-4 top-1/2 -translate-y-1/2 h-6 w-6 text-slate-400 group-focus-within:text-blue-500 transition-colors" />
+                        <label className="block text-sm font-medium text-slate-700 mb-2">Display Name</label>
+                        <div className="relative">
+                          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <User className="h-5 w-5 text-slate-400" />
+                          </div>
                           <input
                             type="text"
                             value={displayName}
                             onChange={(e) => setDisplayName(e.target.value)}
-                            className="w-full pl-12 sm:pl-14 pr-6 py-3 sm:py-4 rounded-2xl border-2 border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all text-base sm:text-lg font-medium outline-none bg-slate-50 focus:bg-white"
+                            className="block w-full pl-10 pr-3 py-2.5 sm:text-sm rounded-lg border-slate-300 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all placeholder:text-slate-400"
                             placeholder="Enter your name"
                           />
                         </div>
                       </div>
 
                       <div>
-                        <label className="block text-base sm:text-lg font-bold text-slate-700 mb-2 sm:mb-3">Email Address</label>
+                        <label className="block text-sm font-medium text-slate-700 mb-2">Email Address</label>
                         <div className="relative">
-                          <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-6 w-6 text-slate-400" />
+                          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <Mail className="h-5 w-5 text-slate-400" />
+                          </div>
                           <input
                             type="email"
                             value={user?.email || ""}
                             disabled
-                            className="w-full pl-12 sm:pl-14 pr-6 py-3 sm:py-4 rounded-2xl border-2 border-slate-100 bg-slate-50 text-slate-500 text-base sm:text-lg font-medium cursor-not-allowed"
+                            className="block w-full pl-10 pr-3 py-2.5 sm:text-sm rounded-lg border-slate-200 bg-slate-100 text-slate-500 cursor-not-allowed"
                           />
                         </div>
-                        <p className="mt-3 text-sm text-slate-400 font-medium flex items-center gap-2">
+                        <p className="mt-2 text-xs text-slate-500 flex items-center gap-1.5">
                           <Lock className="h-3 w-3" />
                           Email address cannot be changed
                         </p>
                       </div>
 
-                      <div className="pt-6">
+                      <div className="pt-4 flex items-center gap-4">
                         <button
                           type="submit"
                           disabled={loading}
-                          className="flex items-center justify-center px-10 py-4 bg-[#1d2f62] text-white rounded-2xl hover:bg-[#1d2f62]/90 transition-all shadow-lg hover:shadow-xl hover:-translate-y-1 disabled:opacity-50 disabled:hover:translate-y-0 text-lg font-bold w-full sm:w-auto min-w-[200px]"
+                          className="flex items-center justify-center px-6 py-2.5 border border-transparent rounded-lg shadow-sm text-sm font-semibold text-white bg-[#1d2f62] hover:bg-[#1d2f62]/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 transition-all min-w-[140px]"
                         >
                           {loading ? (
-                            <span className="flex items-center gap-2">
-                              <div className="h-5 w-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                              Saving...
-                            </span>
+                            <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                           ) : (
                             <>
-                              <Save className="mr-3 h-5 w-5" />
+                              <Save className="mr-2 h-4 w-4" />
                               Save Changes
                             </>
                           )}
@@ -283,20 +280,20 @@ const Settings = () => {
 
                 {/* Notifications Section */}
                 {activeTab === "notifications" && (
-                  <div className="max-w-3xl">
-                    <div className="mb-8 lg:mb-10">
-                      <h2 className="text-2xl lg:text-3xl font-bold text-slate-900 mb-2">Notifications</h2>
-                      <p className="text-lg lg:text-xl text-slate-500">Manage how you receive updates and alerts.</p>
+                  <div className="max-w-2xl">
+                    <div className="mb-8 border-b border-slate-100 pb-6">
+                      <h2 className="text-lg font-semibold text-slate-900">Notifications</h2>
+                      <p className="mt-1 text-sm text-slate-500">Manage how you receive updates and alerts.</p>
                     </div>
 
-                    <div className="space-y-6">
+                    <div className="space-y-4">
                       {[
-                        { id: "email", label: "Email Notifications", desc: "Receive promotional emails and updates" },
+                        { id: "email", label: "Email Notifications", desc: "Receive promotional emails and updates about your interview progress" },
                       ].map((item) => (
-                        <div key={item.id} className="flex items-center justify-between p-4 sm:p-6 rounded-2xl border-2 border-slate-100 hover:border-blue-100 hover:bg-blue-50/30 transition-all">
-                          <div className="pr-4 sm:pr-8">
-                            <h3 className="text-lg sm:text-xl font-bold text-slate-900 mb-1">{item.label}</h3>
-                            <p className="text-sm sm:text-base text-slate-500 font-medium">{item.desc}</p>
+                        <div key={item.id} className="flex items-start sm:items-center justify-between p-4 rounded-lg border border-slate-200 bg-slate-50/50 hover:bg-white hover:border-blue-200 transition-all">
+                          <div className="pr-4">
+                            <h3 className="text-sm font-semibold text-slate-900">{item.label}</h3>
+                            <p className="mt-0.5 text-xs text-slate-500">{item.desc}</p>
                           </div>
                           <button
                             onClick={async () => {
@@ -315,13 +312,13 @@ const Settings = () => {
                                 setMessage({ type: "error", text: "Failed to save preferences" });
                               }
                             }}
-                            className={`relative inline-flex h-8 w-14 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-4 focus:ring-blue-500/20 ${
+                            className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
                               notifications[item.id] ? 'bg-blue-600' : 'bg-slate-200'
                             }`}
                           >
                             <span
-                              className={`pointer-events-none inline-block h-7 w-7 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-                                notifications[item.id] ? 'translate-x-6' : 'translate-x-0'
+                              className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                                notifications[item.id] ? 'translate-x-5' : 'translate-x-0'
                               }`}
                             />
                           </button>
@@ -333,34 +330,95 @@ const Settings = () => {
 
                 {/* Security Section */}
                 {activeTab === "security" && (
-                  <div className="max-w-3xl">
-                    <div className="mb-8 lg:mb-10">
-                      <h2 className="text-2xl lg:text-3xl font-bold text-slate-900 mb-2">Security</h2>
-                      <p className="text-lg lg:text-xl text-slate-500">Manage your password and account security.</p>
+                  <div className="max-w-2xl">
+                    <div className="mb-8 border-b border-slate-100 pb-6">
+                      <h2 className="text-lg font-semibold text-slate-900">Security</h2>
+                      <p className="mt-1 text-sm text-slate-500">Manage your password and account security.</p>
                     </div>
 
                     <div className="space-y-6">
-                      <div className="p-6 lg:p-8 rounded-3xl bg-slate-50 border-2 border-slate-100">
-                        <div className="flex flex-col sm:flex-row items-start gap-6">
-                          <div className="p-4 bg-white rounded-2xl shadow-sm border border-slate-100">
-                            <Lock className="h-8 w-8 text-slate-700" />
-                          </div>
-                          <div className="flex-1">
-                            <h3 className="text-lg sm:text-xl font-bold text-slate-900 mb-2">Password</h3>
-                            <p className="text-sm sm:text-base text-slate-600 leading-relaxed mb-6">
-                              Change your password regularly to keep your account secure. We'll send you an email with instructions.
-                            </p>
-                            <button
-                              onClick={handlePasswordReset}
-                              disabled={loading}
-                              className="px-4 py-2.5 sm:px-6 sm:py-3 text-sm sm:text-base font-bold text-slate-700 bg-white border-2 border-slate-200 rounded-xl hover:bg-slate-50 hover:border-slate-300 focus:ring-4 focus:ring-slate-100 transition-all shadow-sm"
-                            >
-                              Send Password Reset Email
-                            </button>
-                          </div>
+                      <div className="flex items-start gap-4">
+                        <div className="flex-shrink-0 p-3 bg-slate-50 rounded-lg border border-slate-200">
+                          <Lock className="h-6 w-6 text-slate-600" />
+                        </div>
+                        <div>
+                          <h3 className="text-sm font-semibold text-slate-900">Password</h3>
+                          <p className="mt-1 text-sm text-slate-500 leading-relaxed max-w-lg mb-4">
+                            Ensure your account stays secure by updating your password regularly. We'll send a secure link to your email.
+                          </p>
+                          <button
+                            onClick={handlePasswordReset}
+                            disabled={loading}
+                            className="inline-flex items-center px-4 py-2 border border-slate-300 shadow-sm text-sm font-medium rounded-lg text-slate-700 bg-white hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                          >
+                            Send Reset Link
+                          </button>
                         </div>
                       </div>
                     </div>
+                  </div>
+                )}
+
+                {/* Billing Section */}
+                {activeTab === "billing" && (
+                  <div className="max-w-5xl">
+                    <div className="mb-8 border-b border-slate-100 pb-6">
+                      <h2 className="text-lg font-semibold text-slate-900">Payment History</h2>
+                      <p className="mt-1 text-sm text-slate-500">View your past transactions and receipts.</p>
+                    </div>
+
+                    {loading ? (
+                      <div className="flex justify-center py-12">
+                        <div className="h-6 w-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+                      </div>
+                    ) : transactions.length > 0 ? (
+                      <div className="overflow-hidden rounded-lg border border-slate-200 shadow-sm">
+                        <table className="min-w-full divide-y divide-slate-200">
+                          <thead className="bg-slate-50">
+                            <tr>
+                              <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Date</th>
+                              <th scope="col" className="px-3 py-3.5 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Plan</th>
+                              <th scope="col" className="px-3 py-3.5 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Amount</th>
+                              <th scope="col" className="px-3 py-3.5 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Credits</th>
+                              <th scope="col" className="px-3 py-3.5 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Status</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-slate-200 bg-white">
+                            {transactions.map((transaction) => (
+                              <tr key={transaction._id} className="hover:bg-slate-50/50 transition-colors">
+                                <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-slate-900">
+                                  {new Date(transaction.createdAt).toLocaleDateString()}
+                                </td>
+                                <td className="whitespace-nowrap px-3 py-4 text-sm text-slate-600">
+                                  {transaction.planId === "3_interviews" ? "Value Bundle" : "Single Interview"}
+                                </td>
+                                <td className="whitespace-nowrap px-3 py-4 text-sm text-slate-600">
+                                  ₹{transaction.amount ? transaction.amount / 100 : 0}
+                                </td>
+                                <td className="whitespace-nowrap px-3 py-4 text-sm text-slate-600">
+                                  {transaction.creditsAdded}
+                                </td>
+                                <td className="whitespace-nowrap px-3 py-4 text-sm">
+                                  <span className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset ${
+                                    transaction.status === 'success' ? 'bg-green-50 text-green-700 ring-green-600/20' : 
+                                    transaction.status === 'pending' ? 'bg-yellow-50 text-yellow-800 ring-yellow-600/20' : 
+                                    'bg-red-50 text-red-700 ring-red-600/20'
+                                  }`}>
+                                    {transaction.status}
+                                  </span>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    ) : (
+                      <div className="text-center py-12 bg-slate-50 rounded-lg border-2 border-dashed border-slate-200">
+                        <CreditCard className="mx-auto h-8 w-8 text-slate-400" />
+                        <h3 className="mt-2 text-sm font-semibold text-slate-900">No transactions</h3>
+                        <p className="mt-1 text-sm text-slate-500">You haven't made any purchases yet.</p>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>

@@ -1,5 +1,5 @@
 export const disposableDomains = [
-  // Temp-mail.org domains
+  
   "temp-mail.org",
   "temp-mail.ru",
   "temp-mail.net",
@@ -44,7 +44,7 @@ export const disposableDomains = [
   "bipochub.com",
   "oxolead.com",
   
-  // Other common disposable domains
+  
   "mailinator.com",
   "guerrillamail.com",
   "10minutemail.com",
@@ -79,13 +79,13 @@ export const disposableDomains = [
   "e4ward.com",
   "gishpuppy.com",
   "inbox.lv",
-  "mail.ru", // Sometimes used for spam, but also legitimate. Maybe keep it allowed? I'll exclude it for now.
+  "mail.ru", 
   "list.ru",
   "bk.ru",
   "inbox.ru",
   "internet.ru",
   "xmail.net",
-  "yandex.com", // Legitimate provider, but sometimes abused. I'll keep it allowed as it's major.
-  "protonmail.com", // Legitimate, but private. Keep allowed.
-  "tutanota.com", // Legitimate.
+  "yandex.com", 
+  "protonmail.com", 
+  "tutanota.com", 
 ];

@@ -1,12 +1,6 @@
 import redisClient from "../config/redis.js";
 
-/**
- * Redis-based Rate Limiter Middleware
- * Prevents abuse and cost spikes by limiting API calls per user
- * 
- * @param {number} maxRequests - Maximum requests allowed
- * @param {number} windowSeconds - Time window in seconds
- */
+
 export const rateLimiter = (maxRequests = 10, windowSeconds = 60) => {
   return async (req, res, next) => {
     try {

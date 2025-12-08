@@ -27,7 +27,7 @@ export const checkInterviewEligibility = async (req, res, next) => {
       user.usage.lastMonthlyReset = now;
     }
 
-    // Check eligibility
+    
     if (user.usage.freeInterviewsLeft > 0) {
       user.usage.freeInterviewsLeft -= 1;
       await user.save();
