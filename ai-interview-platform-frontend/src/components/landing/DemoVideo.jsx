@@ -56,36 +56,49 @@ const DemoVideo = () => {
              <div className="relative rounded-3xl overflow-hidden bg-slate-900 border border-slate-800 shadow-2xl aspect-video group ring-1 ring-white/10">
                 
                 {!isPlaying ? (
-                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-900 cursor-pointer group z-10" onClick={() => setIsPlaying(true)}>
+                    <div className="absolute inset-0 flex flex-col items-center justify-center cursor-pointer group z-10" onClick={() => setIsPlaying(true)}>
                         
-                        {/* Video Thumbnail Background */}
+                        {/* Video Thumbnail Background with Brand Tint */}
                         <div className="absolute inset-0 overflow-hidden">
-                           {/* Use a high-quality poster from Cloudinary if available, or keep the default YouTube one as fallback until user changes it */}
-                           {/* Ideally, replace this src with: `https://res.cloudinary.com/dxhtey63x/video/upload/v1/1765281863589649_ztwgb3.jpg` (guessing the public_id path, but safer to stick to what we know works or generic) */}
                            <img 
                                 src="https://img.youtube.com/vi/SArYgKtgC10/maxresdefault.jpg" 
                                 alt="Demo Video Thumbnail" 
-                                className="w-full h-full object-cover opacity-60 group-hover:opacity-50 transition-opacity duration-700 transform group-hover:scale-105"
+                                className="w-full h-full object-cover opacity-80 group-hover:scale-105 transition-transform duration-1000"
                            />
-                           {/* Gradient Overlay for better text visibility */}
-                           <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/40 to-slate-900/30"></div>
+                           {/* Brand Gradient Overlay - Richer Blue/Indigo */}
+                           <div className="absolute inset-0 bg-gradient-to-tr from-slate-900/90 via-[#1e1b4b]/50 to-transparent mix-blend-multiply"></div>
+                           <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors duration-500"></div>
                         </div>
 
                         {/* Play Button Container */}
-                        <div className="relative z-10 flex flex-col items-center gap-8">
+                        <div className="relative z-10 flex flex-col items-center gap-6">
                             <motion.div 
-                                whileHover={{ scale: 1.1 }}
+                                whileHover={{ scale: 1.05 }}
                                 whileTap={{ scale: 0.95 }}
-                                className="relative group cursor-pointer"
+                                className="relative flex items-center justify-center"
                             >
-                                <div className="absolute inset-0 bg-blue-500/40 rounded-full blur-2xl group-hover:blur-3xl transition-all duration-500"></div>
-                                <div className="relative w-28 h-28 sm:w-32 sm:h-32 bg-white/10 backdrop-blur-2xl rounded-full flex items-center justify-center border border-white/30 shadow-[0_0_50px_-10px_rgba(59,130,246,0.6)] group-hover:bg-white/20 group-hover:border-white/40 transition-all duration-500">
-                                    <div className="absolute inset-0 rounded-full border border-blue-400/30 border-t-blue-400/80 animate-[spin_10s_linear_infinite]"></div>
-                                    <Play className="w-12 h-12 sm:w-14 sm:h-14 text-white fill-white ml-2 drop-shadow-xl" />
+                                {/* Ripple Effects */}
+                                <div className="absolute inset-0 bg-blue-500/30 rounded-full animate-ping opacity-75"></div>
+                                <div className="absolute -inset-4 bg-white/5 rounded-full blur-xl group-hover:bg-white/10 transition-colors duration-500"></div>
+                                
+                                {/* Glass Button */}
+                                <div className="relative w-24 h-24 sm:w-28 sm:h-28 bg-white/10 backdrop-blur-md rounded-full flex items-center justify-center border border-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.2)] group-hover:bg-white/20 group-hover:border-white/30 transition-all duration-300">
+                                    <div className="absolute inset-1 rounded-full border border-white/10"></div>
+                                    <Play className="w-10 h-10 sm:w-12 sm:h-12 text-white fill-white translate-x-1 drop-shadow-lg" />
                                 </div>
                             </motion.div>
                             
                             <div className="flex flex-col items-center gap-3">
+                                <motion.span 
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    className="text-2xl font-bold text-white tracking-tight drop-shadow-md"
+                                >
+                                    Watch how it works
+                                </motion.span>
+                                <span className="px-3 py-1 rounded-full bg-white/10 backdrop-blur-sm border border-white/10 text-xs font-medium text-blue-200">
+                                    2 min demo
+                                </span>
                             </div>
                         </div>
                     </div>
