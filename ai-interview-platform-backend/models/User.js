@@ -7,6 +7,11 @@ const userSchema = new mongoose.Schema(
     email: { type: String, required: true, unique: true },
 
     resumeUrl: { type: String },
+    resumes: [{
+      text: { type: String },
+      fileName: { type: String },
+      uploadedAt: { type: Date, default: Date.now }
+    }],
     skills: [String],
     lastLoginAt: { type: Date, index: true },
     usage: {

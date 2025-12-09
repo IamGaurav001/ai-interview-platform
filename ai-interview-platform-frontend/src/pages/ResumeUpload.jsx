@@ -19,7 +19,8 @@ import {
   Shield,
   Target,
   PlayCircle,
-  ExternalLink
+  ExternalLink,
+  Trash2
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import PageLayout from "../components/PageLayout";
@@ -36,6 +37,8 @@ const ResumeUpload = () => {
   const [success, setSuccess] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [activeSession, setActiveSession] = useState(null);
+  const [deletingId, setDeletingId] = useState(null);
+  const [pastResumes, setPastResumes] = useState([]);
 
   const [isDragging, setIsDragging] = useState(false);
   const [showPricingModal, setShowPricingModal] = useState(false);
@@ -67,6 +70,14 @@ const ResumeUpload = () => {
         if (totalCredits <= 0) {
           setShowPricingModal(true);
         }
+      }
+      if (res.data.user?.resumes && Array.isArray(res.data.user.resumes)) {
+        const sorted = [...res.data.user.resumes].sort((a, b) => 
+          new Date(b.uploadedAt) - new Date(a.uploadedAt)
+        );
+        setPastResumes(sorted);
+      } else if (res.data.user?.resume) {
+        setPastResumes([res.data.user.resume]);
       }
     } catch (error) {
       console.error("Error checking credits:", error);
@@ -168,7 +179,6 @@ const ResumeUpload = () => {
     setQuestions("");
     setUploadProgress(0);
     
-    // Clear any existing interval
     if (progressInterval.current) clearInterval(progressInterval.current);
 
     try {
@@ -250,11 +260,9 @@ const ResumeUpload = () => {
           .map((q, idx) => `${idx + 1}. ${q}`)
           .join("\n");
         
-        // Complete the progress bar
         if (progressInterval.current) clearInterval(progressInterval.current);
         setUploadProgress(100);
         
-        // Small delay to let the user see 100%
         setTimeout(() => {
           setQuestions(questionsText);
           setSuccess(true);
@@ -294,16 +302,94 @@ const ResumeUpload = () => {
     }
   };
 
+  const handleUseExisting = async (resumeId = null) => {
+    if (activeSession) return;
+    
+    setLoading(true);
+    setError("");
+    setSuccess(false);
+    setQuestions("");
+    setUploadProgress(20);
+
+    if (progressInterval.current) clearInterval(progressInterval.current);
+    progressInterval.current = setInterval(() => {
+        setUploadProgress((prev) => {
+            if (prev >= 90) return 90;
+            return prev + 5;
+        });
+    }, 200);
+
+    try {
+        const payload = resumeId ? { resumeId } : {};
+        const res = await axiosInstance.post("/resume/existing", payload);
+        
+        let questionsData = null;
+        if (res.data) {
+            if (Array.isArray(res.data.questions)) {
+                questionsData = res.data.questions;
+            } else if (res.data.data && Array.isArray(res.data.data.questions)) {
+                questionsData = res.data.data.questions;
+            }
+        }
+
+        if (questionsData && questionsData.length > 0) {
+            logEvent('Resume Reuse', { success: true });
+            const questionsText = questionsData
+                .map((q, idx) => `${idx + 1}. ${q}`)
+                .join("\n");
+            
+            setUploadProgress(100);
+            clearInterval(progressInterval.current);
+            
+            setTimeout(() => {
+                setQuestions(questionsText);
+                setSuccess(true);
+                setError("");
+            }, 500);
+        } else {
+            throw new Error("No questions generated.");
+        }
+    } catch (err) {
+        clearInterval(progressInterval.current);
+        console.error("Existing resume error:", err);
+        setError(
+            err.response?.data?.message || 
+            err.response?.data?.error || 
+            "Failed to usage existing resume. Please upload a new one."
+        );
+        logEvent('Resume Reuse', { success: false, error: err.message });
+        setUploadProgress(0);
+    } finally {
+        setLoading(false);
+    }
+  };
+
+  const handleDeleteResume = async (resumeId, e) => {
+    e.stopPropagation();
+    // if (!window.confirm("Are you sure you want to delete this resume?")) return;
+
+    setDeletingId(resumeId);
+    try {
+      await axiosInstance.delete(`/resume/${resumeId}`);
+      setPastResumes((prev) => prev.filter((r) => r._id !== resumeId));
+      logEvent('Resume Deleted', { resumeId });
+    } catch (err) {
+      console.error("Failed to delete resume:", err);
+      setError("Failed to delete resume. Please try again.");
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
   // Auto-scroll to questions when they are generated
   useEffect(() => {
     if (success && questions) {
-      // Small timeout to ensure DOM is rendered and animation has started
       const timer = setTimeout(() => {
         const questionsSection = document.getElementById("questions-section");
         if (questionsSection) {
           questionsSection.scrollIntoView({
             behavior: "smooth",
-            block: "center", // Changed to center for better visibility
+            block: "center",
           });
         }
       }, 100);
@@ -330,7 +416,6 @@ const ResumeUpload = () => {
       <SEO title="Resume Upload" description="Upload your resume to generate personalized AI interview questions." />
       
       <div className="min-h-screen bg-slate-50/50 py-6 lg:py-10 relative overflow-hidden">
-        {/* Background Blobs */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full max-w-7xl pointer-events-none z-0">
           <div className="absolute top-20 left-20 w-72 h-72 bg-blue-200/20 rounded-full blur-3xl mix-blend-multiply animate-blob" />
           <div className="absolute top-20 right-20 w-72 h-72 bg-purple-200/20 rounded-full blur-3xl mix-blend-multiply animate-blob animation-delay-2000" />
@@ -343,7 +428,6 @@ const ResumeUpload = () => {
           initial="hidden"
           animate="visible"
         >
-          {/* Header */}
           <motion.div className="text-center mb-6 lg:mb-6" variants={itemVariants}>
             <div className="inline-flex items-center justify-center p-2.5 bg-white rounded-2xl shadow-lg shadow-blue-100/50 mb-3 lg:mb-3 border border-slate-100">
               <Sparkles className="h-5 w-5 lg:h-6 lg:w-6 text-[#1d2f62]" />
@@ -357,7 +441,6 @@ const ResumeUpload = () => {
             </p>
           </motion.div>
 
-          {/* Active Session Alert */}
           {activeSession && (
             <motion.div 
               initial={{ opacity: 0, y: -20 }}
@@ -385,7 +468,8 @@ const ResumeUpload = () => {
             </motion.div>
           )}
 
-          {/* Current Resume Display */}
+
+
           {user?.resumeUrl && !file && (
             <motion.div 
               initial={{ opacity: 0, y: -10 }}
@@ -415,7 +499,6 @@ const ResumeUpload = () => {
           )}
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
-            {/* Main Upload Area */}
             <motion.div 
               className="lg:col-span-8"
               variants={itemVariants}
@@ -606,60 +689,104 @@ const ResumeUpload = () => {
               </div>
             </motion.div>
 
-            {/* Sidebar / Steps */}
             <motion.div 
               className="lg:col-span-4 space-y-6 lg:space-y-6"
               variants={itemVariants}
             >
-              <div className="bg-[#1d2f62] rounded-3xl lg:rounded-[2.5rem] p-6 lg:p-8 text-white shadow-xl lg:shadow-2xl shadow-[#1d2f62]/20 relative overflow-hidden">
-                {/* Decorative circles */}
-                <div className="absolute top-0 right-0 w-48 h-48 lg:w-64 lg:h-64 bg-white/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
-                <div className="absolute bottom-0 left-0 w-48 h-48 lg:w-64 lg:h-64 bg-blue-500/10 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2" />
-                
-                <h3 className="text-lg lg:text-xl font-bold mb-4 lg:mb-6 flex items-center gap-3 lg:gap-4 relative z-10">
-                  <div className="h-8 w-8 lg:h-10 lg:w-10 bg-white/10 rounded-xl lg:rounded-2xl flex items-center justify-center border border-white/20">
-                    <Target className="h-4 w-4 lg:h-5 lg:w-5 text-blue-300" />
+              {pastResumes.length > 0 ? (
+                <div className="bg-white rounded-3xl lg:rounded-[2.5rem] p-6 lg:p-8 shadow-xl lg:shadow-2xl shadow-slate-200/50 border border-slate-100 overflow-hidden relative">
+                   <h3 className="text-lg lg:text-xl font-bold text-slate-900 mb-6 flex items-center gap-3">
+                    <div className="h-10 w-10 bg-blue-50 rounded-2xl flex items-center justify-center border border-blue-100">
+                      <FileText className="h-5 w-5 text-[#1d2f62]" />
+                    </div>
+                    Recent Resumes
+                  </h3>
+                  
+                  <div className="space-y-4 max-h-[280px] overflow-y-auto pr-2 custom-scrollbar">
+                    {pastResumes.map((resume, idx) => (
+                      <div 
+                        key={resume._id || idx}
+                        className="group p-4 rounded-2xl border border-slate-100 bg-slate-50/50 hover:bg-white hover:border-blue-200 hover:shadow-lg hover:shadow-blue-50 transition-all duration-300 cursor-pointer relative"
+                        onClick={() => handleUseExisting(resume._id)}
+                      >
+                         <div className="flex items-start justify-between gap-3">
+                           <div className="flex items-start gap-3 min-w-0">
+                              <div className="mt-1 h-8 w-8 rounded-lg bg-white border border-slate-200 flex items-center justify-center flex-shrink-0 text-slate-400 group-hover:text-blue-600 group-hover:border-blue-100 transition-colors">
+                                <FileText className="h-4 w-4" />
+                              </div>
+                              <div className="min-w-0">
+                                <h4 className="text-sm font-bold text-slate-700 truncate group-hover:text-[#1d2f62] transition-colors">
+                                  {resume.fileName || `Resume ${idx + 1}`}
+                                </h4>
+                                <p className="text-xs text-slate-400 font-medium mt-0.5">
+                                  {resume.uploadedAt ? new Date(resume.uploadedAt).toLocaleString([], { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Unknown date'}
+                                </p>
+                              </div>
+                           </div>
+                           
+                           <div className="flex items-center gap-2">
+                             <button
+                               onClick={(e) => handleDeleteResume(resume._id, e)}
+                               disabled={deletingId === resume._id}
+                               className={`h-8 w-8 rounded-full flex items-center justify-center transition-all z-10 ${
+                                 deletingId === resume._id 
+                                   ? "bg-red-50 text-red-500" 
+                                   : "bg-white border border-slate-500 text-slate-500 hover:bg-red-500 hover:text-white hover:border-red-100"
+                               }`}
+                               title="Delete Resume"
+                             >
+                               {deletingId === resume._id ? (
+                                 <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                               ) : (
+                                 <Trash2 className="h-3.5 w-3.5" />
+                               )}
+                             </button>
+                             <div className="h-8 w-8 rounded-full bg-white border border-slate-100 flex items-center justify-center text-slate-300 group-hover:bg-[#1d2f62] group-hover:text-white group-hover:border-[#1d2f62] transition-all transform group-hover:scale-110 shadow-sm">
+                               <Play className="h-3 w-3 fill-current ml-0.5" />
+                             </div>
+                           </div>
+                         </div>
+                      </div>
+                    ))}
                   </div>
-                  Your Journey
-                </h3>
-                <div className="space-y-6 lg:space-y-8 relative z-10">
-                  <StepItem
-                    icon={Upload}
-                    step="1"
-                    title="Upload Your Resume"
-                    description="Upload your PDF resume securely."
-                  />
-                  <StepItem
-                    icon={Zap}
-                    step="2"
-                    title="AI Analyzes You"
-                    description="We identify your unique skills & experience."
-                  />
-
-                  <StepItem
-                    icon={Play}
-                    step="3"
-                    title="Practice Your Interview"
-                    description="Answer questions tailored just for you."
-                  />
                 </div>
-              </div>
-
-              <div className="bg-emerald-50/50 rounded-3xl lg:rounded-[2.5rem] p-5 lg:p-6 shadow-lg border border-emerald-100/50">
-                <h3 className="text-base lg:text-lg font-bold text-emerald-900 mb-3 lg:mb-3 flex items-center gap-2">
-                  <div className="h-7 w-7 lg:h-8 lg:w-8 bg-emerald-100 rounded-lg lg:rounded-xl flex items-center justify-center">
-                    <Shield className="h-3.5 w-3.5 lg:h-5 lg:w-5 text-emerald-600" />
+              ) : (
+                <div className="bg-[#1d2f62] rounded-3xl lg:rounded-[2.5rem] p-6 lg:p-8 text-white shadow-xl lg:shadow-2xl shadow-[#1d2f62]/20 relative overflow-hidden">
+                  {/* Decorative circles */}
+                  <div className="absolute top-0 right-0 w-48 h-48 lg:w-64 lg:h-64 bg-white/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+                  <div className="absolute bottom-0 left-0 w-48 h-48 lg:w-64 lg:h-64 bg-blue-500/10 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2" />
+                  
+                  <h3 className="text-lg lg:text-xl font-bold mb-4 lg:mb-6 flex items-center gap-3 lg:gap-4 relative z-10">
+                    <div className="h-8 w-8 lg:h-10 lg:w-10 bg-white/10 rounded-xl lg:rounded-2xl flex items-center justify-center border border-white/20">
+                      <Target className="h-4 w-4 lg:h-5 lg:w-5 text-blue-300" />
+                    </div>
+                    Your Journey
+                  </h3>
+                  <div className="space-y-6 lg:space-y-8 relative z-10">
+                    <StepItem
+                      icon={Upload}
+                      step="1"
+                      title="Upload Your Resume"
+                      description="Upload your PDF resume securely."
+                    />
+                    <StepItem
+                      icon={Zap}
+                      step="2"
+                      title="AI Analyzes You"
+                      description="We identify your unique skills & experience."
+                    />
+                    <StepItem
+                      icon={Play}
+                      step="3"
+                      title="Practice Your Interview"
+                      description="Answer questions tailored just for you."
+                    />
                   </div>
-                  Pro Tip
-                </h3>
-                <p className="text-sm lg:text-base text-emerald-800/80 leading-relaxed font-medium">
-                  "The more detailed your resume, the better we can tailor questions to challenge your specific expertise."
-                </p>
-              </div>
+                </div>
+              )}
             </motion.div>
           </div>
 
-          {/* Results Section */}
           <AnimatePresence>
             {success && questions && (
               <motion.div

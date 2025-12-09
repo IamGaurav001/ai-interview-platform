@@ -1,7 +1,7 @@
 import express from "express";
 import multer from "multer";
 import { verifyFirebaseToken } from "../middleware/firebaseAuthMiddleware.js";
-import { analyzeResume } from "../controllers/resumeController.js";
+import { analyzeResume, useExistingResume, deleteResume } from "../controllers/resumeController.js";
 import { hasCredits } from "../middleware/checkEligibility.js";
 
 const router = express.Router();
@@ -61,6 +61,19 @@ router.post(
     });
   },
   analyzeResume
+);
+
+router.post(
+  "/existing",
+  verifyFirebaseToken,
+  hasCredits,
+  useExistingResume
+);
+
+router.delete(
+  "/:id",
+  verifyFirebaseToken,
+  deleteResume
 );
 
 export default router;

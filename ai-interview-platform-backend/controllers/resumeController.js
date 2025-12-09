@@ -3,6 +3,7 @@ import dotenv from "dotenv";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
 import redisClient from "../config/redis.js";
+import User from "../models/User.js";
 
 import { callGeminiWithRetry } from "../utils/geminiHelper.js";
 
@@ -97,137 +98,40 @@ export const analyzeResume = async (req, res) => {
       throw new Error("Resume text too short after cleaning.");
     }
 
-    
+    // Save to user profile (History)
     try {
-      const resumeCacheKey = `resume:${req.user._id}`;
-      await redisClient.setEx(resumeCacheKey, 3600, cleanResumeText);
-      console.log("✅ Resume cached in Redis with 1h TTL");
-    } catch (redisError) {
-      console.warn("⚠️ Failed to cache resume in Redis:", redisError.message);
-    }
-
-    console.log("\n=== PREPARING GEMINI REQUEST ===");
-
-    const prompt = `You are an expert technical interviewer. I'm providing you with a candidate's resume below.
-    
-    Your task: Generate exactly 5 interview questions based on this specific candidate's background.
-
-    RESUME:
-    ${cleanResumeText}
-
-    Now, create 5 numbered interview questions (1-5) that are:
-    - Specific to this candidate's skills, experience, and projects
-    - Suitable for assessing their technical abilities
-    - Clear and professional
-    - Directly related to what's mentioned in their resume
-
-    CRITICAL OUTPUT RULES:
-    - Return ONLY the numbered list of questions.
-    - Do NOT include any introductory text like "Here are the questions" or "Based on the resume".
-    - Do NOT include any closing text.
-    - Each line must start with a number followed by a dot or parenthesis.`;
-
-    console.log("Prompt length:", prompt.length);
-    console.log("Resume snippet in prompt:", prompt.includes(cleanResumeText.substring(0, 100)) ? "✓" : "✗");
-
-    const generationConfig = {
-      temperature: 0.7,
-      topP: 0.9,
-      topK: 40,
-      maxOutputTokens: 2048,
-    };
-
-    console.log("Sending request to Gemini...");
-    
-    let responseText;
-    try {
-      responseText = await callGeminiWithRetry(prompt, {
-        model: "gemini-3.0-pro-exp", 
-        maxRetries: 10,
-        initialDelay: 2000,
-        generationConfig,
+      await User.findByIdAndUpdate(req.user._id, {
+        $push: {
+          resumes: {
+            $each: [{
+              text: cleanResumeText,
+              fileName: req.file.originalname,
+              uploadedAt: new Date()
+            }],
+            $slice: -3 // Keep last 3 resumes
+          }
+        }
       });
-      console.log("✓ Successfully received response from Gemini");
-    } catch (apiError) {
-      console.error("❌ Error calling Gemini API:", apiError.message);
-      
-      if (apiError.message && apiError.message.includes("Rate limit exceeded")) {
-        throw new Error(
-          "The AI service is experiencing high demand and rate limits. Please wait 2-3 minutes and try uploading your resume again. " +
-          "We apologize for the inconvenience."
-        );
-      }
-      
-      if (apiError.message && (apiError.message.includes("404") || apiError.message.includes("not found"))) {
-        throw new Error(
-          "Gemini model not available. Please check your API key and ensure you have access to Gemini models."
-        );
-      }
-      
-      throw apiError;
+      console.log("✅ Resume saved to history");
+    } catch (dbError) {
+      console.error("⚠️ Failed to save resume history:", dbError);
     }
+
+    const result = await generateInterviewQuestions(cleanResumeText, req.user._id);
     
-    console.log("\n=== GEMINI RESPONSE ===");
-    console.log("Response length:", responseText.length);
-    console.log("Response preview:");
-    console.log(responseText.substring(0, 500));
-    console.log("=======================\n");
-
-    const lowerResponse = responseText.toLowerCase();
-    if (lowerResponse.includes('provide the resume') || 
-        lowerResponse.includes('need the resume') ||
-        lowerResponse.includes('you provided "undefined"')) {
-      console.error("⚠️ WARNING: Gemini response indicates it didn't receive resume properly!");
-      console.error("This is unexpected. Check the logs above.");
-    }
-
-    let questionsArray = [];
-    
-    const lines = responseText.split("\n").filter((line) => line.trim());
-    
-    for (const line of lines) {
-      const cleaned = line.replace(/^\d+[\.\)]\s*/, "").trim();
-      
-      const isIntro = /^(here are|based on|sure|okay|i have generated|following are)/i.test(cleaned);
-      const isTooShort = cleaned.length < 15;
-      const isMeta = /^(question|answer|note|tip)/i.test(cleaned);
-      
-      if (!isIntro && !isTooShort && !isMeta) {
-        questionsArray.push(cleaned);
-      }
-    }
-
-    if (questionsArray.length === 0) {
-      const paragraphs = responseText.split(/\n\s*\n/).filter(p => p.trim().length > 10);
-      if (paragraphs.length > 0) {
-        questionsArray = paragraphs.slice(0, 5); 
-      } else {
-        const sentences = responseText.split(/[.!?]+/).filter(s => s.trim().length > 20);
-        questionsArray = sentences.slice(0, 5);
-      }
-    }
-
-    if (questionsArray.length > 5) {
-      questionsArray = questionsArray.slice(0, 5);
-    }
-
-    console.log(`✅ Parsed ${questionsArray.length} questions from response`);
-
-    if (fs.existsSync(filePath)) {
+    // Clean up file if it exists
+    if (filePath && fs.existsSync(filePath)) {
       fs.unlinkSync(filePath);
       console.log("Temporary file cleaned up");
     }
 
-    console.log("Sending successful response to client");
-    console.log("========================================\n");
-
     res.json({ 
-      questions: questionsArray,
+      questions: result.questions,
       resumeText: cleanResumeText,
       metadata: {
         textLength: cleanResumeText.length,
         wordCount: cleanResumeText.split(/\s+/).length,
-        questionsCount: questionsArray.length
+        questionsCount: result.questions.length
       }
     });
 
@@ -264,3 +168,199 @@ export const analyzeResume = async (req, res) => {
     });
   }
 };
+export const useExistingResume = async (req, res) => {
+  try {
+    const { resumeId } = req.body;
+    console.log("=== EXISTING RESUME REQUEST ===", resumeId ? `ID: ${resumeId}` : "Latest");
+    
+    const user = await User.findById(req.user._id);
+
+    if (!user || !user.resumes || user.resumes.length === 0) {
+      return res.status(404).json({ error: "No resumes found. Please upload one first." });
+    }
+
+    let targetResume;
+    
+    if (resumeId) {
+      targetResume = user.resumes.id(resumeId);
+    } else {
+      // Default to the most recent one (last in array)
+      targetResume = user.resumes[user.resumes.length - 1];
+    }
+
+    if (!targetResume) {
+       return res.status(404).json({ error: "Selected resume not found." });
+    }
+
+    const { text: resumeText, fileName } = targetResume;
+    console.log(`Using resume: ${fileName}, length: ${resumeText.length}`);
+
+    const result = await generateInterviewQuestions(resumeText, req.user._id);
+
+    console.log("Sending successful response to client");
+    console.log("========================================\n");
+
+    res.json({ 
+      questions: result.questions,
+      resumeText: resumeText,
+      metadata: {
+        textLength: resumeText.length,
+        wordCount: resumeText.split(/\s+/).length,
+        questionsCount: result.questions.length
+      }
+    });
+
+  } catch (error) {
+    console.error("\n========================================");
+    console.error("❌ ERROR in useExistingResume");
+    console.error("========================================");
+    console.error("Error message:", error.message);
+    
+    let errorMessage = error.message;
+    let statusCode = 500;
+    
+    if (error.message && (error.message.includes('503') || error.message.includes('overloaded'))) {
+      errorMessage = "The AI service is temporarily overloaded. Please try again in a few moments.";
+      statusCode = 503;
+    }
+    
+    res.status(statusCode).json({ 
+      error: statusCode === 503 ? "AI Service Temporarily Unavailable" : "Error generating questions",
+      message: errorMessage,
+      retry: statusCode === 503 ? "Please wait a moment and try again" : undefined
+    });
+  }
+};
+
+export const deleteResume = async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    if (!id) {
+      return res.status(400).json({ error: "Resume ID is required" });
+    }
+
+    const user = await User.findByIdAndUpdate(
+      req.user._id,
+      { $pull: { resumes: { _id: id } } },
+      { new: true }
+    );
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    console.log(`✅ Resume ${id} deleted from history`);
+    res.json({ success: true, message: "Resume deleted successfully" });
+
+  } catch (error) {
+    console.error("Delete resume error:", error);
+    res.status(500).json({ error: "Failed to delete resume" });
+  }
+};
+
+async function generateInterviewQuestions(resumeText, userId) {
+    try {
+      const resumeCacheKey = `resume:${userId}`;
+      await redisClient.setEx(resumeCacheKey, 3600, resumeText);
+      console.log("✅ Resume cached in Redis with 1h TTL");
+    } catch (redisError) {
+      console.warn("⚠️ Failed to cache resume in Redis:", redisError.message);
+    }
+
+    console.log("\n=== PREPARING GEMINI REQUEST ===");
+
+    const prompt = `You are an expert technical interviewer. I'm providing you with a candidate's resume below.
+    
+    Your task: Generate exactly 5 interview questions based on this specific candidate's background.
+
+    RESUME:
+    ${resumeText}
+
+    Now, create 5 numbered interview questions (1-5) that are:
+    - Specific to this candidate's skills, experience, and projects
+    - Suitable for assessing their technical abilities
+    - Clear and professional
+    - Directly related to what's mentioned in their resume
+
+    CRITICAL OUTPUT RULES:
+    - Return ONLY the numbered list of questions.
+    - Do NOT include any introductory text like "Here are the questions" or "Based on the resume".
+    - Do NOT include any closing text.
+    - Each line must start with a number followed by a dot or parenthesis.`;
+
+    console.log("Prompt length:", prompt.length);
+    const generationConfig = {
+      temperature: 0.7,
+      topP: 0.9,
+      topK: 40,
+      maxOutputTokens: 2048,
+    };
+
+    console.log("Sending request to Gemini...");
+    
+    let responseText;
+    try {
+      responseText = await callGeminiWithRetry(prompt, {
+        model: "gemini-3.0-pro-exp", 
+        maxRetries: 10,
+        initialDelay: 2000,
+        generationConfig,
+      });
+      console.log("✓ Successfully received response from Gemini");
+    } catch (apiError) {
+      console.error("❌ Error calling Gemini API:", apiError.message);
+      
+      if (apiError.message && apiError.message.includes("Rate limit exceeded")) {
+        throw new Error(
+          "The AI service is experiencing high demand and rate limits. Please wait 2-3 minutes and try again."
+        );
+      }
+      
+      if (apiError.message && (apiError.message.includes("404") || apiError.message.includes("not found"))) {
+        throw new Error(
+          "Gemini model not available. Please check your API key."
+        );
+      }
+      
+      throw apiError;
+    }
+    
+    console.log("\n=== GEMINI RESPONSE ===");
+    console.log("Response preview:", responseText.substring(0, 500));
+    console.log("=======================\n");
+
+    let questionsArray = [];
+    
+    const lines = responseText.split("\n").filter((line) => line.trim());
+    
+    for (const line of lines) {
+      const cleaned = line.replace(/^\d+[\.\)]\s*/, "").trim();
+      
+      const isIntro = /^(here are|based on|sure|okay|i have generated|following are)/i.test(cleaned);
+      const isTooShort = cleaned.length < 15;
+      const isMeta = /^(question|answer|note|tip)/i.test(cleaned);
+      
+      if (!isIntro && !isTooShort && !isMeta) {
+        questionsArray.push(cleaned);
+      }
+    }
+
+    if (questionsArray.length === 0) {
+      const paragraphs = responseText.split(/\n\s*\n/).filter(p => p.trim().length > 10);
+      if (paragraphs.length > 0) {
+        questionsArray = paragraphs.slice(0, 5); 
+      } else {
+        const sentences = responseText.split(/[.!?]+/).filter(s => s.trim().length > 20);
+        questionsArray = sentences.slice(0, 5);
+      }
+    }
+
+    if (questionsArray.length > 5) {
+      questionsArray = questionsArray.slice(0, 5);
+    }
+
+    console.log(`✅ Parsed ${questionsArray.length} questions from response`);
+
+    return { questions: questionsArray };
+}
