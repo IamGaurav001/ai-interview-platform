@@ -103,7 +103,7 @@ const DemoVideo = () => {
                     <div className="relative w-full h-full bg-black pt-10"> {/* Added padding-top for header */}
                       <iframe 
                         className="w-full h-full"
-                        src="https://www.youtube.com/embed/SArYgKtgC10?autoplay=1" 
+                        src="https://www.youtube.com/embed/SArYgKtgC10?autoplay=1&modestbranding=1&rel=0&iv_load_policy=3&controls=0&disablekb=1" 
                         title="PrepHire Demo Video"
                         frameBorder="0"
                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
