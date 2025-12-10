@@ -302,7 +302,7 @@ async function generateInterviewQuestions(resumeText, userId) {
     let responseText;
     try {
       responseText = await callGeminiWithRetry(prompt, {
-        model: "gemini-2.0-flash-exp", // Switched to faster, more reliable model
+        model: "gemini-2.0-flash-lite", // Switched to faster, more reliable model
         maxRetries: 3,
         initialDelay: 1000,
         generationConfig,

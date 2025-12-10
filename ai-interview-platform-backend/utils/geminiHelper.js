@@ -5,7 +5,7 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 export const callGeminiWithRetry = async (prompt, options = {}) => {
   const {
-    model = "gemini-3.0-pro-exp", 
+    model = "gemini-2.0-flash-lite", 
     maxRetries = 10,
     initialDelay = 2000,
     generationConfig = {
@@ -135,7 +135,7 @@ export const callGeminiWithRetry = async (prompt, options = {}) => {
 };
 
 
-export const getGeminiModel = (preferredModel = "gemini-3.0-pro-exp") => {
+export const getGeminiModel = (preferredModel = "gemini-2.0-flash-lite") => {
   return genAI.getGenerativeModel({ model: preferredModel });
 };
 

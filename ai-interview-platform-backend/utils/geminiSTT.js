@@ -7,7 +7,7 @@ dotenv.config();
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 
-const DEFAULT_MODEL = "gemini-3.0-pro-exp"; 
+const DEFAULT_MODEL = "gemini-2.0-flash-lite"; 
 const FALLBACK_MODEL = "gemini-2.0-flash-lite"; 
 const MAX_RETRIES = 10; 
 const INITIAL_DELAY_MS = 2000;

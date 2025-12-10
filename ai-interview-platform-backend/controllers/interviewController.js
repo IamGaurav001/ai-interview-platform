@@ -82,7 +82,7 @@ export const evaluateAnswer = async (req, res) => {
     let feedbackText = "";
     try {
       feedbackText = await callGeminiWithRetry(prompt, {
-        model: "gemini-3.0-pro-exp",
+        model: "gemini-2.0-flash-lite",
         maxRetries: 5,
         initialDelay: 2000,
       });
@@ -103,7 +103,7 @@ export const evaluateAnswer = async (req, res) => {
         const repairPrompt = `Convert this to valid JSON with correctness, clarity, confidence (0-10), and overall_feedback:\n${feedbackText}`;
         try {
           feedbackText = await callGeminiWithRetry(repairPrompt, {
-            model: "gemini-3.0-pro-exp",
+            model: "gemini-2.0-flash-lite",
             maxRetries: 3,
           });
         } catch (repairError) {
@@ -132,7 +132,7 @@ Text:
 ${feedbackText}`;
       try {
         const repairText = await callGeminiWithRetry(repairPrompt, {
-          model: "gemini-3.0-pro-exp",
+          model: "gemini-2.0-flash-lite",
           maxRetries: 2,
         });
         feedback = parseFeedbackSafely(repairText);
@@ -521,7 +521,7 @@ Generate only the first interview question. Do not include any introduction or e
     let firstQuestion;
     try {
       firstQuestion = await callGeminiWithRetry(prompt, {
-        model: "gemini-3.0-pro-exp",
+        model: "gemini-2.0-flash-lite",
         maxRetries: 5,
         initialDelay: 2000,
       });
@@ -704,7 +704,7 @@ QUESTION: [next question or "INTERVIEW_COMPLETE" if conditions above are met]
     let aiResponse;
     try {
       aiResponse = await callGeminiWithRetry(prompt, {
-        model: "gemini-3.0-pro-exp",
+        model: "gemini-2.0-flash-lite",
         maxRetries: 5,
         initialDelay: 2000,
       });
