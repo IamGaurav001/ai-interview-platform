@@ -153,7 +153,7 @@ export const callGeminiWithRetry = async (prompt, options = {}) => {
         
         const delay = initialDelay * Math.pow(2, Math.min(attempt - 1, 6)); 
         const jitter = Math.random() * 1000; 
-        const totalDelay = Math.min(delay + jitter, 10000); // Max 10 seconds instead of 60 
+        const totalDelay = Math.max(2000, Math.min(delay + jitter, 10000)); // Minimum 2s to respect 1 req/sec limit
 
         if (attempt < maxRetries) {
           console.log(`⏳ Waiting ${Math.round(totalDelay)}ms before retry ${attempt + 1}...`);
