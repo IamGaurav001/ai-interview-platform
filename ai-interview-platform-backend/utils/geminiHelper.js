@@ -24,10 +24,18 @@ export const callGeminiWithRetry = async (prompt, options = {}) => {
     try {
       console.log(`🔄 Attempt ${attempt}/${maxRetries} with model: ${currentModel}`);
       const geminiModel = genAI.getGenerativeModel({ model: currentModel });
-      const result = await geminiModel.generateContent({
+      
+      // Add timeout wrapper to prevent hanging
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Gemini API timeout after 45s')), 45000)
+      );
+      
+      const apiPromise = geminiModel.generateContent({
         contents: [{ role: "user", parts: [{ text: prompt }] }],
         generationConfig,
       });
+      
+      const result = await Promise.race([apiPromise, timeoutPromise]);
 
       const responseText = result.response.text().trim();
       console.log(`✅ Gemini API call successful (attempt ${attempt}, model: ${currentModel})`);
@@ -61,7 +69,7 @@ export const callGeminiWithRetry = async (prompt, options = {}) => {
         
         const delay = initialDelay * Math.pow(2, Math.min(attempt - 1, 6)); 
         const jitter = Math.random() * 1000; 
-        const totalDelay = Math.min(delay + jitter, 60000); 
+        const totalDelay = Math.min(delay + jitter, 10000); // Max 10 seconds instead of 60 
 
         if (attempt < maxRetries) {
           console.log(`⏳ Waiting ${Math.round(totalDelay)}ms before retry ${attempt + 1}...`);
