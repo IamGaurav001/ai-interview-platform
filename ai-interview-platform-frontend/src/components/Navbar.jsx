@@ -99,13 +99,26 @@ const Navbar = () => {
 
   return (
     <>
+      {/* Backdrop overlay for mobile menu */}
+      <AnimatePresence>
+        {mobileMenuOpen && windowWidth < 768 && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40"
+            onClick={() => setMobileMenuOpen(false)}
+          />
+        )}
+      </AnimatePresence>
     
       <motion.nav
         initial={{ y: -100, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.5, ease: "easeOut" }}
         className={`fixed left-1/2 -translate-x-1/2 z-50 transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] rounded-full border ${
-          isScrolled
+          isScrolled || (mobileMenuOpen && windowWidth < 768)
             ? "top-2 w-[calc(100%-1rem)] md:w-[calc(100%-3rem)] max-w-5xl bg-white shadow-md border-gray-200/50 py-1.5"
             : "top-4 w-[calc(100%-2rem)] max-w-screen-2xl bg-white/60 backdrop-blur-md shadow-sm border-transparent py-2.5"
         }`}
@@ -240,12 +253,13 @@ const Navbar = () => {
                   {windowWidth < 768 && (
                     <button
                       onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                      className="p-2 rounded-xl text-gray-600 hover:bg-gray-100 active:scale-95 transition-transform"
+                      className="p-2 rounded-xl text-gray-700 hover:bg-gray-100 active:scale-95 transition-all duration-200 z-50"
+                      aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
                     >
                       {mobileMenuOpen ? (
-                        <X className="h-6 w-6" />
+                        <X className="h-6 w-6 stroke-[2.5]" />
                       ) : (
-                        <Menu className="h-6 w-6" />
+                        <Menu className="h-6 w-6 stroke-[2.5]" />
                       )}
                     </button>
                   )}
@@ -268,105 +282,111 @@ const Navbar = () => {
               )}
             </div>
           </div>
-        </div>
+         </div>
 
 
-        <AnimatePresence>
-          {mobileMenuOpen && windowWidth < 768 && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.3, ease: "easeInOut" }}
-              className="border-t border-gray-100 bg-white/50 backdrop-blur-xl rounded-b-2xl overflow-hidden"
-            >
-              <div className="px-4 py-4 space-y-2">
-                {user && (
-                  <div className="flex items-center gap-3 px-2 pb-3 border-b border-gray-200/50">
-                    {user.photoURL ? (
-                      <img
-                        src={user.photoURL}
-                        alt={userDisplayName}
-                        className="h-10 w-10 rounded-full object-cover border border-gray-200 shadow-sm"
-                      />
-                    ) : (
-                      <div className="h-10 w-10 rounded-full bg-primary-100 text-primary-600 flex items-center justify-center font-bold text-lg">
-                        {userInitials}
-                      </div>
-                    )}
-                    <div>
-                      <p className="font-semibold text-gray-900">
-                        {userDisplayName}
-                      </p>
-                      <p className="text-xs text-gray-500">{user.email}</p>
+      </motion.nav>
+
+      {/* Mobile Menu Dropdown - Outside navbar */}
+      <AnimatePresence>
+        {mobileMenuOpen && windowWidth < 768 && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.3, ease: "easeInOut" }}
+            className={`fixed left-1/2 -translate-x-1/2 z-50 w-[calc(100%-1rem)] max-w-md bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden ${
+              isScrolled ? "top-[72px]" : "top-[88px]"
+            }`}
+          >
+            <div className="px-4 py-4 space-y-2 max-h-[calc(100vh-120px)] overflow-y-auto">
+              {user && (
+                <div className="flex items-center gap-3 px-3 py-3 mb-3 bg-gradient-to-r from-primary-50 to-blue-50 rounded-2xl border border-primary-100/50">
+                  {user.photoURL ? (
+                    <img
+                      src={user.photoURL}
+                      alt={userDisplayName}
+                      className="h-12 w-12 rounded-full object-cover border-2 border-white shadow-md"
+                    />
+                  ) : (
+                    <div className="h-12 w-12 rounded-full bg-gradient-to-br from-primary-500 to-primary-600 text-white flex items-center justify-center font-bold text-lg shadow-md">
+                      {userInitials}
                     </div>
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-gray-900 truncate">
+                      {userDisplayName}
+                    </p>
+                    <p className="text-xs text-gray-600 truncate">{user.email}</p>
                   </div>
-                )}
+                </div>
+              )}
 
-                <div className="space-y-1">
-                  {user ? (
-                    <>
-                      {navLinks.map((link) => {
-                        const Icon = link.icon;
-                        return (
-                          <Link
-                            key={link.path}
-                            to={link.path}
-                            className={`flex flex-row items-center gap-3 px-4 py-3 rounded-xl text-base font-medium transition-colors ${
-                              isActive(link.path)
-                                ? "bg-primary-50 text-primary-700"
-                                : "text-gray-600 hover:bg-gray-50/80 hover:text-gray-900"
-                            }`}
-                          >
-                            <Icon className="h-5 w-5" />
-                            {link.label}
-                          </Link>
-                        );
-                      })}
-                      
+              <div className="space-y-1">
+                {user ? (
+                  <>
+                    {navLinks.map((link) => {
+                      const Icon = link.icon;
+                      return (
+                        <Link
+                          key={link.path}
+                          to={link.path}
+                          className={`flex flex-row items-center gap-3 px-4 py-3.5 rounded-xl text-base font-medium transition-all duration-200 ${
+                            isActive(link.path)
+                              ? "bg-gradient-to-r from-primary-50 to-blue-50 text-primary-700 shadow-sm"
+                              : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+                          }`}
+                        >
+                          <Icon className={`h-5 w-5 ${isActive(link.path) ? "text-primary-600" : "text-gray-500"}`} />
+                          {link.label}
+                        </Link>
+                      );
+                    })}
+                    
 
-                      <Link
-                        to="/settings"
-                        className={`flex flex-row items-center gap-3 px-4 py-3 rounded-xl text-base font-medium transition-colors ${
-                          isActive("/settings")
-                            ? "bg-primary-50 text-primary-700"
-                            : "text-gray-600 hover:bg-gray-50/80 hover:text-gray-900"
-                        }`}
-                      >
-                        <Settings className="h-5 w-5" />
-                        Settings
-                      </Link>
-                      
+                    <Link
+                      to="/settings"
+                      className={`flex flex-row items-center gap-3 px-4 py-3.5 rounded-xl text-base font-medium transition-all duration-200 ${
+                        isActive("/settings")
+                          ? "bg-gradient-to-r from-primary-50 to-blue-50 text-primary-700 shadow-sm"
+                          : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+                      }`}
+                    >
+                      <Settings className={`h-5 w-5 ${isActive("/settings") ? "text-primary-600" : "text-gray-500"}`} />
+                      Settings
+                    </Link>
+                    
+                    <div className="pt-2 mt-2 border-t border-gray-100">
                       <button
                         onClick={handleLogout}
-                        className="w-full flex flex-row items-center gap-3 px-4 py-3 mt-2 rounded-xl text-base font-medium text-red-600 hover:bg-red-50/80 transition-colors"
+                        className="w-full flex flex-row items-center gap-3 px-4 py-3.5 rounded-xl text-base font-medium text-red-600 hover:bg-red-50 transition-all duration-200"
                       >
                         <LogOut className="h-5 w-5" />
                         Logout
                       </button>
-                    </>
-                  ) : (
-                    <div className="grid gap-3">
-                      <Link
-                        to="/login"
-                        className="flex justify-center w-full px-4 py-3 rounded-xl text-gray-700 bg-gray-50 font-medium"
-                      >
-                        Log In
-                      </Link>
-                      <Link
-                        to="/register"
-                        className="flex justify-center w-full px-4 py-3 rounded-xl text-white bg-[#1d2f62] font-medium shadow-lg hover:shadow-xl hover:shadow-[#1d2f62]/40 hover:scale-105 active:scale-95 transition-all duration-300"
-                      >
-                        Create Account
-                      </Link>
                     </div>
-                  )}
-                </div>
+                  </>
+                ) : (
+                  <div className="grid gap-3 pt-2">
+                    <Link
+                      to="/login"
+                      className="flex justify-center w-full px-4 py-3.5 rounded-xl text-gray-700 bg-gray-50 hover:bg-gray-100 font-medium transition-all duration-200"
+                    >
+                      Log In
+                    </Link>
+                    <Link
+                      to="/register"
+                      className="flex justify-center w-full px-4 py-3.5 rounded-xl text-white bg-gradient-to-r from-[#1d2f62] to-[#2a4080] font-medium shadow-lg hover:shadow-xl hover:shadow-[#1d2f62]/40 hover:scale-[1.02] active:scale-95 transition-all duration-300"
+                    >
+                      Create Account
+                    </Link>
+                  </div>
+                )}
               </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </motion.nav>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </>
   );
 };
