@@ -7,8 +7,8 @@ dotenv.config();
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 
-const DEFAULT_MODEL = "gemini-2.0-flash-lite"; 
-const FALLBACK_MODEL = "gemini-2.0-flash-lite"; 
+const DEFAULT_MODEL = "gemini-2.0-flash"; 
+const FALLBACK_MODEL = "gemini-2.0-flash"; 
 const MAX_RETRIES = 10; 
 const INITIAL_DELAY_MS = 2000;
 
@@ -89,8 +89,8 @@ export async function geminiSpeechToText(audioFilePath, mimeType = "audio/webm")
          
          
          if (!hasTriedFallback && currentModel === "gemini-3.0-pro-exp") {
-             console.log("🔄 gemini-3.0-pro-exp rate limited, switching to gemini-2.0-flash-lite...");
-             currentModel = "gemini-2.0-flash-lite";
+             console.log("🔄 gemini-3.0-pro-exp rate limited, switching to gemini-2.0-flash...");
+             currentModel = "gemini-2.0-flash";
              hasTriedFallback = true;
              await new Promise((resolve) => setTimeout(resolve, 1500));
              continue;
@@ -115,12 +115,12 @@ export async function geminiSpeechToText(audioFilePath, mimeType = "audio/webm")
       
       if (isModelNotFound && attempt === 1) {
         if (currentModel === "gemini-3.0-pro-exp") {
-          console.log("🔄 gemini-3.0-pro-exp not available, trying gemini-2.0-flash-lite as fallback...");
-          currentModel = "gemini-2.0-flash-lite";
+          console.log("🔄 gemini-3.0-pro-exp not available, trying gemini-2.0-flash as fallback...");
+          currentModel = "gemini-2.0-flash";
           hasTriedFallback = true;
           continue;
-        } else if (currentModel === "gemini-2.0-flash-lite") {
-          console.log("🔄 gemini-2.0-flash-lite not available, trying gemini-2.0-flash as fallback...");
+        } else if (currentModel === "gemini-2.0-flash") {
+          console.log("🔄 gemini-2.0-flash not available, trying gemini-2.0-flash as fallback...");
           currentModel = "gemini-2.0-flash";
           hasTriedFallback = true;
           continue;

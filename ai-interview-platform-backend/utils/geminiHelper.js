@@ -73,7 +73,7 @@ const markKeySuccess = (keyInfo) => {
 const genAI = new GoogleGenerativeAI(API_KEYS[0]); 
 export const callGeminiWithRetry = async (prompt, options = {}) => {
   const {
-    model = "gemini-2.0-flash-lite", 
+    model = "gemini-2.0-flash", 
     maxRetries = 10,
     initialDelay = 2000,
     generationConfig = {
@@ -142,8 +142,8 @@ export const callGeminiWithRetry = async (prompt, options = {}) => {
 
         
         if (!hasTriedFallback && currentModel === "gemini-3.0-pro-exp") {
-             console.log("🔄 gemini-3.0-pro-exp rate limited, switching to gemini-2.0-flash-lite...");
-             currentModel = "gemini-2.0-flash-lite";
+             console.log("🔄 gemini-3.0-pro-exp rate limited, switching to gemini-2.0-flash...");
+             currentModel = "gemini-2.0-flash";
              hasTriedFallback = true;
              
              await new Promise((resolve) => setTimeout(resolve, 1500));
@@ -169,12 +169,12 @@ export const callGeminiWithRetry = async (prompt, options = {}) => {
       
       if (isModelNotFound && attempt === 1) {
         if (currentModel === "gemini-3.0-pro-exp") {
-          console.log("🔄 gemini-3.0-pro-exp not available, trying gemini-2.0-flash-lite as fallback...");
-          currentModel = "gemini-2.0-flash-lite";
+          console.log("🔄 gemini-3.0-pro-exp not available, trying gemini-2.0-flash as fallback...");
+          currentModel = "gemini-2.0-flash";
           hasTriedFallback = true;
           continue;
-        } else if (currentModel === "gemini-2.0-flash-lite") {
-          console.log("🔄 gemini-2.0-flash-lite not available, trying gemini-2.0-flash as fallback...");
+        } else if (currentModel === "gemini-2.0-flash") {
+          console.log("🔄 gemini-2.0-flash not available, trying gemini-2.0-flash as fallback...");
           currentModel = "gemini-2.0-flash";
           hasTriedFallback = true;
           continue;
@@ -219,7 +219,7 @@ export const callGeminiWithRetry = async (prompt, options = {}) => {
 };
 
 
-export const getGeminiModel = (preferredModel = "gemini-2.0-flash-lite") => {
+export const getGeminiModel = (preferredModel = "gemini-2.0-flash") => {
   return genAI.getGenerativeModel({ model: preferredModel });
 };
 
