@@ -668,7 +668,7 @@ const ResumeUpload = () => {
                             <Loader2 className="h-5 w-5 lg:h-6 lg:w-6 animate-spin" />
                             <span>
                               {uploadProgress > 0
-                                ? `Analyzing... ${uploadProgress}%`
+                                ? `Analyzing... ${Math.round(uploadProgress)}%`
                                 : "Processing..."}
                             </span>
                             <div
