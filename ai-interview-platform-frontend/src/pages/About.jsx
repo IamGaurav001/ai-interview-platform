@@ -6,7 +6,7 @@ import SEO from "../components/SEO";
 import Footer from "../components/landing/Footer";
 
 const About = () => {
-
+//Hi
   const values = [
     {
       icon: Target,
