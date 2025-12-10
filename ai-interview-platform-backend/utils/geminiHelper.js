@@ -1,8 +1,76 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
+const API_KEYS = process.env.GEMINI_API_KEY 
+  ? process.env.GEMINI_API_KEY.split(',').map(k => k.trim()).filter(k => k)
+  : [];
 
+if (API_KEYS.length === 0) {
+  throw new Error("GEMINI_API_KEY environment variable is not set");
+}
+
+// Track API key health and usage
+const keyHealth = API_KEYS.map((key, index) => ({
+  key,
+  index,
+  failures: 0,
+  lastFailure: null,
+  successCount: 0,
+  isHealthy: true,
+  cooldownUntil: null,
+}));
+
+let currentKeyIndex = 0;
+const requestQueue = [];
+let isProcessingQueue = false;
+const MAX_CONCURRENT_REQUESTS = 5; 
+let activeRequests = 0;
+
+  const getNextApiKey = () => {
+  const now = Date.now();
+  
+  const availableKeys = keyHealth.filter(k => 
+    k.isHealthy && (!k.cooldownUntil || k.cooldownUntil < now)
+  );
+  
+  if (availableKeys.length === 0) {
+    const nextAvailable = keyHealth.reduce((min, k) => 
+      (!min.cooldownUntil || (k.cooldownUntil && k.cooldownUntil < min.cooldownUntil)) ? k : min
+    );
+    console.warn(`⚠️ All API keys in cooldown. Using key ${nextAvailable.index + 1} (cooldown ends in ${Math.round((nextAvailable.cooldownUntil - now) / 1000)}s)`);
+    return nextAvailable;
+  }
+  
+  currentKeyIndex = (currentKeyIndex + 1) % availableKeys.length;
+  return availableKeys[currentKeyIndex];
+};
+
+const markKeyFailure = (keyInfo, error) => {
+  keyInfo.failures++;
+  keyInfo.lastFailure = Date.now();
+  
+    const cooldownDuration = Math.min(30000 * Math.pow(2, keyInfo.failures - 1), 300000);
+  keyInfo.cooldownUntil = Date.now() + cooldownDuration;
+  
+  if (keyInfo.failures >= 3) {
+    keyInfo.isHealthy = false;
+    console.error(`❌ API Key ${keyInfo.index + 1} marked unhealthy after ${keyInfo.failures} failures`);
+  }
+  
+  console.warn(`⚠️ API Key ${keyInfo.index + 1} in cooldown for ${cooldownDuration / 1000}s`);
+};
+
+const markKeySuccess = (keyInfo) => {
+  keyInfo.successCount++;
+  keyInfo.failures = Math.max(0, keyInfo.failures - 1); 
+  
+  if (keyInfo.successCount % 3 === 0 && !keyInfo.isHealthy) {
+    keyInfo.isHealthy = true;
+    console.log(`✅ API Key ${keyInfo.index + 1} restored to healthy status`);
+  }
+};
+
+const genAI = new GoogleGenerativeAI(API_KEYS[0]); 
 export const callGeminiWithRetry = async (prompt, options = {}) => {
   const {
     model = "gemini-2.0-flash-lite", 
@@ -21,9 +89,15 @@ export const callGeminiWithRetry = async (prompt, options = {}) => {
   let hasTriedFallback = false; 
 
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    let keyInfo = null;
+    
     try {
-      console.log(`🔄 Attempt ${attempt}/${maxRetries} with model: ${currentModel}`);
-      const geminiModel = genAI.getGenerativeModel({ model: currentModel });
+      // Get next healthy API key
+      keyInfo = getNextApiKey();
+      const geminiInstance = new GoogleGenerativeAI(keyInfo.key);
+      
+      console.log(`🔄 Attempt ${attempt}/${maxRetries} with model: ${currentModel} (Key ${keyInfo.index + 1}/${API_KEYS.length}, Health: ${keyInfo.isHealthy ? '✅' : '⚠️'})`);
+      const geminiModel = geminiInstance.getGenerativeModel({ model: currentModel });
       
       // Add timeout wrapper to prevent hanging
       const timeoutPromise = new Promise((_, reject) => 
@@ -38,7 +112,11 @@ export const callGeminiWithRetry = async (prompt, options = {}) => {
       const result = await Promise.race([apiPromise, timeoutPromise]);
 
       const responseText = result.response.text().trim();
-      console.log(`✅ Gemini API call successful (attempt ${attempt}, model: ${currentModel})`);
+      
+      // Mark key as successful
+      markKeySuccess(keyInfo);
+      
+      console.log(`✅ Gemini API call successful (attempt ${attempt}, model: ${currentModel}, Key ${keyInfo.index + 1})`);
       return responseText;
     } catch (error) {
       lastError = error;
@@ -54,7 +132,13 @@ export const callGeminiWithRetry = async (prompt, options = {}) => {
 
       
       if (isRateLimit) {
-        console.warn(`⚠️ Rate limit error (429) on attempt ${attempt}/${maxRetries} with model ${currentModel}`);
+        // Mark this key as failed and put in cooldown
+        if (keyInfo) {
+          markKeyFailure(keyInfo, error);
+        }
+        
+        console.warn(`⚠️ Rate limit error (429) on attempt ${attempt}/${maxRetries} with model ${currentModel} (Key ${keyInfo?.index + 1 || 'unknown'})`);
+
 
         
         if (!hasTriedFallback && currentModel === "gemini-3.0-pro-exp") {
