@@ -7,8 +7,8 @@ dotenv.config();
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 
-const DEFAULT_MODEL = "gemini-2.0-flash"; 
-const FALLBACK_MODEL = "gemini-2.0-flash"; 
+const DEFAULT_MODEL = "gemini-3.0-pro-exp"; // Using Gemini 3.0 Pro (experimental) for competition
+const FALLBACK_MODEL = "gemini-2.0-flash"; // Fallback to 2.0 flash if 3.0 fails 
 const MAX_RETRIES = 10; 
 const INITIAL_DELAY_MS = 2000;
 
@@ -116,11 +116,6 @@ export async function geminiSpeechToText(audioFilePath, mimeType = "audio/webm")
       if (isModelNotFound && attempt === 1) {
         if (currentModel === "gemini-3.0-pro-exp") {
           console.log("🔄 gemini-3.0-pro-exp not available, trying gemini-2.0-flash as fallback...");
-          currentModel = "gemini-2.0-flash";
-          hasTriedFallback = true;
-          continue;
-        } else if (currentModel === "gemini-2.0-flash") {
-          console.log("🔄 gemini-2.0-flash not available, trying gemini-2.0-flash as fallback...");
           currentModel = "gemini-2.0-flash";
           hasTriedFallback = true;
           continue;
