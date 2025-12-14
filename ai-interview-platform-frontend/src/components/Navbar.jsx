@@ -119,8 +119,8 @@ const Navbar = () => {
         transition={{ duration: 0.5, ease: "easeOut" }}
         className={`fixed left-1/2 -translate-x-1/2 z-50 transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] rounded-full border ${
           isScrolled || (mobileMenuOpen && windowWidth < 768)
-            ? "top-2 w-[calc(100%-1rem)] md:w-[calc(100%-3rem)] max-w-5xl bg-white shadow-md border-gray-200/50 py-1.5"
-            : "top-4 w-[calc(100%-2rem)] max-w-screen-2xl bg-white/60 backdrop-blur-md shadow-sm border-transparent py-2.5"
+            ? "top-2 w-[calc(100%-1rem)] md:w-[calc(100%-3rem)] max-w-5xl bg-white shadow-md border-gray-200/50 py-1"
+            : "top-4 w-[calc(100%-2rem)] max-w-screen-2xl bg-white/60 backdrop-blur-md shadow-sm border-transparent py-1.5"
         }`}
       >
         <div className="px-4 sm:px-6 py-1">
@@ -133,12 +133,12 @@ const Navbar = () => {
               <img
                 src={prephireIcon}
                 alt="PrepHire Icon"
-                className="h-10 w-10 transition-transform duration-300 group-hover:scale-105 rounded-full"
+                className="h-8 w-8 transition-transform duration-300 group-hover:scale-105 rounded-full"
               />
               <img
                 src={logo}
                 alt="PrepHire"
-                className="h-8 w-auto transition-transform duration-300 group-hover:scale-105 -ml-2"
+                className="h-6 w-auto transition-transform duration-300 group-hover:scale-105 -ml-2"
               />
             </Link>
 
