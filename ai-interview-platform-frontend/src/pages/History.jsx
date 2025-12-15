@@ -14,31 +14,38 @@ import {
   Clock,
   ArrowRight,
   BarChart3,
-  Sparkles
+  Sparkles,
+  Target,
+  Zap,
+  BookOpen
 } from "lucide-react";
 import Loader from "../components/Loader";
 import PageLayout from "../components/PageLayout";
 import { motion, AnimatePresence } from "framer-motion";
 import SEO from "../components/SEO";
+import { AreaChart, Area, ResponsiveContainer } from "recharts";
+import { useNavigate } from "react-router-dom";
+
+// --- Utility Functions ---
 
 const getConfidenceBadge = (score) => {
   const numScore = parseFloat(score);
   if (numScore >= 8) {
     return (
-      <span className="px-4 py-1.5 bg-emerald-100 text-emerald-800 text-sm font-bold rounded-full flex items-center gap-2 border border-emerald-200">
-        <TrendingUp className="h-4 w-4" /> Strong
+      <span className="px-3 py-1 bg-emerald-100 text-emerald-800 text-xs font-bold rounded-full flex items-center gap-1.5 border border-emerald-200">
+        <TrendingUp className="h-3 w-3" /> Strong
       </span>
     );
   } else if (numScore >= 5) {
     return (
-      <span className="px-4 py-1.5 bg-amber-100 text-amber-800 text-sm font-bold rounded-full flex items-center gap-2 border border-amber-200">
-        <div className="h-2.5 w-2.5 rounded-full bg-amber-500" /> Average
+      <span className="px-3 py-1 bg-blue-100 text-blue-800 text-xs font-bold rounded-full flex items-center gap-1.5 border border-blue-200">
+        <div className="h-2 w-2 rounded-full bg-blue-500" /> Good Progress
       </span>
     );
   } else {
     return (
-      <span className="px-4 py-1.5 bg-red-100 text-red-800 text-sm font-bold rounded-full flex items-center gap-2 border border-red-200">
-        <AlertCircle className="h-4 w-4" /> Weak
+      <span className="px-3 py-1 bg-amber-100 text-amber-800 text-xs font-bold rounded-full flex items-center gap-1.5 border border-amber-200">
+        <Target className="h-3 w-3" /> Needs Focus
       </span>
     );
   }
@@ -53,9 +60,6 @@ const formatSessionDate = (session) => {
     return new Intl.DateTimeFormat('en-US', {
       month: 'short',
       day: 'numeric',
-      hour: 'numeric',
-      minute: 'numeric',
-      hour12: true
     }).format(date);
   } catch (e) {
     return "Invalid date";
@@ -119,7 +123,7 @@ const ReadMoreText = ({ text, limit = 150, className = "" }) => {
           e.stopPropagation();
           setIsExpanded(!isExpanded);
         }}
-        className="ml-1 text-blue-600 font-bold text-sm hover:underline focus:outline-none inline-flex items-center gap-0.5"
+        className="ml-1 text-blue-600 font-bold text-xs hover:underline focus:outline-none inline-flex items-center gap-0.5"
       >
         {isExpanded ? "Show Less" : "Read More"}
       </button>
@@ -127,7 +131,53 @@ const ReadMoreText = ({ text, limit = 150, className = "" }) => {
   );
 };
 
+// --- Components ---
+
+const FilterChip = ({ label, active, onClick }) => (
+  <button
+    onClick={onClick}
+    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all duration-300 border ${
+      active 
+        ? "bg-[#1d2f62] text-white border-[#1d2f62] shadow-md shadow-[#1d2f62]/20" 
+        : "bg-white text-slate-600 border-slate-200 hover:border-slate-300 hover:bg-slate-50"
+    }`}
+  >
+    {label}
+  </button>
+);
+
+const TrendSparkline = ({ data, color = "#10b981" }) => {
+  if (!data || data.length < 2) return null;
+  
+  const chartData = data.map((d, i) => ({ i, score: parseFloat(d.score || 0) })).reverse();
+
+  return (
+    <div className="h-10 w-full -mx-1 opacity-50 hover:opacity-100 transition-opacity duration-300">
+      <ResponsiveContainer width="100%" height="100%">
+        <AreaChart data={chartData}>
+          <defs>
+            <linearGradient id="colorScore" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor={color} stopOpacity={0.3}/>
+              <stop offset="95%" stopColor={color} stopOpacity={0}/>
+            </linearGradient>
+          </defs>
+          <Area 
+            type="monotone" 
+            dataKey="score" 
+            stroke={color} 
+            strokeWidth={1.5}
+            fillOpacity={1} 
+            fill="url(#colorScore)" 
+            isAnimationActive={false}
+          />
+        </AreaChart>
+      </ResponsiveContainer>
+    </div>
+  );
+};
+
 const History = () => {
+  const navigate = useNavigate();
   const [history, setHistory] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -162,7 +212,11 @@ const History = () => {
     });
 
     if (filterDomain !== "All") {
-      flat = flat.filter(s => s.domain === filterDomain);
+      if (filterDomain === "Needs Focus") {
+         flat = flat.filter(s => parseFloat(s.score || 0) < 5);
+      } else {
+         flat = flat.filter(s => s.domain === filterDomain);
+      }
     }
 
     return flat.sort((a, b) => {
@@ -176,16 +230,38 @@ const History = () => {
   }, [history, filterDomain, sortBy]);
 
   const stats = useMemo(() => {
-    if (!processedSessions.length) return { avg: 0, total: 0, best: null };
+    if (!processedSessions.length) return { avg: 0, total: 0, best: null, trend: 0 };
     
-    const totalScore = processedSessions.reduce((sum, s) => sum + parseFloat(s.score || 0), 0);
+    const scores = processedSessions.map(s => parseFloat(s.score || 0));
+    const totalScore = scores.reduce((sum, s) => sum + s, 0);
     const avg = (totalScore / processedSessions.length).toFixed(1);
     
     const best = processedSessions.reduce((max, s) => 
       parseFloat(s.score) > parseFloat(max.score || 0) ? s : max
     , processedSessions[0]);
 
-    return { avg, total: processedSessions.length, best };
+    let trend = 0;
+    if (processedSessions.length >= 2) {
+       const sortedByDate = [...processedSessions].sort((a, b) => new Date(a.createdAt || 0) - new Date(b.createdAt || 0));
+       const recentLength = Math.min(3, sortedByDate.length);
+       const recent = sortedByDate.slice(-recentLength);
+       const previous = sortedByDate.slice(0, -recentLength);
+       
+       const avgRecent = recent.reduce((a, b) => a + parseFloat(b.score || 0), 0) / recent.length;
+       const avgPrevious = previous.length 
+          ? previous.reduce((a, b) => a + parseFloat(b.score || 0), 0) / previous.length 
+          : 0; 
+          
+       if (previous.length > 0) {
+           trend = (avgRecent - avgPrevious).toFixed(1);
+       }
+    }
+
+    const scoresForChart = processedSessions
+        .sort((a, b) => new Date(a.createdAt || 0) - new Date(b.createdAt || 0))
+        .map(s => ({ score: s.score || 0 }));
+
+    return { avg, total: processedSessions.length, best, trend, scores: scoresForChart };
   }, [processedSessions]);
 
   const toggleSession = (sessionId) => {
@@ -195,9 +271,18 @@ const History = () => {
     }));
   };
 
+  const getFilterOptions = () => {
+    const base = ["All"];
+    if (history?.groupedHistory) {
+      base.push(...Object.keys(history.groupedHistory));
+    }
+    base.push("Needs Focus");
+    return base;
+  };
+
   if (loading) return (
     <PageLayout>
-      <div className="min-h-[80vh] flex items-center justify-center">
+      <div className="min-h-[60vh] flex items-center justify-center">
         <Loader />
       </div>
     </PageLayout>
@@ -206,14 +291,14 @@ const History = () => {
   if (error) {
     return (
       <PageLayout>
-        <div className="min-h-[80vh] flex items-center justify-center">
-          <div className="text-center p-10 bg-white rounded-[2.5rem] shadow-2xl border border-red-100 max-w-lg">
-            <div className="h-20 w-20 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-6">
-              <AlertCircle className="h-10 w-10 text-red-500" />
+        <div className="min-h-[60vh] flex items-center justify-center">
+          <div className="text-center p-8 bg-white rounded-3xl shadow-xl border border-red-100 max-w-md">
+            <div className="h-16 w-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
+              <AlertCircle className="h-8 w-8 text-red-500" />
             </div>
-            <h3 className="text-2xl font-bold text-slate-900 mb-3">Error Loading History</h3>
-            <p className="text-slate-600 mb-8 text-lg">{error}</p>
-            <button onClick={fetchHistory} className="px-8 py-3 bg-[#1d2f62] text-white rounded-xl font-bold hover:bg-[#1d2f62]/90 transition-all shadow-lg hover:shadow-xl">
+            <h3 className="text-xl font-bold text-slate-900 mb-2">Error Loading History</h3>
+            <p className="text-slate-600 mb-6 text-sm">{error}</p>
+            <button onClick={fetchHistory} className="px-6 py-2.5 bg-[#1d2f62] text-white rounded-xl font-bold hover:bg-[#1d2f62]/90 transition-all text-sm shadow-lg">
               Try Again
             </button>
           </div>
@@ -225,31 +310,30 @@ const History = () => {
   if (!history || history.total === 0) {
     return (
       <PageLayout>
-        <div className="min-h-[80vh] flex flex-col items-center justify-center p-4 relative overflow-hidden">
-           {/* Background Blobs */}
-           <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full max-w-7xl pointer-events-none z-0">
-            <div className="absolute top-20 left-20 w-96 h-96 bg-blue-200/20 rounded-full blur-3xl mix-blend-multiply animate-blob" />
-            <div className="absolute bottom-20 right-20 w-96 h-96 bg-purple-200/20 rounded-full blur-3xl mix-blend-multiply animate-blob animation-delay-2000" />
+        <div className="min-h-[70vh] flex flex-col items-center justify-center p-4 relative overflow-hidden">
+           <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full max-w-5xl pointer-events-none z-0">
+            <div className="absolute top-20 left-20 w-80 h-80 bg-blue-200/20 rounded-full blur-3xl mix-blend-multiply animate-blob" />
+            <div className="absolute bottom-20 right-20 w-80 h-80 bg-purple-200/20 rounded-full blur-3xl mix-blend-multiply animate-blob animation-delay-2000" />
           </div>
 
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-center max-w-xl relative z-10"
+            className="text-center max-w-lg relative z-10"
           >
-            <div className="bg-white/80 backdrop-blur-xl p-12 rounded-[3rem] shadow-2xl border border-white">
-              <div className="h-24 w-24 bg-blue-50 rounded-[2rem] flex items-center justify-center mx-auto mb-8 shadow-inner">
-                <MessageSquare className="h-12 w-12 text-[#1d2f62]" />
+            <div className="bg-white/80 backdrop-blur-xl p-8 rounded-[2.5rem] shadow-xl border border-white">
+              <div className="h-20 w-20 bg-blue-50 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-inner">
+                <MessageSquare className="h-10 w-10 text-[#1d2f62]" />
               </div>
-              <h2 className="text-3xl font-bold text-slate-900 mb-4">No Interviews Yet</h2>
-              <p className="text-slate-600 mb-10 text-xl leading-relaxed">
+              <h2 className="text-2xl font-bold text-slate-900 mb-3">No Interviews Yet</h2>
+              <p className="text-slate-600 mb-8 text-lg leading-relaxed">
                 Start your first AI interview to track your progress and get detailed feedback tailored to you.
               </p>
               <a
                 href="/upload-resume"
-                className="inline-flex items-center px-10 py-5 bg-[#1d2f62] text-white rounded-2xl font-bold text-lg hover:bg-[#1d2f62]/90 hover:shadow-2xl hover:shadow-[#1d2f62]/30 hover:-translate-y-1 transition-all"
+                className="inline-flex items-center px-8 py-4 bg-[#1d2f62] text-white rounded-xl font-bold hover:bg-[#1d2f62]/90 hover:shadow-xl hover:-translate-y-0.5 transition-all"
               >
-                Start Interview <ArrowRight className="ml-3 h-6 w-6" />
+                Start Interview <ArrowRight className="ml-2 h-5 w-5" />
               </a>
             </div>
           </motion.div>
@@ -262,75 +346,153 @@ const History = () => {
     <PageLayout>
       <SEO title="Interview History" description="Review your past interview sessions, scores, and detailed AI feedback." />
       
-      <div className="min-h-screen bg-slate-50/50 py-8 lg:py-12 relative overflow-hidden">
-        {/* Background Blobs */}
+      <div className="min-h-screen bg-slate-50/50 py-6 lg:py-10 relative overflow-hidden">
+        {/* Background Blobs (Smaller) */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full max-w-7xl pointer-events-none z-0">
-          <div className="absolute top-20 left-20 w-72 h-72 bg-blue-200/20 rounded-full blur-3xl mix-blend-multiply animate-blob" />
-          <div className="absolute top-40 right-20 w-72 h-72 bg-purple-200/20 rounded-full blur-3xl mix-blend-multiply animate-blob animation-delay-2000" />
-          <div className="absolute -bottom-32 left-1/2 -translate-x-1/2 w-96 h-96 bg-emerald-200/20 rounded-full blur-3xl mix-blend-multiply animate-blob animation-delay-4000" />
+          <div className="absolute top-20 left-20 w-64 h-64 bg-blue-200/20 rounded-full blur-3xl mix-blend-multiply animate-blob" />
+          <div className="absolute top-40 right-20 w-64 h-64 bg-purple-200/20 rounded-full blur-3xl mix-blend-multiply animate-blob animation-delay-2000" />
+          <div className="absolute -bottom-32 left-1/2 -translate-x-1/2 w-80 h-80 bg-emerald-200/20 rounded-full blur-3xl mix-blend-multiply animate-blob animation-delay-4000" />
         </div>
 
-        <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <motion.div 
-            initial={{ opacity: 0, y: -20 }}
+        <div className="max-w-screen-xl mx-auto px-4 sm:px-6 relative z-10">
+          
+          {/* Header Section (Compact) */}
+          <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4 mb-8">
+            <motion.div 
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="text-center lg:text-left"
+            >
+              <div className="inline-flex items-center gap-2 mb-1 text-slate-500 font-bold text-xs uppercase tracking-wider">
+                <div className="h-1.5 w-1.5 rounded-full bg-blue-500" />
+                 Performance Dashboard
+              </div>
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-slate-900 mb-2 tracking-tight">
+                Your Progress
+              </h1>
+              <p className="text-sm sm:text-base text-slate-600 font-medium max-w-2xl">
+                Track your growth, spot patterns, and master your interview skills.
+              </p>
+            </motion.div>
+            
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.1 }}
+            >
+              <button 
+                onClick={() => navigate('/upload-resume')}
+                className="w-full lg:w-auto px-6 py-3 bg-[#1d2f62] text-white rounded-xl font-bold text-sm sm:text-base hover:bg-[#1d2f62]/90 hover:shadow-lg hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2"
+              >
+                 <Zap className="h-4 w-4" /> Take Another Mock Interview
+              </button>
+            </motion.div>
+          </div>
+
+          {/* Metrics Grid (Compact) */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
+             {/* Best Session Card - Large */}
+             <div className="md:col-span-2 lg:col-span-2">
+                <SummaryCard 
+                  title="Best Session" 
+                  value={stats.best ? parseFloat(stats.best.score).toFixed(1) : "N/A"} 
+                  suffix={stats.best ? "/10" : ""}
+                  subValue={stats.best?.domain}
+                  icon={Trophy} 
+                  delay={0.1}
+                  variant="primary"
+                  trendLabel="Personal Record"
+                />
+             </div>
+             
+             {/* Trend / Average */}
+             <SummaryCard 
+                  title="Average Score" 
+                  value={stats.avg}
+                  suffix="/10"
+                  icon={Target} 
+                  delay={0.2}
+                  trendValue={stats.trend}
+                  trendLabel={parseFloat(stats.trend) >= 0 ? "Recent Improvement" : "Needs Attention"}
+                  data={stats.scores} 
+                  variant="trend"
+            />
+            
+            {/* Total */}
+             <SummaryCard 
+                  title="Total Sprints" 
+                  value={stats.total} 
+                  icon={CheckCircle2} 
+                  delay={0.3}
+                  subValue="Completed"
+            />
+          </div>
+
+          {/* Coaching Insight Section (Compact) */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="mb-12 text-center lg:text-left"
+            transition={{ delay: 0.2 }}
+            className="mb-8 bg-gradient-to-br from-indigo-600 to-[#1d2f62] text-white rounded-[2rem] p-6 sm:p-8 shadow-xl relative overflow-hidden"
           >
-            <div className="inline-flex items-center justify-center p-3 bg-white rounded-2xl shadow-sm mb-4 border border-slate-100 lg:hidden">
-              <BarChart3 className="h-6 w-6 text-[#1d2f62]" />
-            </div>
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-slate-900 mb-3 tracking-tight">
-              Interview History
-            </h1>
-            <p className="text-base sm:text-lg lg:text-xl text-slate-600 font-medium max-w-2xl">
-              Track your progress, analyze your performance, and review detailed AI feedback.
-            </p>
+             <div className="absolute top-0 right-0 w-48 h-48 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+             <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
+               <div className="flex-1">
+                 <div className="inline-flex items-center gap-2 px-2.5 py-1 bg-white/20 rounded-full text-[10px] font-bold uppercase tracking-wider mb-3 border border-white/10">
+                    <Sparkles className="h-3 w-3" /> Coach's Insight
+                 </div>
+                 <h2 className="text-xl sm:text-2xl font-bold mb-2">
+                   {parseFloat(stats.trend) > 0 
+                     ? "You're getting better! Keep the momentum."
+                     : parseFloat(stats.avg) > 7 
+                       ? "You're consistently strong. Challenge yourself."
+                       : "Focus on consistency to boost confidence."}
+                 </h2>
+                 <p className="text-indigo-100 text-sm sm:text-base leading-relaxed max-w-2xl">
+                    {stats.best?.domain 
+                      ? `Your ${stats.best.domain} interviews are your strongest suit. Try focusing on your weaker areas next.` 
+                      : "Review your valid feedback to identify key areas for improvement in your next session."}
+                 </p>
+               </div>
+               <div className="flex-shrink-0">
+                  <button 
+                    onClick={() => navigate('/upload-resume')}
+                    className="px-6 py-2.5 bg-white text-[#1d2f62] rounded-xl font-bold text-sm hover:bg-indigo-50 transition-colors shadow-lg"
+                  >
+                    Start Targeted Practice
+                  </button>
+               </div>
+             </div>
           </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 lg:gap-8 mb-8 sm:mb-12">
-            <SummaryCard 
-              title="Total Interviews" 
-              value={stats.total} 
-              icon={MessageSquare} 
-              delay={0.1}
-            />
-            <SummaryCard 
-              title="Average Score" 
-              value={stats.avg}
-              suffix="/10"
-              icon={Trophy} 
-              delay={0.2}
-            />
-            <SummaryCard 
-              title="Best Session" 
-              value={stats.best ? parseFloat(stats.best.score).toFixed(1) : "N/A"} 
-              suffix={stats.best ? "/10" : ""}
-              subValue={stats.best?.domain}
-              icon={Star} 
-              delay={0.3}
-            />
-          </div>
+          {/* Filters & Sort (Compact) */}
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6">
+             <div className="flex flex-wrap items-center gap-2">
+                <span className="text-slate-400 font-bold text-[10px] uppercase tracking-wider mr-2">Filter:</span>
+                {getFilterOptions().map(opt => (
+                  <FilterChip 
+                    key={opt} 
+                    label={opt} 
+                    active={filterDomain === opt} 
+                    onClick={() => setFilterDomain(opt)} 
+                  />
+                ))}
+             </div>
 
-          <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-8 bg-white p-4 sm:p-2 sm:pl-6 rounded-[2rem] shadow-lg shadow-slate-200/50 border border-white">
-            <div className="flex items-center gap-3 w-full sm:w-auto overflow-x-auto pb-2 sm:pb-0 no-scrollbar">
-              <Filter className="h-5 w-5 text-slate-400 flex-shrink-0" />
-              <span className="text-slate-600 font-bold text-sm uppercase tracking-wider whitespace-nowrap">Filter</span>
-            </div>
-
-            <div className="flex items-center gap-3 w-full sm:w-auto bg-slate-100/50 p-1.5 rounded-[1.5rem]">
-              <span className="text-sm text-slate-500 font-bold pl-4 whitespace-nowrap">Sort by:</span>
-              <select
+             <div className="flex items-center gap-3">
+               <span className="text-xs text-slate-500 font-bold whitespace-nowrap">Sort by:</span>
+               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
-                className="w-full sm:w-auto px-4 sm:px-6 py-2.5 bg-white border border-slate-200 rounded-2xl text-sm font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#1d2f62] shadow-sm cursor-pointer hover:bg-slate-50 transition-colors appearance-none"
+                className="px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#1d2f62] cursor-pointer hover:bg-slate-50"
               >
                 <option value="date">Most Recent</option>
-                <option value="score">Highest Score</option>
+                <option value="score">Score: High to Low</option>
               </select>
-            </div>
+             </div>
           </div>
 
-          <div className="space-y-6 lg:space-y-8">
+          <div className="space-y-4 lg:space-y-6">
             <AnimatePresence mode="popLayout">
               {processedSessions.map((session, index) => (
                 <SessionCard
@@ -344,12 +506,12 @@ const History = () => {
             </AnimatePresence>
             
             {processedSessions.length === 0 && (
-              <div className="text-center py-20 bg-white rounded-[3rem] border-2 border-slate-100 border-dashed">
-                <div className="h-20 w-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-6">
-                  <Search className="h-10 w-10 text-slate-300" />
+              <div className="text-center py-12 bg-white rounded-[2rem] border-2 border-slate-100 border-dashed">
+                <div className="h-16 w-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Search className="h-8 w-8 text-slate-300" />
                 </div>
-                <h3 className="text-xl font-bold text-slate-900 mb-2">No matches found</h3>
-                <p className="text-slate-500 font-medium">Try adjusting your filters to see more results.</p>
+                <h3 className="text-lg font-bold text-slate-900 mb-1">No matches found</h3>
+                <p className="text-slate-500 text-sm font-medium">Try adjusting your filters.</p>
               </div>
             )}
           </div>
@@ -359,34 +521,66 @@ const History = () => {
   );
 };
 
-const SummaryCard = ({ title, value, suffix, subValue, icon: Icon, delay }) => {
+const SummaryCard = ({ title, value, suffix, subValue, icon: Icon, delay, variant = "default", trendValue, trendLabel, data }) => {
+  const isPrimary = variant === "primary";
+  const isTrend = variant === "trend";
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay }}
-      className="relative overflow-hidden rounded-[2rem] sm:rounded-[2.5rem] shadow-xl shadow-slate-200/50 p-6 sm:p-8 bg-white border border-white group hover:scale-[1.02] transition-transform duration-300"
+      className={`relative overflow-hidden rounded-[2rem] p-5 sm:p-6 border group hover:scale-[1.02] transition-transform duration-300 flex flex-col justify-between h-full ${
+        isPrimary 
+          ? "bg-gradient-to-br from-[#1d2f62] to-[#2a407c] text-white border-[#1d2f62] shadow-lg shadow-[#1d2f62]/20" 
+          : "bg-white border-slate-100 shadow-lg shadow-slate-200/50"
+      }`}
     >
-      <div className="absolute top-0 right-0 w-24 h-24 sm:w-32 sm:h-32 bg-slate-50 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2 group-hover:bg-blue-50 transition-colors duration-500" />
+      <div className={`absolute top-0 right-0 w-24 h-24 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2 transition-colors duration-500 ${
+        isPrimary ? "bg-white/10" : "bg-slate-50 group-hover:bg-blue-50"
+      }`} />
       
-      <div className="relative z-10 flex flex-col h-full justify-between gap-4">
-        <div className="flex items-start justify-between">
-          <div className="p-2.5 sm:p-3 bg-slate-50 rounded-2xl border border-slate-100 group-hover:bg-[#1d2f62] group-hover:border-[#1d2f62] transition-colors duration-300">
-            <Icon className="h-5 w-5 sm:h-6 sm:w-6 text-[#1d2f62] group-hover:text-white transition-colors duration-300" />
-          </div>
-        </div>
+      <div className="relative z-10 flex justify-between items-start mb-3">
+         <div className={`p-2.5 rounded-xl border transition-colors duration-300 ${
+           isPrimary 
+            ? "bg-white/10 border-white/20 text-white" 
+            : "bg-slate-50 border-slate-100 text-[#1d2f62] group-hover:bg-[#1d2f62] group-hover:border-[#1d2f62] group-hover:text-white"
+         }`}>
+           <Icon className="h-5 w-5" />
+         </div>
+         {trendValue !== undefined && trendValue !== 0 && (
+           <div className={`text-xs font-bold ${
+             parseFloat(trendValue) > 0 ? (isPrimary ? "text-emerald-300" : "text-emerald-600") : "text-amber-500"
+           }`}>
+             {parseFloat(trendValue) > 0 ? "▲" : "▼"} {Math.abs(parseFloat(trendValue))}
+             <span className={`block text-[9px] uppercase tracking-wide opacity-70 ${isPrimary ? "text-white" : "text-slate-500"}`}>
+               {trendLabel}
+             </span>
+           </div>
+         )}
+      </div>
+      
+      <div className="relative z-10">
+        <h3 className={`text-3xl sm:text-4xl font-bold tracking-tight mb-1 ${isPrimary ? "text-white" : "text-slate-900"}`}>
+          {value}<span className={`text-lg sm:text-x font-medium ${isPrimary ? "text-white/60" : "text-slate-400"}`}>{suffix}</span>
+        </h3>
+        <p className={`text-xs font-bold uppercase tracking-wider ${isPrimary ? "text-white/70" : "text-slate-500"}`}>{title}</p>
         
-        <div>
-          <h3 className="text-4xl sm:text-5xl font-bold mb-1 tracking-tight text-slate-900">
-            {value}<span className="text-xl sm:text-2xl text-slate-400 font-medium">{suffix}</span>
-          </h3>
-          <p className="text-sm sm:text-base font-bold text-slate-500 uppercase tracking-wider">{title}</p>
-          {subValue && (
-            <div className="mt-3 inline-block px-3 py-1 bg-slate-100 rounded-lg text-xs font-bold text-slate-600 border border-slate-200">
-              {subValue}
-            </div>
-          )}
-        </div>
+        {subValue && (
+          <div className={`mt-2.5 inline-block px-2.5 py-1 rounded-lg text-[10px] font-bold border ${
+             isPrimary 
+               ? "bg-white/10 border-white/20 text-white" 
+               : "bg-slate-100 border-slate-200 text-slate-600"
+          }`}>
+            {subValue}
+          </div>
+        )}
+
+        {isTrend && data && (
+          <div className="mt-3">
+            <TrendSparkline data={data} />
+          </div>
+        )}
       </div>
     </motion.div>
   );
@@ -396,19 +590,19 @@ const ExecutiveSummarySection = ({ summary, strengths, weaknesses }) => {
   const [isOpen, setIsOpen] = useState(true);
 
   return (
-    <div className="bg-white rounded-[1.5rem] sm:rounded-[2rem] border border-blue-100 shadow-sm relative overflow-hidden transition-all duration-300">
-      <div className="absolute top-0 left-0 w-1.5 h-full bg-blue-500" />
+    <div className="bg-white rounded-[1.5rem] border border-blue-100 shadow-sm relative overflow-hidden transition-all duration-300">
+      <div className="absolute top-0 left-0 w-1 h-full bg-blue-500" />
       
       <div 
-        className="p-4 sm:p-6 lg:p-8 cursor-pointer flex justify-between items-center gap-4 group"
+        className="p-4 sm:p-5 lg:p-6 cursor-pointer flex justify-between items-center gap-3 group"
         onClick={() => setIsOpen(!isOpen)}
       >
-        <h4 className="text-xs sm:text-sm font-bold text-blue-900 uppercase tracking-wide flex items-center gap-2">
+        <h4 className="text-xs font-bold text-blue-900 uppercase tracking-wide flex items-center gap-2">
           <Sparkles className="h-4 w-4 text-blue-500" /> Executive Summary
         </h4>
         
-        <div className={`h-8 w-8 rounded-full flex items-center justify-center bg-blue-50 text-blue-600 transition-transform duration-300 group-hover:bg-blue-100 ${isOpen ? "rotate-180" : ""}`}>
-           <ChevronDown className="h-5 w-5" />
+        <div className={`h-7 w-7 rounded-full flex items-center justify-center bg-blue-50 text-blue-600 transition-transform duration-300 group-hover:bg-blue-100 ${isOpen ? "rotate-180" : ""}`}>
+           <ChevronDown className="h-4 w-4" />
         </div>
       </div>
 
@@ -419,11 +613,11 @@ const ExecutiveSummarySection = ({ summary, strengths, weaknesses }) => {
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
           >
-            <div className="px-4 sm:px-6 lg:px-8 pb-6 lg:pb-8 pt-0">
-               <ReadMoreText text={summary} limit={200} className="text-slate-700 leading-relaxed text-sm sm:text-base lg:text-lg" />
+            <div className="px-4 sm:px-5 lg:px-6 pb-5 lg:pb-6 pt-0">
+               <ReadMoreText text={summary} limit={200} className="text-slate-700 leading-relaxed text-sm" />
                
                {(strengths?.length > 0 || weaknesses?.length > 0) && (
-                  <div className="mt-6 lg:mt-8 grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6">
+                  <div className="mt-5 grid grid-cols-1 md:grid-cols-2 gap-4">
                     {strengths?.length > 0 && (
                         <FeedbackSection
                           title="Key Strengths"
@@ -434,8 +628,8 @@ const ExecutiveSummarySection = ({ summary, strengths, weaknesses }) => {
                       )}
                       {weaknesses?.length > 0 && (
                         <FeedbackSection
-                          title="Growth Areas"
-                          icon={TrendingUp}
+                          title="Focus Areas"
+                          icon={Target}
                           items={weaknesses}
                           color="amber"
                         />
@@ -465,6 +659,10 @@ const SessionCard = ({ session, index, isExpanded, onToggle }) => {
   
   const questionCount = session.questions?.length || 0;
 
+  // Extract quick insights for card face
+  const keyWeakness = summaryFeedback.weaknesses?.[0];
+  const keyStrength = summaryFeedback.strengths?.[0];
+
   return (
     <motion.div
       layout
@@ -472,28 +670,28 @@ const SessionCard = ({ session, index, isExpanded, onToggle }) => {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.95 }}
       transition={{ delay: index * 0.05 }}
-      className="bg-white rounded-[2rem] sm:rounded-[2.5rem] shadow-xl shadow-slate-200/50 border border-white overflow-hidden hover:shadow-2xl hover:shadow-slate-200/80 transition-all duration-300 hover:scale-[1.005]"
+      className="bg-white rounded-[1.5rem] sm:rounded-[2rem] shadow-lg shadow-slate-200/50 border border-white overflow-hidden hover:shadow-xl hover:shadow-slate-200/80 transition-all duration-300 hover:scale-[1.005]"
     >
       <div 
         onClick={onToggle}
-        className="p-4 sm:p-6 lg:p-8 cursor-pointer bg-white group"
+        className="p-4 sm:p-5 lg:p-6 cursor-pointer bg-white group"
       >
-        <div className="flex flex-col md:flex-row items-start md:items-center gap-4 sm:gap-6 lg:gap-8">
+        <div className="flex flex-col md:flex-row items-start md:items-center gap-4 sm:gap-6">
           {/* Score Circle */}
-          <div className="flex items-center gap-4 w-full md:w-auto">
+          <div className="flex items-center gap-3 w-full md:w-auto">
             <div className="flex-shrink-0">
-              <div className={`h-16 w-16 sm:h-20 sm:w-20 lg:h-24 lg:w-24 rounded-[1.5rem] sm:rounded-[2rem] flex flex-col items-center justify-center border-4 shadow-inner ${
+              <div className={`h-14 w-14 sm:h-16 sm:w-16 lg:h-18 lg:w-18 rounded-2xl flex flex-col items-center justify-center border-4 shadow-inner ${
                 sessionScore >= 8 ? "bg-emerald-50 border-emerald-100 text-emerald-700" :
-                sessionScore >= 5 ? "bg-amber-50 border-amber-100 text-amber-700" :
-                "bg-red-50 border-red-100 text-red-700"
+                sessionScore >= 5 ? "bg-blue-50 border-blue-100 text-blue-700" :
+                "bg-amber-50 border-amber-100 text-amber-700"
               }`}>
-                <span className="text-xl sm:text-2xl lg:text-3xl font-bold">{sessionScore.toFixed(1)}</span>
-                <span className="text-[8px] sm:text-[10px] lg:text-xs font-bold uppercase opacity-70">Score</span>
+                <span className="text-lg sm:text-xl lg:text-2xl font-bold">{sessionScore.toFixed(1)}</span>
+                <span className="text-[8px] sm:text-[9px] font-bold uppercase opacity-70">Score</span>
               </div>
             </div>
             
             <div className="md:hidden flex-1 min-w-0">
-               <h3 className="text-lg font-bold text-slate-900 truncate group-hover:text-[#1d2f62] transition-colors">
+               <h3 className="text-base font-bold text-slate-900 truncate group-hover:text-[#1d2f62] transition-colors">
                 {session.domain || "Resume"} Interview
               </h3>
               <div className="mt-1">
@@ -503,47 +701,72 @@ const SessionCard = ({ session, index, isExpanded, onToggle }) => {
           </div>
             
           <div className="hidden md:block flex-1 min-w-0 w-full">
-            <div className="flex flex-wrap items-center gap-3 mb-3">
-              <h3 className="text-xl lg:text-2xl font-bold text-slate-900 truncate group-hover:text-[#1d2f62] transition-colors">
+            <div className="flex flex-wrap items-center gap-2 mb-2">
+              <h3 className="text-lg lg:text-xl font-bold text-slate-900 truncate group-hover:text-[#1d2f62] transition-colors">
                 {session.domain || "Resume"} Interview
               </h3>
               {getConfidenceBadge(sessionScore)}
             </div>
             
-            <div className="flex flex-wrap items-center gap-6 text-sm lg:text-base text-slate-500 font-medium">
-              <span className="flex items-center gap-2 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-100">
-                <Calendar className="h-4 w-4 text-slate-400" />
+            <div className="flex flex-wrap items-center gap-4 text-xs lg:text-sm text-slate-500 font-medium">
+              <span className="flex items-center gap-1.5 bg-slate-50 px-2.5 py-1 rounded-lg border border-slate-100">
+                <Calendar className="h-3.5 w-3.5 text-slate-400" />
                 {formatSessionDate(session)}
               </span>
-              <span className="flex items-center gap-2 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-100">
-                <Clock className="h-4 w-4 text-slate-400" />
+              <span className="flex items-center gap-1.5 bg-slate-50 px-2.5 py-1 rounded-lg border border-slate-100">
+                <Clock className="h-3.5 w-3.5 text-slate-400" />
                 {questionCount} Questions
               </span>
             </div>
+
+            {/* Quick Insight (Desktop - Compact) */}
+            {(keyWeakness || keyStrength) && (
+              <div className="mt-3 flex items-center gap-3 text-xs text-slate-600">
+                 {keyWeakness ? (
+                    <span className="flex items-center gap-1.5">
+                       <Target className="h-3.5 w-3.5 text-amber-500" /> 
+                       Focus: <span className="font-medium">{keyWeakness.slice(0, 50)}...</span>
+                    </span>
+                 ) : (
+                    <span className="flex items-center gap-1.5">
+                       <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" /> 
+                       Strength: <span className="font-medium">{keyStrength.slice(0, 50)}...</span>
+                    </span>
+                 )}
+              </div>
+            )}
           </div>
 
-          {/* Mobile Meta Data */}
-          <div className="flex md:hidden flex-wrap items-center gap-3 text-xs sm:text-sm text-slate-500 font-medium w-full">
-            <span className="flex items-center gap-1.5 bg-slate-50 px-2.5 py-1 rounded-lg border border-slate-100">
-              <Calendar className="h-3.5 w-3.5 text-slate-400" />
-              {formatSessionDate(session)}
-            </span>
-            <span className="flex items-center gap-1.5 bg-slate-50 px-2.5 py-1 rounded-lg border border-slate-100">
-              <Clock className="h-3.5 w-3.5 text-slate-400" />
-              {questionCount} Qs
-            </span>
+          {/* Mobile Meta Data (Compact) */}
+          <div className="flex flex-col md:hidden w-full gap-2">
+             <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500 font-medium">
+                <span className="flex items-center gap-1 bg-slate-50 px-2 py-0.5 rounded border border-slate-100">
+                  <Calendar className="h-3 w-3 text-slate-400" />
+                  {formatSessionDate(session)}
+                </span>
+                <span className="flex items-center gap-1 bg-slate-50 px-2 py-0.5 rounded border border-slate-100">
+                  <Clock className="h-3 w-3 text-slate-400" />
+                  {questionCount} Qs
+                </span>
+             </div>
+             {(keyWeakness) && (
+                <div className="text-[10px] text-slate-600 bg-amber-50 p-1.5 rounded border border-amber-100 flex items-start gap-1">
+                   <Target className="h-3 w-3 text-amber-500 mt-0.5" />
+                   <span className="line-clamp-1">{keyWeakness}</span>
+                </div>
+             )}
           </div>
 
-          <div className="flex items-center justify-between w-full md:w-auto gap-6 mt-2 md:mt-0">
-            <div className="flex flex-col items-end gap-2">
-              <div className="hidden sm:block text-xs font-bold text-slate-400 uppercase tracking-wider">Performance</div>
-              <div className="flex gap-1.5">
+          <div className="flex items-center justify-between w-full md:w-auto gap-4 mt-2 md:mt-0">
+            <div className="flex flex-col items-end gap-1.5">
+              <div className="hidden sm:block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Growth</div>
+              <div className="flex gap-1">
                 {[...Array(5)].map((_, i) => (
                   <div 
                     key={i} 
-                    className={`h-1.5 w-6 sm:h-2 sm:w-8 rounded-full transition-all duration-500 ${
+                    className={`h-1.5 w-5 sm:h-1.5 sm:w-6 rounded-full transition-all duration-500 ${
                       (i + 1) * 2 <= sessionScore 
-                        ? sessionScore >= 8 ? "bg-emerald-500 shadow-sm shadow-emerald-200" : sessionScore >= 5 ? "bg-amber-500 shadow-sm shadow-amber-200" : "bg-red-500 shadow-sm shadow-red-200"
+                        ? sessionScore >= 8 ? "bg-emerald-500" : sessionScore >= 5 ? "bg-blue-500" : "bg-amber-500"
                         : "bg-slate-100"
                     }`} 
                   />
@@ -551,12 +774,12 @@ const SessionCard = ({ session, index, isExpanded, onToggle }) => {
               </div>
             </div>
             
-            <div className={`h-10 w-10 sm:h-12 sm:w-12 rounded-2xl flex items-center justify-center border-2 transition-all duration-300 ${
+            <div className={`h-8 w-8 sm:h-10 sm:w-10 rounded-xl flex items-center justify-center border-2 transition-all duration-300 ${
               isExpanded 
-                ? "bg-[#1d2f62] border-[#1d2f62] text-white rotate-180 shadow-lg shadow-[#1d2f62]/30" 
+                ? "bg-[#1d2f62] border-[#1d2f62] text-white rotate-180" 
                 : "bg-white border-slate-100 text-slate-400 group-hover:border-[#1d2f62] group-hover:text-[#1d2f62]"
             }`}>
-              <ChevronDown className="h-5 w-5 sm:h-6 sm:w-6" />
+              <ChevronDown className="h-4 w-4 sm:h-5 sm:w-5" />
             </div>
           </div>
         </div>
@@ -570,7 +793,7 @@ const SessionCard = ({ session, index, isExpanded, onToggle }) => {
             exit={{ height: 0, opacity: 0 }}
             className="border-t border-slate-100 bg-slate-50/50"
           >
-            <div className="p-4 sm:p-6 lg:p-10 space-y-6 sm:space-y-8 lg:space-y-10">
+            <div className="p-4 sm:p-5 lg:p-8 space-y-5 lg:space-y-8">
 
               {summaryFeedback.summary && (
                 <ExecutiveSummarySection 
@@ -582,11 +805,11 @@ const SessionCard = ({ session, index, isExpanded, onToggle }) => {
 
               {session.questions && session.questions.length > 0 && (
                 <div>
-                  <h4 className="text-lg sm:text-xl font-bold text-slate-900 mb-4 sm:mb-6 flex items-center gap-3">
-                    <div className="h-8 w-8 bg-slate-900 rounded-lg flex items-center justify-center text-white text-xs">Q&A</div>
+                  <h4 className="text-base sm:text-lg font-bold text-slate-900 mb-3 sm:mb-4 flex items-center gap-2.5">
+                    <div className="h-6 w-6 bg-slate-900 rounded-md flex items-center justify-center text-white text-[10px]">Q&A</div>
                     Detailed Analysis
                   </h4>
-                  <div className="space-y-4">
+                  <div className="space-y-3">
                     {session.questions.map((q, qIdx) => (
                       <QuestionItem 
                         key={qIdx} 
@@ -618,19 +841,19 @@ const QuestionItem = ({ question, answer, feedback, index }) => {
   };
 
   return (
-    <div className={`bg-white rounded-[1.5rem] border transition-all duration-300 overflow-hidden ${isOpen ? 'border-blue-200 shadow-md' : 'border-slate-200 hover:border-blue-200'}`}>
+    <div className={`bg-white rounded-[1.25rem] border transition-all duration-300 overflow-hidden ${isOpen ? 'border-blue-200 shadow-md' : 'border-slate-200 hover:border-blue-200'}`}>
       <div 
         onClick={() => setIsOpen(!isOpen)}
-        className="p-4 sm:p-5 lg:p-6 flex items-start gap-3 sm:gap-4 lg:gap-5 cursor-pointer hover:bg-slate-50/50 transition-colors"
+        className="p-3 sm:p-4 flex items-start gap-3 cursor-pointer hover:bg-slate-50/50 transition-colors"
       >
-        <div className={`h-8 w-8 sm:h-10 sm:w-10 rounded-xl flex items-center justify-center font-bold text-xs sm:text-sm flex-shrink-0 mt-0.5 transition-colors ${isOpen ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-600'}`}>
+        <div className={`h-7 w-7 sm:h-9 sm:w-9 rounded-xl flex items-center justify-center font-bold text-xs flex-shrink-0 mt-0.5 transition-colors ${isOpen ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-600'}`}>
           Q{index + 1}
         </div>
         <div className="flex-1">
-          <p className="text-slate-900 font-bold text-base sm:text-lg leading-snug">{question}</p>
+          <p className="text-slate-900 font-bold text-sm sm:text-base leading-snug">{question}</p>
         </div>
-        <div className={`h-8 w-8 rounded-full flex items-center justify-center bg-slate-50 border border-slate-100 transition-transform duration-300 ${isOpen ? "rotate-180 bg-blue-50 border-blue-100 text-blue-600" : "text-slate-400"}`}>
-          <ChevronDown className="h-5 w-5" />
+        <div className={`h-7 w-7 rounded-full flex items-center justify-center bg-slate-50 border border-slate-100 transition-transform duration-300 ${isOpen ? "rotate-180 bg-blue-50 border-blue-100 text-blue-600" : "text-slate-400"}`}>
+          <ChevronDown className="h-4 w-4" />
         </div>
       </div>
 
@@ -642,10 +865,10 @@ const QuestionItem = ({ question, answer, feedback, index }) => {
             exit={{ height: 0, opacity: 0 }}
             className="border-t border-slate-100"
           >
-            <div className="p-4 sm:p-6 lg:p-8 lg:pl-20 space-y-6 bg-slate-50/30">
+            <div className="p-4 sm:p-5 lg:p-6 lg:pl-16 space-y-4 bg-slate-50/30">
               <div>
-                <h5 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">Your Answer</h5>
-                <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 text-slate-700 text-base leading-relaxed shadow-sm">
+                <h5 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Your Answer</h5>
+                <div className="bg-white p-3 sm:p-4 rounded-xl border border-slate-200 text-slate-700 text-sm leading-relaxed shadow-sm">
                   {answer ? (
                     <ReadMoreText text={answer} limit={300} />
                   ) : (
@@ -655,18 +878,18 @@ const QuestionItem = ({ question, answer, feedback, index }) => {
               </div>
 
               <div>
-                <h5 className="text-xs font-bold text-blue-400 uppercase tracking-widest mb-3">AI Feedback</h5>
-                <div className="bg-blue-50/50 p-4 sm:p-6 rounded-2xl border border-blue-100">
-                  <ReadMoreText text={feedbackText} limit={300} className="text-slate-800 text-base leading-relaxed mb-6 font-medium" />
+                <h5 className="text-[10px] font-bold text-blue-400 uppercase tracking-widest mb-2">AI Feedback</h5>
+                <div className="bg-blue-50/50 p-3 sm:p-4 rounded-xl border border-blue-100">
+                  <ReadMoreText text={feedbackText} limit={300} className="text-slate-800 text-sm leading-relaxed mb-4 font-medium" />
                   
                   {(scores.correctness !== undefined || scores.clarity !== undefined) && (
-                    <div className="flex flex-wrap gap-4">
+                    <div className="flex flex-wrap gap-3">
                       {Object.entries(scores).map(([key, val]) => val !== undefined && (
-                        <div key={key} className="flex items-center gap-3 bg-white px-4 py-2 rounded-xl border border-blue-100 shadow-sm">
-                          <span className="text-xs font-bold text-slate-500 capitalize tracking-wide">{key}</span>
-                          <div className="h-4 w-px bg-slate-200" />
-                          <span className={`text-sm font-bold ${
-                            val >= 8 ? "text-emerald-600" : val >= 5 ? "text-amber-600" : "text-red-600"
+                        <div key={key} className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-lg border border-blue-100 shadow-sm">
+                          <span className="text-[10px] font-bold text-slate-500 capitalize tracking-wide">{key}</span>
+                          <div className="h-3 w-px bg-slate-200" />
+                          <span className={`text-xs font-bold ${
+                            val >= 8 ? "text-emerald-600" : val >= 5 ? "text-blue-600" : "text-amber-600"
                           }`}>{val}/10</span>
                         </div>
                       ))}
@@ -696,17 +919,17 @@ const FeedbackSection = ({ title, icon: Icon, items, color }) => {
   };
 
   return (
-    <div className={`rounded-2xl border p-5 ${colors[color] || colors.blue}`}>
-      <h5 className="text-sm font-bold uppercase flex items-center gap-3 mb-4 tracking-wide">
-        <div className={`h-8 w-8 rounded-lg flex items-center justify-center ${iconColors[color] || iconColors.blue}`}>
-          <Icon className="h-4 w-4" />
+    <div className={`rounded-xl border p-4 ${colors[color] || colors.blue}`}>
+      <h5 className="text-xs font-bold uppercase flex items-center gap-2 mb-3 tracking-wide">
+        <div className={`h-6 w-6 rounded-md flex items-center justify-center ${iconColors[color] || iconColors.blue}`}>
+          <Icon className="h-3.5 w-3.5" />
         </div>
         {title}
       </h5>
-      <ul className="space-y-3">
+      <ul className="space-y-2">
         {items.map((item, i) => (
-          <li key={i} className="text-sm font-medium flex items-start gap-3 leading-relaxed opacity-90">
-            <span className={`h-2 w-2 rounded-full mt-1.5 flex-shrink-0 ${color === 'emerald' ? 'bg-emerald-500' : 'bg-amber-500'}`} />
+          <li key={i} className="text-xs sm:text-sm font-medium flex items-start gap-2.5 leading-relaxed opacity-90">
+            <span className={`h-1.5 w-1.5 rounded-full mt-1.5 flex-shrink-0 ${color === 'emerald' ? 'bg-emerald-500' : 'bg-amber-500'}`} />
             {item}
           </li>
         ))}
