@@ -614,6 +614,19 @@ const ResumeUpload = () => {
                               <p className="mt-3 lg:mt-4 text-[10px] lg:text-xs text-slate-400 font-medium uppercase tracking-widest">
                                 Max Size: 5MB
                               </p>
+                              
+                              <div className="mt-6 flex flex-col items-center gap-2">
+                                <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">
+                                  We extract & analyze:
+                                </span>
+                                <div className="flex flex-wrap justify-center gap-2 max-w-[260px]">
+                                  {["Skills", "Projects", "Tech Stack", "Experience"].map((item) => (
+                                    <span key={item} className="px-2 py-1 rounded-md bg-slate-100 text-slate-500 text-[10px] font-bold border border-slate-200">
+                                      {item}
+                                    </span>
+                                  ))}
+                                </div>
+                              </div>
                             </motion.div>
                           )}
                         </AnimatePresence>
@@ -679,10 +692,15 @@ const ResumeUpload = () => {
                         ) : (
                           <>
                             <Sparkles className="h-5 w-5 lg:h-6 lg:w-6 group-hover:animate-pulse" />
-                            <span>Generate Interview Questions</span>
+                            <span>Generate My Personalized Interview</span>
                           </>
                         )}
                       </button>
+                      
+                      <div className="mt-5 flex items-center justify-center gap-2 text-xs text-slate-400 font-medium opacity-75">
+                         <Shield className="h-3 w-3 text-slate-400" />
+                         <span>Your resume is encrypted and never shared.</span>
+                      </div>
                     </div>
                   </form>
                 </div>
@@ -768,18 +786,21 @@ const ResumeUpload = () => {
                       step="1"
                       title="Upload Your Resume"
                       description="Upload your PDF resume securely."
+                      active={true}
                     />
                     <StepItem
                       icon={Zap}
                       step="2"
                       title="AI Analyzes You"
                       description="We identify your unique skills & experience."
+                      active={false}
                     />
                     <StepItem
                       icon={Play}
                       step="3"
                       title="Practice Your Interview"
                       description="Answer questions tailored just for you."
+                      active={false}
                     />
                   </div>
                 </div>
@@ -872,14 +893,14 @@ const ResumeUpload = () => {
   );
 };
 
-const StepItem = ({ icon: Icon, step, title, description }) => (
-  <div className="flex items-start gap-3">
-    <div className="h-10 w-10 bg-white/10 rounded-xl flex items-center justify-center flex-shrink-0 border border-white/20">
-      <Icon className="h-5 w-5 text-blue-200" />
+const StepItem = ({ icon: Icon, step, title, description, active = true }) => (
+  <div className={`flex items-start gap-4 transition-all duration-300 ${active ? "opacity-100 translate-x-0" : "opacity-40 grayscale translate-x-2"}`}>
+    <div className={`h-12 w-12 rounded-xl flex items-center justify-center flex-shrink-0 border transition-colors ${active ? "bg-white/10 border-white/20 shadow-inner" : "bg-white/5 border-white/5"}`}>
+      <Icon className={`h-6 w-6 ${active ? "text-blue-200" : "text-slate-500"}`} />
     </div>
     <div>
-      <h4 className="text-base font-bold text-white mb-0.5">{title}</h4>
-      <p className="text-blue-100 text-xs leading-relaxed opacity-90">{description}</p>
+      <h4 className={`text-base font-bold mb-1 ${active ? "text-white" : "text-slate-300"}`}>{title}</h4>
+      <p className={`text-xs leading-relaxed ${active ? "text-blue-100 opacity-90" : "text-slate-500 opacity-70"}`}>{description}</p>
     </div>
   </div>
 );
