@@ -1300,7 +1300,16 @@ export const evaluateVoiceAnswer = async (req, res) => {
       const audioPath = audioFile.path;
       const mimeType = audioFile.mimetype || "audio/webm";
 
-      transcribedText = await geminiSpeechToText(audioPath, mimeType);
+      // Add timeout protection for production serverless environment
+      const isProduction = process.env.NODE_ENV === 'production';
+      const timeoutMs = isProduction ? 45000 : 120000; // 45s for prod, 120s for dev
+      
+      const transcriptionPromise = geminiSpeechToText(audioPath, mimeType);
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Speech-to-text timeout')), timeoutMs)
+      );
+
+      transcribedText = await Promise.race([transcriptionPromise, timeoutPromise]);
       console.log(
         "✅ Transcription:",
         transcribedText.substring(0, 100) + "..."
@@ -1316,8 +1325,13 @@ export const evaluateVoiceAnswer = async (req, res) => {
 
       return res.status(500).json({
         success: false,
-        error: "Failed to transcribe audio",
-        message: transcriptionError.message || "Could not process audio file",
+        error: transcriptionError.message.includes('timeout') 
+          ? "Speech processing took too long" 
+          : "Failed to transcribe audio",
+        message: transcriptionError.message.includes('timeout')
+          ? "The audio processing is taking longer than expected. Please try again with a shorter recording, or use text input instead."
+          : transcriptionError.message || "Could not process audio file",
+        isTimeout: transcriptionError.message.includes('timeout'),
       });
     }
 

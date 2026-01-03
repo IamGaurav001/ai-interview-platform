@@ -9,8 +9,10 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 const DEFAULT_MODEL = "gemini-3.0-pro-exp"; // Using Gemini 3.0 Pro (experimental) for competition
 const FALLBACK_MODEL = "gemini-2.0-flash"; // Fallback to 2.0 flash if 3.0 fails 
-const MAX_RETRIES = 10; 
-const INITIAL_DELAY_MS = 2000;
+
+// Reduced retries for production serverless environment to avoid Vercel timeout
+const MAX_RETRIES = process.env.NODE_ENV === 'production' ? 3 : 10; 
+const INITIAL_DELAY_MS = process.env.NODE_ENV === 'production' ? 500 : 2000;
 
 
 export async function geminiSpeechToText(audioFilePath, mimeType = "audio/webm") {

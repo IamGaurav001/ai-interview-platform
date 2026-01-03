@@ -584,10 +584,20 @@ const InterviewFlow = () => {
       }
     } catch (err) {
       console.error("Evaluate voice error:", err);
+      
+      // Handle timeout errors specifically
+      if (err.response?.data?.isTimeout) {
+        toastError("Voice processing timed out. Please try recording a shorter answer or use text input instead.");
+        setLoading(false);
+        return;
+      }
+      
       if (err.networkError) {
         console.error("Cannot connect to server. Please make sure the backend is running.");
+        toastError("Cannot connect to server. Please check your internet connection and try again.");
       } else {
-        toastError(err.response?.data?.error || err.message || "Failed to evaluate voice answer");
+        const errorMsg = err.response?.data?.message || err.response?.data?.error || err.message || "Failed to evaluate voice answer";
+        toastError(errorMsg);
       }
       setLoading(false);
     }
