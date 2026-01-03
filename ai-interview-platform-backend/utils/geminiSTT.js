@@ -7,8 +7,8 @@ dotenv.config();
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 
-const DEFAULT_MODEL = "gemini-3.0-pro-exp"; // Using Gemini 3.0 Pro (experimental) for competition
-const FALLBACK_MODEL = "gemini-2.0-flash"; // Fallback to 2.0 flash if 3.0 fails 
+const DEFAULT_MODEL = "gemini-2.0-flash-exp"; // Using Gemini 2.0 Flash (experimental) - fastest and most reliable
+const FALLBACK_MODEL = "gemini-2.0-flash"; // Fallback to stable 2.0 flash if exp fails 
 
 // Reduced retries for production serverless environment to avoid Vercel timeout
 const MAX_RETRIES = process.env.NODE_ENV === 'production' ? 3 : 10; 
@@ -90,8 +90,8 @@ export async function geminiSpeechToText(audioFilePath, mimeType = "audio/webm")
          console.warn(`⚠️ Rate limit error (429) on attempt ${attempt}/${maxRetries} with model ${currentModel}`);
          
          
-         if (!hasTriedFallback && currentModel === "gemini-3.0-pro-exp") {
-             console.log("🔄 gemini-3.0-pro-exp rate limited, switching to gemini-2.0-flash...");
+         if (!hasTriedFallback && currentModel === "gemini-2.0-flash-exp") {
+             console.log("🔄 gemini-2.0-flash-exp rate limited, switching to gemini-2.0-flash...");
              currentModel = "gemini-2.0-flash";
              hasTriedFallback = true;
              await new Promise((resolve) => setTimeout(resolve, 1500));
@@ -116,8 +116,8 @@ export async function geminiSpeechToText(audioFilePath, mimeType = "audio/webm")
 
       
       if (isModelNotFound && attempt === 1) {
-        if (currentModel === "gemini-3.0-pro-exp") {
-          console.log("🔄 gemini-3.0-pro-exp not available, trying gemini-2.0-flash as fallback...");
+        if (currentModel === "gemini-2.0-flash-exp") {
+          console.log("🔄 gemini-2.0-flash-exp not available, trying gemini-2.0-flash as fallback...");
           currentModel = "gemini-2.0-flash";
           hasTriedFallback = true;
           continue;
