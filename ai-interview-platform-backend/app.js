@@ -20,6 +20,7 @@ import adminRoutes from "./routes/adminRoutes.js";
 
 // Middleware
 import { errorHandler } from "./middleware/errorMiddleware.js";
+import { sanitizeInput, preventParameterPollution } from "./middleware/sanitization.js";
 
 // Initialize Environment
 dotenv.config();
@@ -28,7 +29,7 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 
 // ==========================================
-// Middleware Configuration
+// OWASP Security: Middleware Configuration
 // ==========================================
 
 // Trust proxy (required for rate limiting behind load balancers/proxies like Nginx/Vercel)
@@ -46,6 +47,7 @@ const allowedOrigins = [
 
 app.use(cors({
   origin: function (origin, callback) {
+    // Allow requests with no origin (mobile apps, Postman, etc.)
     if (!origin) return callback(null, true);
     if (allowedOrigins.indexOf(origin) === -1) {
       const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
@@ -56,23 +58,64 @@ app.use(cors({
   credentials: true
 }));
 
-// 2. Security & Performance
-app.use(helmet());
+// 2. OWASP Security: Enhanced Helmet Configuration
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      scriptSrc: ["'self'"],
+      imgSrc: ["'self'", "data:", "https:"],
+    },
+  },
+  hsts: {
+    maxAge: 31536000, // 1 year
+    includeSubDomains: true,
+    preload: true
+  },
+  frameguard: { action: 'deny' }, // Prevent clickjacking
+  noSniff: true, // Prevent MIME type sniffing
+  xssFilter: true, // Enable XSS filter
+}));
+
+// 3. Compression
 app.use(compression());
 
-// 3. Rate Limiting
-const limiter = rateLimit({
+// 4. OWASP Security: Global Rate Limiting (IP-based)
+const globalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 1000, // Limit each IP to 1000 requests per windowMs
-  message: "Too many requests from this IP, please try again later.",
-  standardHeaders: true,
-  legacyHeaders: false,
+  message: {
+    success: false,
+    error: "Too many requests",
+    message: "Too many requests from this IP, please try again later.",
+  },
+  standardHeaders: true, // Return rate limit info in `RateLimit-*` headers
+  legacyHeaders: false, // Disable `X-RateLimit-*` headers
+  handler: (req, res) => {
+    res.status(429).json({
+      success: false,
+      error: "Too many requests",
+      message: "Too many requests from this IP, please try again after 15 minutes.",
+      retryAfter: 900,
+    });
+  },
+  // Skip health check endpoint
+  skip: (req) => req.path === "/health",
 });
-app.use(limiter);
+app.use(globalLimiter);
 
-// 4. Body Parsing & Static Files
-app.use(express.json({ limit: "50mb" }));
-app.use(express.urlencoded({ extended: true, limit: "50mb" }));
+// 5. OWASP Security: Body Parsing with size limits
+app.use(express.json({ limit: "10mb" })); // Reduced from 50mb for security
+app.use(express.urlencoded({ extended: true, limit: "10mb" }));
+
+// 6. OWASP Security: Global Input Sanitization
+app.use(sanitizeInput);
+
+// 7. OWASP Security: Prevent Parameter Pollution
+app.use(preventParameterPollution(['tags', 'filters'])); // Whitelist array params if needed
+
+// 8. Static Files
 app.use("/audio", express.static("public/audio"));
 
 // ==========================================
@@ -107,10 +150,10 @@ app.use("/api/admin", adminRoutes);
 
 // Root Route
 app.get("/", (req, res) => {
-  res.send("IntervueAI Backend is running ✅");
+  res.send("PrepHire Backend is running ✅");
 });
 
-// Error Handling (Must be last)
+// OWASP Security: Error Handling (Must be last)
 app.use(errorHandler);
 
 // ==========================================

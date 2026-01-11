@@ -3,8 +3,13 @@ import crypto from "crypto";
 import User from "../models/User.js";
 import Transaction from "../models/Transaction.js";
 import dotenv from "dotenv";
+import { createOrderSchema, verifyPaymentSchema } from "../validators/monetizationValidators.js";
 
 dotenv.config();
+
+if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {
+  console.error("❌ RAZORPAY credentials not configured in environment variables");
+}
 
 const razorpay = new Razorpay({
   key_id: process.env.RAZORPAY_KEY_ID,
@@ -13,9 +18,21 @@ const razorpay = new Razorpay({
 
 export const createOrder = async (req, res) => {
   try {
-    const { planId } = req.body;
+    // OWASP Security: Strict input validation
+    const validation = createOrderSchema.safeParse(req.body);
+    
+    if (!validation.success) {
+      return res.status(400).json({ 
+        success: false, 
+        message: "Invalid plan selection",
+        error: validation.error.errors?.[0]?.message || "Invalid input data" 
+      });
+    }
+
+    const { planId } = validation.data;
     let amount, credits;
 
+    // Whitelist-based plan selection (OWASP recommendation)
     switch (planId) {
       case "3_interviews":
         amount = 4900;
@@ -34,7 +51,8 @@ export const createOrder = async (req, res) => {
       receipt: `receipt_${Date.now()}`,
       notes: {
         credits: credits, 
-        planId: planId || "1_interview",
+        planId: planId,
+        userId: req.user._id.toString(),
       },
     };
 
@@ -46,7 +64,11 @@ export const createOrder = async (req, res) => {
     });
   } catch (error) {
     console.error("Create order error:", error);
-    res.status(500).json({ success: false, message: "Failed to create order" });
+    res.status(500).json({ 
+      success: false, 
+      message: "Failed to create order",
+      ...(process.env.NODE_ENV === 'development' && { details: error.message })
+    });
   }
 };
 
@@ -54,9 +76,20 @@ export const createOrder = async (req, res) => {
 
 export const verifyPayment = async (req, res) => {
   try {
-    const { razorpay_order_id, razorpay_payment_id, razorpay_signature } =
-      req.body;
+    // OWASP Security: Strict input validation
+    const validation = verifyPaymentSchema.safeParse(req.body);
+    
+    if (!validation.success) {
+      return res.status(400).json({ 
+        success: false, 
+        message: "Invalid payment data",
+        error: validation.error.errors?.[0]?.message || "Invalid input data" 
+      });
+    }
 
+    const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = validation.data;
+
+    // OWASP Security: Verify signature using constant-time comparison
     const body = razorpay_order_id + "|" + razorpay_payment_id;
 
     const expectedSignature = crypto
@@ -67,10 +100,14 @@ export const verifyPayment = async (req, res) => {
       .update(body.toString())
       .digest("hex");
 
-    const isAuthentic = expectedSignature === razorpay_signature;
+    // Use crypto.timingSafeEqual to prevent timing attacks
+    const isAuthentic = crypto.timingSafeEqual(
+      Buffer.from(expectedSignature, 'hex'),
+      Buffer.from(razorpay_signature, 'hex')
+    );
 
     if (isAuthentic) {
-      
+      // OWASP Security: Idempotency check to prevent double-processing
       const existingTransaction = await Transaction.findOne({
         orderId: razorpay_order_id,
         status: "success",
@@ -100,7 +137,7 @@ export const verifyPayment = async (req, res) => {
         (user.usage.purchasedCredits || 0) + creditsToAdd;
       await user.save();
 
-      
+      // Create transaction record
       await Transaction.create({
         userId: req.user._id,
         orderId: razorpay_order_id,
@@ -116,6 +153,9 @@ export const verifyPayment = async (req, res) => {
         message: `Payment verified and ${creditsToAdd} credit(s) added`,
       });
     } else {
+      // OWASP Security: Log failed verification attempts for monitoring
+      console.warn(`⚠️ Invalid payment signature attempt for order: ${razorpay_order_id}`);
+      
       res.status(400).json({
         success: false,
         message: "Invalid signature",
@@ -125,7 +165,12 @@ export const verifyPayment = async (req, res) => {
     console.error("Verify payment error:", error);
     res
       .status(500)
-      .json({ success: false, message: "Payment verification failed" });
+      .json({ 
+        success: false, 
+        message: "Payment verification failed",
+        // Don't expose internal error details in production
+        ...(process.env.NODE_ENV === 'development' && { details: error.message })
+      });
   }
 };
 

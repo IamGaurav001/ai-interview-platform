@@ -4,7 +4,8 @@ import path from "path";
 import fs from "fs";
 import { fileURLToPath } from "url";
 import { verifyFirebaseToken } from "../middleware/firebaseAuthMiddleware.js";
-import { rateLimiter } from "../middleware/rateLimiter.js";
+import { userRateLimiter, uploadRateLimiter } from "../middleware/rateLimiters.js";
+import { sanitizeInput } from "../middleware/sanitization.js";
 import {
   evaluateAnswer,
   getInterviewHistory,
@@ -29,23 +30,27 @@ const uploadDir = path.join(__dirname, "../uploads/audio");
 
 fs.mkdirSync(uploadDir, { recursive: true });
 
+// OWASP Security: Strict file upload configuration
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, uploadDir);
   },
   filename: (req, file, cb) => {
+    // Sanitize filename to prevent path traversal
+    const sanitizedName = file.originalname.replace(/[^a-zA-Z0-9.-]/g, '_');
     const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-    cb(null, `voice-${uniqueSuffix}${path.extname(file.originalname)}`);
+    cb(null, `voice-${uniqueSuffix}-${sanitizedName}`);
   },
 });
 
 const upload = multer({
   storage: storage,
   limits: {
-    fileSize: 50 * 1024 * 1024, 
+    fileSize: 50 * 1024 * 1024, // 50MB max
+    files: 1, // Only 1 file per request
   },
   fileFilter: (req, file, cb) => {
-
+    // OWASP Security: Whitelist allowed MIME types
     const allowedMimes = [
       "audio/webm",
       "audio/wav",
@@ -64,27 +69,30 @@ const upload = multer({
 
 const router = express.Router();
 
+// OWASP Security: Apply sanitization to all routes
+router.use(sanitizeInput);
 
-router.post("/evaluate", verifyFirebaseToken, hasCredits, rateLimiter(10, 60), evaluateAnswer);
-router.post("/save-session", verifyFirebaseToken, hasCredits, saveCompleteSession);
-router.get("/history", verifyFirebaseToken, getInterviewHistory);
-router.get("/weak-areas", verifyFirebaseToken, getWeakAreas);
+// Public endpoints with IP-based rate limiting
+router.post("/evaluate", verifyFirebaseToken, hasCredits, userRateLimiter(10, 60), evaluateAnswer);
+router.post("/save-session", verifyFirebaseToken, hasCredits, userRateLimiter(5, 60), saveCompleteSession);
+router.get("/history", verifyFirebaseToken, userRateLimiter(20, 60), getInterviewHistory);
+router.get("/weak-areas", verifyFirebaseToken, userRateLimiter(20, 60), getWeakAreas);
 
+// Interview flow endpoints with stricter rate limiting
+router.post("/start", verifyFirebaseToken, hasCredits, userRateLimiter(5, 60), startInterview);
+router.post("/next", verifyFirebaseToken, hasCredits, userRateLimiter(20, 60), nextInterviewStep);
+router.post("/end", verifyFirebaseToken, hasCredits, userRateLimiter(5, 60), endInterview);
+router.post("/cancel", verifyFirebaseToken, hasCredits, userRateLimiter(5, 60), cancelInterview);
+router.post("/reset", verifyFirebaseToken, hasCredits, userRateLimiter(5, 60), resetInterview);
+router.get("/active-session", verifyFirebaseToken, userRateLimiter(20, 60), getActiveSession);
 
-
-router.post("/start", verifyFirebaseToken, hasCredits, rateLimiter(5, 60), startInterview);
-router.post("/next", verifyFirebaseToken, hasCredits, rateLimiter(20, 60), nextInterviewStep);
-router.post("/end", verifyFirebaseToken, hasCredits, rateLimiter(5, 60), endInterview);
-router.post("/cancel", verifyFirebaseToken, hasCredits, rateLimiter(5, 60), cancelInterview);
-router.post("/reset", verifyFirebaseToken, hasCredits, rateLimiter(5, 60), resetInterview);
-router.get("/active-session", verifyFirebaseToken, getActiveSession);
-
-
+// Voice upload endpoint with upload-specific rate limiting
 router.post(
   "/voice-answer",
   verifyFirebaseToken,
   hasCredits,
-  rateLimiter(10, 60),
+  uploadRateLimiter, // IP-based upload limiting
+  userRateLimiter(10, 60), // User-based limiting
   upload.single("audio"),
   evaluateVoiceAnswer
 );

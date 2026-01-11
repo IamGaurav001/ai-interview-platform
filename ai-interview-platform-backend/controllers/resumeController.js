@@ -6,6 +6,7 @@ import redisClient from "../config/redis.js";
 import User from "../models/User.js";
 
 import { callGeminiWithRetry } from "../utils/geminiHelper.js";
+import { useExistingResumeSchema, deleteResumeSchema } from "../validators/resumeValidators.js";
 
 dotenv.config();
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
@@ -170,6 +171,19 @@ export const analyzeResume = async (req, res) => {
 };
 export const useExistingResume = async (req, res) => {
   try {
+    // OWASP Security: Validate resumeId if provided
+    if (req.body.resumeId) {
+      const validation = useExistingResumeSchema.safeParse(req.body);
+      
+      if (!validation.success) {
+        return res.status(400).json({ 
+          success: false,
+          error: "Invalid resume ID",
+          message: validation.error.errors?.[0]?.message || "Invalid input data" 
+        });
+      }
+    }
+    
     const { resumeId } = req.body;
     console.log("=== EXISTING RESUME REQUEST ===", resumeId ? `ID: ${resumeId}` : "Latest");
     
@@ -234,11 +248,18 @@ export const useExistingResume = async (req, res) => {
 
 export const deleteResume = async (req, res) => {
   try {
-    const { id } = req.params;
+    // OWASP Security: Strict input validation
+    const validation = deleteResumeSchema.safeParse(req.params);
     
-    if (!id) {
-      return res.status(400).json({ error: "Resume ID is required" });
+    if (!validation.success) {
+      return res.status(400).json({ 
+        success: false,
+        error: "Invalid resume ID",
+        message: validation.error.errors?.[0]?.message || "Invalid input data" 
+      });
     }
+    
+    const { id } = validation.data;
 
     const user = await User.findByIdAndUpdate(
       req.user._id,

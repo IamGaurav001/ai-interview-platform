@@ -14,7 +14,7 @@ import { parseFeedbackSafely, calculateSafeScore } from "../utils/aiHelper.js";
 import { callGeminiWithRetry } from "../utils/geminiHelper.js";
 import { geminiSpeechToText } from "../utils/geminiSTT.js";
 
-import { evaluateAnswerSchema, startInterviewSchema, nextStepSchema } from "../validators/interviewValidators.js";
+import { evaluateAnswerSchema, startInterviewSchema, nextStepSchema, saveSessionSchema } from "../validators/interviewValidators.js";
 
 dotenv.config();
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
@@ -34,7 +34,7 @@ export const evaluateAnswer = async (req, res) => {
     if (!validation.success) {
       return res.status(400).json({
         success: false,
-        error: validation.error.errors[0].message,
+        error: validation.error.errors?.[0]?.message || "Invalid input data",
       });
     }
 
@@ -300,27 +300,18 @@ export const getWeakAreas = async (req, res) => {
 
 export const saveCompleteSession = async (req, res) => {
   try {
-    const { domain, questions, answers, feedbacks, scores } = req.body;
-
-    if (
-      !domain ||
-      !questions ||
-      !answers ||
-      !Array.isArray(questions) ||
-      !Array.isArray(answers)
-    ) {
+    // OWASP Security: Strict input validation
+    const validation = saveSessionSchema.safeParse(req.body);
+    
+    if (!validation.success) {
       return res.status(400).json({
         success: false,
-        error: "Domain, questions array, and answers array are required.",
+        error: "Invalid session data",
+        message: validation.error.errors?.[0]?.message || "Invalid input data",
       });
     }
 
-    if (questions.length !== answers.length) {
-      return res.status(400).json({
-        success: false,
-        error: "Number of questions must match number of answers.",
-      });
-    }
+    const { domain, questions, answers, feedbacks, scores } = validation.data;
 
     let totalScore = 0;
     let validScores = 0;
@@ -344,6 +335,7 @@ export const saveCompleteSession = async (req, res) => {
 
     const averageScore = validScores > 0 ? totalScore / validScores : 0;
 
+    // OWASP Security: Idempotency check to prevent duplicate saves
     const thirtySecondsAgo = new Date(Date.now() - 30 * 1000);
     const existingSession = await InterviewSession.findOne({
       userId: req.user._id,
@@ -394,7 +386,7 @@ export const startInterview = async (req, res) => {
     if (!validation.success) {
         return res.status(400).json({ 
             success: false, 
-            error: validation.error.errors[0].message 
+            error: validation.error.errors?.[0]?.message || "Invalid input data"
         });
     }
 
@@ -588,7 +580,7 @@ export const nextInterviewStep = async (req, res) => {
     if (!validation.success) {
       return res.status(400).json({
         success: false,
-        error: validation.error.errors[0].message,
+        error: validation.error.errors?.[0]?.message || "Invalid input data",
       });
     }
 

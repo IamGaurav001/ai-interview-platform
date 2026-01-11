@@ -1,4 +1,5 @@
 import User from "../models/User.js";
+import { strictUpdateProfileSchema } from "../validators/userValidators.js";
 
 
 export const getProfile = async (req, res) => {
@@ -36,7 +37,18 @@ export const getProfile = async (req, res) => {
 
 export const updateProfile = async (req, res) => {
   try {
-    const { name } = req.body;
+    // OWASP Security: Strict input validation
+    const validation = strictUpdateProfileSchema.safeParse(req.body);
+    
+    if (!validation.success) {
+      return res.status(400).json({ 
+        success: false, 
+        message: "Invalid input data",
+        error: validation.error.errors?.[0]?.message || "Invalid input data" 
+      });
+    }
+
+    const { name, hasCompletedOnboarding, notifications } = validation.data;
     const userId = req.user._id;
 
     const user = await User.findById(userId);
@@ -45,12 +57,13 @@ export const updateProfile = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
+    // Only update fields that were provided and validated
     if (name) user.name = name;
-    if (req.body.hasCompletedOnboarding !== undefined) {
-      user.hasCompletedOnboarding = req.body.hasCompletedOnboarding;
+    if (hasCompletedOnboarding !== undefined) {
+      user.hasCompletedOnboarding = hasCompletedOnboarding;
     }
-    if (req.body.notifications) {
-      user.notifications = { ...user.notifications, ...req.body.notifications };
+    if (notifications) {
+      user.notifications = { ...user.notifications, ...notifications };
     }
 
 
