@@ -198,7 +198,7 @@ const HeroDashboardPreview = () => {
             <div className="relative mb-8">
               <div className="h-32 w-32 rounded-full p-1.5 bg-[#1d2f62] from-blue-500 via-indigo-500 to-purple-500 shadow-xl relative z-10">
                 <div className="h-full w-full rounded-full bg-white overflow-hidden border-4 border-white">
-                  <img src={icon} alt="AI Interviewer" className="h-full w-full object-cover transform group-hover:scale-110 transition-transform duration-700" />
+                  <img src={icon} alt="AI Interviewer" width="128" height="128" className="h-full w-full object-cover transform group-hover:scale-110 transition-transform duration-700" />
                 </div>
               </div>
               

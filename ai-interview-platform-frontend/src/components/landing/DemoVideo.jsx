@@ -63,6 +63,9 @@ const DemoVideo = () => {
                            <img 
                                 src="https://img.youtube.com/vi/SArYgKtgC10/maxresdefault.jpg" 
                                 alt="Demo Video Thumbnail" 
+                                width="1280"
+                                height="720"
+                                loading="lazy"
                                 className="w-full h-full object-cover opacity-80 group-hover:scale-105 transition-transform duration-1000"
                            />
                            {/* Brand Gradient Overlay - Richer Blue/Indigo */}

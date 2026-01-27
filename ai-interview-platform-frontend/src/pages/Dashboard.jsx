@@ -291,18 +291,7 @@ const Dashboard = () => {
           initial="hidden"
           animate="visible"
         >
-          <motion.div className="mb-10" variants={itemVariants}>
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-              <div>
-                <h1 className="text-2xl sm:text-4xl font-bold text-slate-900 mb-2 tracking-tight">
-                  Welcome back, <span className="text-[#1d2f62]">{userDisplayName.toUpperCase()}</span>! 👋
-                </h1>
-                <p className="text-lg text-slate-500 font-medium">
-                  Ready to ace your next interview? Let's get started.
-                </p>
-              </div>
-            </div>
-          </motion.div>
+
 
           {error && (
             <motion.div

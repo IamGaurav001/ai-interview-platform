@@ -36,8 +36,6 @@ const SEO = ({ title, description, keywords, url, image }) => {
 
   useEffect(() => {
     const pageName = PAGE_NAMES[location.pathname] || title || 'Unknown Page';
-    // Log the event with the *intended* title passed to this component, 
-    // ensuring we don't log stale document.title from the previous page.
     logPageView(pageName, { 
       path: location.pathname,
       title: title ? `${title} | PrepHire` : siteTitle
@@ -46,20 +44,16 @@ const SEO = ({ title, description, keywords, url, image }) => {
 
   return (
     <Helmet>
-      {/* Standard Metadata */}
       <title>{title ? `${title} | PrepHire` : siteTitle}</title>
       <meta name="description" content={description || defaultDescription} />
       <meta name="keywords" content={keywords || defaultKeywords} />
       <link rel="canonical" href={url || siteUrl} />
 
-      {/* Open Graph / Facebook */}
       <meta property="og:type" content="website" />
       <meta property="og:url" content={url || siteUrl} />
       <meta property="og:title" content={title || siteTitle} />
       <meta property="og:description" content={description || defaultDescription} />
       <meta property="og:image" content={image || defaultImage} />
-
-      {/* Twitter */}
       <meta property="twitter:card" content="summary_large_image" />
       <meta property="twitter:url" content={url || siteUrl} />
       <meta property="twitter:title" content={title || siteTitle} />

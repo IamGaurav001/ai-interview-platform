@@ -69,7 +69,7 @@ const Testimonials = () => {
                     className="w-12 h-12 rounded-full object-cover border-2 border-indigo-100"
                   />
                   <div className="ml-4">
-                    <h4 className="font-semibold text-slate-900">{testimonial.name}</h4>
+                    <h3 className="font-semibold text-slate-900">{testimonial.name}</h3>
                     <p className="text-sm text-slate-500">{testimonial.role}</p>
                   </div>
                 </div>
@@ -98,7 +98,7 @@ const Testimonials = () => {
                     className="w-12 h-12 rounded-full object-cover border-2 border-indigo-100"
                   />
                   <div className="ml-4">
-                    <h4 className="font-semibold text-slate-900">{testimonial.name}</h4>
+                    <h3 className="font-semibold text-slate-900">{testimonial.name}</h3>
                     <p className="text-sm text-slate-500">{testimonial.role}</p>
                   </div>
                 </div>

@@ -1,40 +1,39 @@
 {
-  "redirects": [
-    {
-      "source": "/:path*",
-      "has": [
-        {
-          "type": "host",
-          "value": "prephire.co.in"
-        }
-      ],
-      "destination": "https://www.prephire.co/:path*",
-      "permanent": true
-    },
-    {
-      "source": "/:path*",
-      "has": [
-        {
-          "type": "host",
-          "value": "www.prephire.co.in"
-        }
-      ],
-      "destination": "https://www.prephire.co/:path*",
-      "permanent": true
-    }
-  ],
   "rewrites": [
-    {
-      "source": "/api/:match*",
-      "destination": "https://api.prephire.co/api/:match*"
-    },
-    {
-      "source": "/audio/:match*",
-      "destination": "https://api.prephire.co/audio/:match*"
-    },
     {
       "source": "/(.*)",
       "destination": "/index.html"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
+        {
+          "key": "X-XSS-Protection",
+          "value": "1; mode=block"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        },
+        {
+          "key": "Strict-Transport-Security",
+          "value": "max-age=63072000; includeSubDomains; preload"
+        },
+        {
+          "key": "Permissions-Policy",
+          "value": "camera=(self), microphone=(self), geolocation=()"
+        }
+      ]
     }
   ]
 }
