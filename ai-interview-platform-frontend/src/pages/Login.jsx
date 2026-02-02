@@ -121,6 +121,9 @@ const Login = () => {
         case "auth/cancelled-popup-request":
           setError("Another sign-in attempt is already in progress.");
           break;
+        case "auth/internal-error":
+          setError("Network or security connection error. Please check your system time, antivirus, or VPN settings.");
+          break;
         default:
           setError(
             err.message || "Unable to sign in with Google. Please try again."
