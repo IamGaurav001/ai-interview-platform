@@ -1,4 +1,4 @@
-# 🚀 PrepHire - Vibe Code Edition
+# 🚀 PrepHire
 
 ![Project Banner](https://via.placeholder.com/1200x600?text=AI+Interview+Platform+Powered+by+Gemini+3.0+Pro)
 
