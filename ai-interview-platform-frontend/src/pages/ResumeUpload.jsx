@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { getUserProfile } from "../api/userAPI";
 import { getActiveSession } from "../api/interviewAPI";
-import PricingModal from "../components/PricingModal";
+import PricingModal from "../components/features/monetization/PricingModal";
 import axiosInstance from "../api/axiosInstance";
 import {
   FileText,
@@ -23,9 +23,9 @@ import {
   Trash2
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import PageLayout from "../components/PageLayout";
+import PageLayout from "../components/layout/PageLayout";
 import { logEvent } from "../config/amplitude";
-import SEO from "../components/SEO";
+import SEO from "../components/layout/SEO";
 
 const ResumeUpload = () => {
   const navigate = useNavigate();

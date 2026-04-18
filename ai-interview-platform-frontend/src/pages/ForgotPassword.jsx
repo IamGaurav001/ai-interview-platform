@@ -4,8 +4,8 @@ import { Link } from "react-router-dom";
 import { Mail, ArrowRight, ArrowLeft, AlertCircle, CheckCircle2, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
 import logo from "../assets/intervueai-logo.png";
-import PageLayout from "../components/PageLayout";
-import SEO from "../components/SEO";
+import PageLayout from "../components/layout/PageLayout";
+import SEO from "../components/layout/SEO";
 
 const ForgotPassword = () => {
   const { resetPassword } = useAuth();

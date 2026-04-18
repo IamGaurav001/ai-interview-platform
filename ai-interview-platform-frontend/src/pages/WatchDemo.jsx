@@ -12,8 +12,8 @@ import {
   Award,
   Star,
 } from "lucide-react";
-import PageLayout from "../components/PageLayout";
-import SEO from "../components/SEO";
+import PageLayout from "../components/layout/PageLayout";
+import SEO from "../components/layout/SEO";
 
 // --- Animation Variants ---
 

@@ -2,7 +2,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowRight, Sparkles } from "lucide-react";
-import { logEvent } from "../../config/amplitude";
+import { logEvent } from "../../../config/amplitude";
 
 const CTA = () => {
   return (

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { MessageSquare, Send, RefreshCw, Star, TrendingUp, CheckCircle, AlertCircle, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import PageLayout from "../components/PageLayout";
+import PageLayout from "../components/layout/PageLayout";
 
 const AnswerEvaluation = () => {
   const [question, setQuestion] = useState("");

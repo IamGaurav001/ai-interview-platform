@@ -1,14 +1,14 @@
 import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import SEO from "../components/SEO";
-import Hero from "../components/landing/Hero";
-import SocialProof from "../components/landing/SocialProof";
-import DemoVideo from "../components/landing/DemoVideo";
-import Features from "../components/landing/Features";
-import Testimonials from "../components/landing/Testimonials";
-import CTA from "../components/landing/CTA";
-import Footer from "../components/landing/Footer";
+import SEO from "../components/layout/SEO";
+import Hero from "../components/features/landing/Hero";
+import SocialProof from "../components/features/landing/SocialProof";
+import DemoVideo from "../components/features/landing/DemoVideo";
+import Features from "../components/features/landing/Features";
+import Testimonials from "../components/features/landing/Testimonials";
+import CTA from "../components/features/landing/CTA";
+import Footer from "../components/features/landing/Footer";
 
 const Landing = () => {
   const navigate = useNavigate();

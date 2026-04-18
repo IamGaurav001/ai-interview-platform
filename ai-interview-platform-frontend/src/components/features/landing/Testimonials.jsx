@@ -1,8 +1,8 @@
 import React from 'react';
-import Sourav from "../../assets/Sourav.png";
-import Shubham from "../../assets/Shubham.jpeg";
-import Satyendra from "../../assets/Satyendra.jpeg";
-import Manish from "../../assets/Manish.png";
+import Sourav from "../../../assets/Sourav.png";
+import Shubham from "../../../assets/Shubham.jpeg";
+import Satyendra from "../../../assets/Satyendra.jpeg";
+import Manish from "../../../assets/Manish.png";
 
 const testimonials = [
   {

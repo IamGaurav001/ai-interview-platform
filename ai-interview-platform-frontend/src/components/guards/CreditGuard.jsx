@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import { getUserProfile } from '../api/userAPI';
-import PricingModal from './PricingModal';
+import { useAuth } from '../../context/AuthContext';
+import { getUserProfile } from '../../api/userAPI';
+import PricingModal from '../features/monetization/PricingModal';
 import { Loader2, Lock } from 'lucide-react';
 import { motion } from 'framer-motion';
 

@@ -5,8 +5,8 @@ import { LogIn, Mail, Lock, Loader2, ArrowRight, CheckCircle2, ArrowLeft, AlertC
 import { syncUser } from "../api/authAPI.jsx";
 import { motion } from "framer-motion";
 import logo from "../assets/intervueai-logo.png";
-import PageLayout from "../components/PageLayout";
-import SEO from "../components/SEO";
+import PageLayout from "../components/layout/PageLayout";
+import SEO from "../components/layout/SEO";
 import { allowedDomains } from "../utils/allowedDomains";
 
 import { logEvent, setUserId, setUserProperties } from "../config/amplitude";

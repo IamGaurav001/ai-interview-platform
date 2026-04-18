@@ -1,9 +1,9 @@
 import React from "react";
-import PageLayout from "../components/PageLayout";
+import PageLayout from "../components/layout/PageLayout";
 import { Check, Star } from "lucide-react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import SEO from "../components/SEO";
+import SEO from "../components/layout/SEO";
 import Footer from "../components/landing/Footer";
 
 const Pricing = () => {

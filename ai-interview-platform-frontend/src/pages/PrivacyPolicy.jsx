@@ -1,7 +1,7 @@
 import React from "react";
-import PageLayout from "../components/PageLayout";
+import PageLayout from "../components/layout/PageLayout";
 import { Shield } from "lucide-react";
-import SEO from "../components/SEO";
+import SEO from "../components/layout/SEO";
 import Footer from "../components/landing/Footer";
 
 const PrivacyPolicy = () => {

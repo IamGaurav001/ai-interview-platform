@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../../context/AuthContext";
 import {
   LogOut,
   User,
@@ -13,8 +13,8 @@ import {
   Settings,
   Shield,
 } from "lucide-react";
-import logo from "../assets/intervueai-logo.png";
-import prephireIcon from "../assets/prephire-icon-circle.png";
+import logo from "../../assets/intervueai-logo.png";
+import prephireIcon from "../../assets/prephire-icon-circle.png";
 import { motion, AnimatePresence } from "framer-motion";
 
 const Navbar = () => {

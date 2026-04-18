@@ -3,8 +3,8 @@ import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { Mail, CheckCircle2, RefreshCw, LogOut, ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
-import PageLayout from "../components/PageLayout";
-import SEO from "../components/SEO";
+import PageLayout from "../components/layout/PageLayout";
+import SEO from "../components/layout/SEO";
 import { auth } from "../config/firebase";
 
 const VerifyEmail = () => {

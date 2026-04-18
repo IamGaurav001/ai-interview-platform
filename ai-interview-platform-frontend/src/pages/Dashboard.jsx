@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { getHistory, getActiveSession } from "../api/interviewAPI";
 import { getUserProfile } from "../api/userAPI";
-import PricingModal from "../components/PricingModal";
+import PricingModal from "../components/features/monetization/PricingModal";
 
 import {
   Briefcase,
@@ -29,11 +29,11 @@ import {
   Tooltip,
   ResponsiveContainer
 } from "recharts";
-import Loader from "../components/Loader";
-import PageLayout from "../components/PageLayout";
+import Loader from "../components/ui/Loader";
+import PageLayout from "../components/layout/PageLayout";
 import { logEvent } from "../config/amplitude";
 import { motion, AnimatePresence } from "framer-motion";
-import SEO from "../components/SEO";
+import SEO from "../components/layout/SEO";
 
 const Dashboard = () => {
   const { user } = useAuth();

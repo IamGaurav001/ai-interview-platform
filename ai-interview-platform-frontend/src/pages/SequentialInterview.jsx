@@ -23,20 +23,20 @@ import {
   Clock
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import AudioVisualizer from "../components/AudioVisualizer";
-import SpeakingAvatar from "../components/SpeakingAvatar";
-import ConfirmModal from "../components/ConfirmModal";
-import PageLayout from "../components/PageLayout";
-import InterviewTour from "../components/InterviewTour";
-import QuestionCard from "../components/QuestionCard";
-import AnswerArea from "../components/AnswerArea";
-import VoiceSettingsModal from "../components/VoiceSettingsModal";
+import AudioVisualizer from "../components/features/interview/AudioVisualizer";
+import SpeakingAvatar from "../components/features/interview/SpeakingAvatar";
+import ConfirmModal from "../components/ui/ConfirmModal";
+import PageLayout from "../components/layout/PageLayout";
+import InterviewTour from "../components/features/interview/InterviewTour";
+import QuestionCard from "../components/features/interview/QuestionCard";
+import AnswerArea from "../components/features/interview/AnswerArea";
+import VoiceSettingsModal from "../components/features/interview/VoiceSettingsModal";
 import logo from "../assets/prephire-icon-circle.png";
 import { useToast } from "../context/ToastContext";
 
 
 import { logEvent } from "../config/amplitude";
-import SEO from "../components/SEO";
+import SEO from "../components/layout/SEO";
 
 const SequentialInterview = () => {
   const navigate = useNavigate();

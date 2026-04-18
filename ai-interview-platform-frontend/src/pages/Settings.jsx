@@ -17,7 +17,7 @@ import {
 } from "lucide-react";
 import { getTransactionHistory } from "../api/monetizationAPI";
 import { logEvent } from "../config/amplitude";
-import SEO from "../components/SEO";
+import SEO from "../components/layout/SEO";
 import { motion, AnimatePresence } from "framer-motion";
 
 const Settings = () => {

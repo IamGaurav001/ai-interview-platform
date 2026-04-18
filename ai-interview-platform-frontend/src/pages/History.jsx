@@ -19,10 +19,10 @@ import {
   Zap,
   BookOpen
 } from "lucide-react";
-import Loader from "../components/Loader";
-import PageLayout from "../components/PageLayout";
+import Loader from "../components/ui/Loader";
+import PageLayout from "../components/layout/PageLayout";
 import { motion, AnimatePresence } from "framer-motion";
-import SEO from "../components/SEO";
+import SEO from "../components/layout/SEO";
 import { AreaChart, Area, ResponsiveContainer } from "recharts";
 import { useNavigate } from "react-router-dom";
 

@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useLocation } from 'react-router-dom';
-import { logEvent, logPageView } from '../config/amplitude';
+import { logEvent, logPageView } from '../../config/amplitude';
 
 const SEO = ({ title, description, keywords, url, image }) => {
   const location = useLocation();

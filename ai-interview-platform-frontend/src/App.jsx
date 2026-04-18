@@ -1,14 +1,14 @@
 import { useEffect, lazy, Suspense } from "react";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
-import Navbar from "./components/Navbar";
-import ProtectedRoute from "./components/ProtectedRoute";
-import CreditGuard from "./components/CreditGuard";
-import ScrollToTop from "./components/ScrollToTop";
+import Navbar from "./components/layout/Navbar";
+import ProtectedRoute from "./components/guards/ProtectedRoute";
+import CreditGuard from "./components/guards/CreditGuard";
+import ScrollToTop from "./components/layout/ScrollToTop";
 import { ToastProvider } from './context/ToastContext';
 import { logEvent } from "./config/amplitude";
 import { HelmetProvider } from 'react-helmet-async';
 import { Loader2 } from "lucide-react";
-import SkipLink from "./components/SkipLink";
+import SkipLink from "./components/layout/SkipLink";
 
 const Login = lazy(() => import("./pages/Login"));
 const Register = lazy(() => import("./pages/Register"));
@@ -77,7 +77,7 @@ const LoadingFallback = () => (
   </div>
 );
 
-import ErrorBoundary from "./components/ErrorBoundary";
+import ErrorBoundary from "./components/layout/ErrorBoundary";
 
 function App() {
   return (

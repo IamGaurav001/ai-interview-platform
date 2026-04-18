@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
 import { X, Check, Zap, ShieldCheck, Sparkles, AlertCircle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import axiosInstance from "../api/axiosInstance";
-import { auth } from "../config/firebase";
-import { logEvent } from "../config/amplitude";
+import axiosInstance from "../../../api/axiosInstance";
+import { auth } from "../../../config/firebase";
+import { logEvent } from "../../../config/amplitude";
 
 const PricingModal = ({ isOpen, onClose, onSuccess, userEmail, userName }) => {
   useEffect(() => {
