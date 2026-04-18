@@ -100,11 +100,14 @@ export const verifyPayment = async (req, res) => {
       .update(body.toString())
       .digest("hex");
 
-    // Use crypto.timingSafeEqual to prevent timing attacks
-    const isAuthentic = crypto.timingSafeEqual(
-      Buffer.from(expectedSignature, 'hex'),
-      Buffer.from(razorpay_signature, 'hex')
-    );
+    const expectedBuffer = Buffer.from(expectedSignature, 'hex');
+    const signatureBuffer = Buffer.from(razorpay_signature, 'hex');
+
+    // Use crypto.timingSafeEqual and ensure lengths match to avoid TypeError
+    let isAuthentic = false;
+    if (expectedBuffer.length === signatureBuffer.length) {
+      isAuthentic = crypto.timingSafeEqual(expectedBuffer, signatureBuffer);
+    }
 
     if (isAuthentic) {
       // OWASP Security: Idempotency check to prevent double-processing
@@ -167,9 +170,8 @@ export const verifyPayment = async (req, res) => {
       .status(500)
       .json({ 
         success: false, 
-        message: "Payment verification failed",
-        // Don't expose internal error details in production
-        ...(process.env.NODE_ENV === 'development' && { details: error.message })
+        message: error.message || "Payment verification failed",
+        details: error.stack
       });
   }
 };

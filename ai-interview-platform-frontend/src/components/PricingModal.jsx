@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { X, Check, Zap, ShieldCheck, Sparkles, AlertCircle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import axios from "axios";
+import axiosInstance from "../api/axiosInstance";
 import { auth } from "../config/firebase";
 import { logEvent } from "../config/amplitude";
 
@@ -75,11 +75,9 @@ const PricingModal = ({ isOpen, onClose, onSuccess, userEmail, userName }) => {
       const user = auth.currentUser;
       if (!user) throw new Error("User not authenticated");
       
-      const token = await user.getIdToken();
-      const orderRes = await axios.post(
-        "/api/monetization/create-order",
-        { planId: selectedPlan },
-        { headers: { Authorization: `Bearer ${token}` } }
+      const orderRes = await axiosInstance.post(
+        "/monetization/create-order",
+        { planId: selectedPlan }
       );
 
       const { order } = orderRes.data;
@@ -93,14 +91,13 @@ const PricingModal = ({ isOpen, onClose, onSuccess, userEmail, userName }) => {
         order_id: order.id,
         handler: async (response) => {
           try {
-            await axios.post(
-              "/api/monetization/verify-payment",
+            await axiosInstance.post(
+              "/monetization/verify-payment",
               {
                 razorpay_order_id: response.razorpay_order_id,
                 razorpay_payment_id: response.razorpay_payment_id,
                 razorpay_signature: response.razorpay_signature,
-              },
-              { headers: { Authorization: `Bearer ${token}` } }
+              }
             );
 
             logEvent('Payment Success', { plan: selectedPlan, method: 'Razorpay' });
