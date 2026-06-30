@@ -7,13 +7,33 @@ export default defineConfig(({ mode }) => {
   const isProduction = mode === 'production';
   return {
     plugins: [react(), tailwindcss()],
-    resolve: {
-      alias: {
-        ...(isProduction ? {
-          'react-dom/client': 'react-dom/profiling',
-          'react-dom': 'react-dom/profiling',
-          'scheduler/tracing': 'scheduler/tracing-profiling',
-        } : {})
+    build: {
+      rollupOptions: {
+        output: {
+          manualChunks(id) {
+            if (id.includes('node_modules')) {
+              if (id.includes('three') || id.includes('@react-three')) {
+                return 'three';
+              }
+              if (id.includes('recharts') || id.includes('d3')) {
+                return 'recharts';
+              }
+              if (id.includes('firebase')) {
+                return 'firebase';
+              }
+              if (id.includes('framer-motion')) {
+                return 'framer-motion';
+              }
+              if (id.includes('react-joyride') || id.includes('react-floater')) {
+                return 'joyride';
+              }
+              if (id.includes('react-razorpay')) {
+                return 'razorpay';
+              }
+              return 'vendor';
+            }
+          }
+        }
       }
     },
     server: {
