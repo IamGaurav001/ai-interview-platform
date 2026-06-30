@@ -277,8 +277,8 @@ const Dashboard = () => {
   return (
     <PageLayout>
       <SEO title="Dashboard" description="Track your interview progress, view recent sessions, and start new practice interviews." />
+      <h1 className="sr-only">Dashboard</h1>
 
-      
       <div className="min-h-screen bg-slate-50/50 pb-12 relative overflow-hidden">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full max-w-7xl pointer-events-none z-0">
           <div className="absolute top-20 left-20 w-72 h-72 bg-blue-200/20 rounded-full blur-3xl mix-blend-multiply animate-blob" />

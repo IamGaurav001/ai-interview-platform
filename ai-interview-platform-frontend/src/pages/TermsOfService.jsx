@@ -2,7 +2,7 @@ import React from "react";
 import PageLayout from "../components/layout/PageLayout";
 import { FileText } from "lucide-react";
 import SEO from "../components/layout/SEO";
-import Footer from "../components/landing/Footer";
+import Footer from "../components/features/landing/Footer";
 
 const TermsOfService = () => {
   return (

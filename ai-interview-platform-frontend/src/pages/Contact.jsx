@@ -3,7 +3,7 @@ import PageLayout from "../components/layout/PageLayout";
 import { Mail, MessageSquare, MapPin, Send, ArrowRight, Phone, Clock } from "lucide-react";
 import { motion } from "framer-motion";
 import SEO from "../components/layout/SEO";
-import Footer from "../components/landing/Footer";
+import Footer from "../components/features/landing/Footer";
 
 const Contact = () => {
   const [formData, setFormData] = useState({
@@ -32,13 +32,13 @@ const Contact = () => {
           
           {/* Header */}
           <div className="text-center max-w-2xl mx-auto mb-16">
-            <motion.h2 
+            <motion.div 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="text-blue-600 font-semibold tracking-wide uppercase text-sm mb-3"
+              className="text-base font-semibold leading-7 text-blue-600 uppercase tracking-wider mb-3"
             >
               Contact Us
-            </motion.h2>
+            </motion.div>
             <motion.h1 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}

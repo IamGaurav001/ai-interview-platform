@@ -38,7 +38,7 @@ const InterviewSetupModal = ({ isOpen, onClose, onConfirm }) => {
 
           <div className="space-y-6">
             <div className="group">
-              <label className="block text-sm font-bold text-slate-700 mb-2 ml-1">
+              <label htmlFor="job-role-input" className="block text-sm font-bold text-slate-700 mb-2 ml-1">
                 Target Job Role <span className="font-normal text-slate-400 text-xs ml-1">(Optional)</span>
               </label>
               <div className="relative">
@@ -46,6 +46,7 @@ const InterviewSetupModal = ({ isOpen, onClose, onConfirm }) => {
                   <Briefcase className="h-5 w-5 text-slate-400 group-focus-within:text-blue-500 transition-colors" />
                 </div>
                 <input
+                  id="job-role-input"
                   type="text"
                   value={jobRole}
                   onChange={(e) => setJobRole(e.target.value)}
@@ -60,7 +61,7 @@ const InterviewSetupModal = ({ isOpen, onClose, onConfirm }) => {
             </div>
 
             <div className="group">
-              <label className="block text-sm font-bold text-slate-700 mb-2 ml-1">
+              <label htmlFor="job-url-input" className="block text-sm font-bold text-slate-700 mb-2 ml-1">
                 Job Posting URL <span className="font-normal text-slate-400 text-xs ml-1">(Optional)</span>
               </label>
               <div className="relative">
@@ -68,6 +69,7 @@ const InterviewSetupModal = ({ isOpen, onClose, onConfirm }) => {
                   <LinkIcon className="h-5 w-5 text-slate-400 group-focus-within:text-blue-500 transition-colors" />
                 </div>
                 <input
+                  id="job-url-input"
                   type="url"
                   value={jobDescriptionUrl}
                   onChange={(e) => setJobDescriptionUrl(e.target.value)}

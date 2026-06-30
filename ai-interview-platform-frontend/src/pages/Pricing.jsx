@@ -4,13 +4,14 @@ import { Check, Star } from "lucide-react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import SEO from "../components/layout/SEO";
-import Footer from "../components/landing/Footer";
+import Footer from "../components/features/landing/Footer";
 
 const Pricing = () => {
 
   return (
     <PageLayout>
       <SEO title="Pricing" description="Simple, transparent pricing for your interview preparation. Pay-as-you-go or value bundles." />
+      <h1 className="sr-only">Pricing Plans</h1>
       <div className="bg-slate-50 min-h-screen flex flex-col justify-center py-12 sm:py-16">
         <div className="mx-auto max-w-7xl px-6 lg:px-8 w-full">
           <div className="mx-auto max-w-4xl text-center">

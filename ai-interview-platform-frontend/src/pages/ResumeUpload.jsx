@@ -635,6 +635,7 @@ const ResumeUpload = () => {
                           id="file-upload"
                           type="file"
                           accept="application/pdf"
+                          aria-label="Upload Resume PDF"
                           className="hidden"
                           onChange={handleFileChange}
                           disabled={!!activeSession}

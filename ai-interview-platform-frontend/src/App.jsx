@@ -78,16 +78,18 @@ const LoadingFallback = () => (
 );
 
 import ErrorBoundary from "./components/layout/ErrorBoundary";
+import PerformanceProfiler from "./components/layout/PerformanceProfiler";
 
 function App() {
   return (
     <HelmetProvider>
       <ErrorBoundary>
-        <ToastProvider>
-          <BrowserRouter>
-            <ScrollToTop />
-            <Layout>
-              <Suspense fallback={<LoadingFallback />}>
+        <PerformanceProfiler id="RootApp">
+          <ToastProvider>
+            <BrowserRouter>
+              <ScrollToTop />
+              <Layout>
+                <Suspense fallback={<LoadingFallback />}>
                 <Routes>
                   {/* Public Routes */}
                   <Route path="/" element={<Landing />} />
@@ -175,9 +177,10 @@ function App() {
                   />
                 </Routes>
               </Suspense>
-            </Layout>
-          </BrowserRouter>
-        </ToastProvider>
+              </Layout>
+            </BrowserRouter>
+          </ToastProvider>
+        </PerformanceProfiler>
       </ErrorBoundary>
     </HelmetProvider>
   );

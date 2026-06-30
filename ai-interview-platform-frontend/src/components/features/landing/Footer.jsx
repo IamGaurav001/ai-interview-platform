@@ -20,14 +20,14 @@ const Footer = () => {
 
 
             <div className="flex gap-4 md:gap-6">
-              <SocialLink href="https://x.com/prephire" icon={
+              <SocialLink href="https://x.com/prephire" label="X (formerly Twitter)" icon={
                 <svg viewBox="0 0 24 24" aria-hidden="true" className="h-4 w-4 md:h-5 md:w-5" fill="currentColor">
                   <path d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932ZM17.61 20.644h2.039L6.486 3.24H4.298Z" />
                 </svg>
               } />
-              <SocialLink href="https://www.linkedin.com/company/prephire/?viewAsMember=true" icon={<Linkedin className="h-4 w-4 md:h-5 md:w-5" />} />
-              <SocialLink href="https://www.instagram.com/prephire/" icon={<Instagram className="h-4 w-4 md:h-5 md:w-5" />} />
-              <SocialLink href="https://www.youtube.com/@PrepHire-AI" icon={<Youtube className="h-4 w-4 md:h-5 md:w-5" />} />
+              <SocialLink href="https://www.linkedin.com/company/prephire/?viewAsMember=true" label="LinkedIn" icon={<Linkedin className="h-4 w-4 md:h-5 md:w-5" />} />
+              <SocialLink href="https://www.instagram.com/prephire/" label="Instagram" icon={<Instagram className="h-4 w-4 md:h-5 md:w-5" />} />
+              <SocialLink href="https://www.youtube.com/@PrepHire-AI" label="YouTube" icon={<Youtube className="h-4 w-4 md:h-5 md:w-5" />} />
             </div>
           </div>
           
@@ -65,8 +65,8 @@ const Footer = () => {
           <div className="md:col-span-2">
             <h4 className="font-bold text-white mb-3 md:mb-6 text-sm md:text-base">Legal</h4>
             <ul className="space-y-2 md:space-y-4 text-xs md:text-sm">
-              <li><FooterLink to="/privacy">Privacy</FooterLink></li>
-              <li><FooterLink to="/terms">Terms</FooterLink></li>
+              <li><FooterLink to="/privacy">Privacy Policy</FooterLink></li>
+              <li><FooterLink to="/terms">Terms of Service</FooterLink></li>
               <li><FooterLink to="/refund">Refund Policy</FooterLink></li>
               <li><FooterLink to="/shipping">Shipping Policy</FooterLink></li>
             </ul>
@@ -87,11 +87,12 @@ const Footer = () => {
   );
 };
 
-const SocialLink = ({ href, icon }) => (
+const SocialLink = ({ href, icon, label }) => (
   <a 
     href={href} 
     target="_blank"
     rel="noopener noreferrer"
+    aria-label={label}
     className="h-8 w-8 md:h-10 md:w-10 rounded-full bg-slate-900 flex items-center justify-center text-slate-400 hover:bg-white hover:text-slate-950 transition-all duration-300"
   >
     {icon}
