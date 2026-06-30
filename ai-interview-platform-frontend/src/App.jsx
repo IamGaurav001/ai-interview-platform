@@ -9,6 +9,7 @@ import { logEvent } from "./config/amplitude";
 import { HelmetProvider } from 'react-helmet-async';
 import { Loader2 } from "lucide-react";
 import SkipLink from "./components/layout/SkipLink";
+import Landing from "./pages/Landing";
 
 const Login = lazy(() => import("./pages/Login"));
 const Register = lazy(() => import("./pages/Register"));
@@ -18,7 +19,6 @@ const InterviewFlow = lazy(() => import("./pages/InterviewFlow"));
 const History = lazy(() => import("./pages/History"));
 const ResumeUpload = lazy(() => import("./pages/ResumeUpload"));
 const Settings = lazy(() => import("./pages/Settings"));
-const Landing = lazy(() => import("./pages/Landing"));
 const WatchDemo = lazy(() => import("./pages/WatchDemo"));
 const ForgotPassword = lazy(() => import("./pages/ForgotPassword"));
 const About = lazy(() => import("./pages/About"));

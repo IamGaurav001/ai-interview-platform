@@ -44,13 +44,38 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // For assets, try cache first, fallback to network
+  // For assets, try cache first, fallback to network and dynamically cache the result
   event.respondWith(
     caches.match(event.request).then((cachedResponse) => {
       if (cachedResponse) {
         return cachedResponse;
       }
-      return fetch(event.request);
+      return fetch(event.request).then((response) => {
+        // Only cache valid 200 responses from our own origin
+        if (
+          !response ||
+          response.status !== 200 ||
+          response.type !== 'basic' ||
+          !event.request.url.startsWith(self.location.origin)
+        ) {
+          return response;
+        }
+
+        // Don't cache API or audio requests
+        const url = new URL(event.request.url);
+        if (url.pathname.startsWith('/api') || url.pathname.startsWith('/audio')) {
+          return response;
+        }
+
+        const responseToCache = response.clone();
+        caches.open(CACHE_NAME).then((cache) => {
+          cache.put(event.request, responseToCache);
+        });
+
+        return response;
+      }).catch(() => {
+        // Fallback silently if network request fails offline
+      });
     })
   );
 });
