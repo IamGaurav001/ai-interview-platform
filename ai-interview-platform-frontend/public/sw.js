@@ -4,12 +4,24 @@ const OFFLINE_URL = '/index.html';
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll([
+      const urlsToCache = [
         OFFLINE_URL,
         '/manifest.json',
         '/pwa-192.png',
         '/pwa-512.png'
-      ]);
+      ];
+      return Promise.allSettled(
+        urlsToCache.map((url) => {
+          return fetch(url).then((response) => {
+            if (response.ok) {
+              return cache.put(url, response);
+            }
+            throw new Error(`Failed to fetch ${url} (status: ${response.status})`);
+          }).catch((err) => {
+            console.warn(`Failed to precache ${url}:`, err);
+          });
+        })
+      );
     })
   );
   self.skipWaiting();

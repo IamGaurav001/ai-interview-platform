@@ -16,7 +16,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(
 );
 
 if ("serviceWorker" in navigator) {
-  window.addEventListener("load", () => {
+  const registerSW = () => {
     navigator.serviceWorker
       .register("/sw.js")
       .then((registration) => {
@@ -25,6 +25,12 @@ if ("serviceWorker" in navigator) {
       .catch((registrationError) => {
         console.log("SW registration failed: ", registrationError);
       });
-  });
+  };
+
+  if (document.readyState === "complete") {
+    registerSW();
+  } else {
+    window.addEventListener("load", registerSW);
+  }
 }
 
