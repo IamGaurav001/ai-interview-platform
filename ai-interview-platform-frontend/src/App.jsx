@@ -31,10 +31,11 @@ const VerifyEmail = lazy(() => import("./pages/VerifyEmail"));
 const Refund = lazy(() => import("./pages/Refund"));
 const Shipping = lazy(() => import("./pages/Shipping"));
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
+const Agency = lazy(() => import("./pages/Agency"));
 
 const Layout = ({ children }) => {
   const location = useLocation();
-  const hideNavbarRoutes = ["/login", "/register", "/interview-flow", "/sequential-interview", "/forgot-password", "/verify-email"];
+  const hideNavbarRoutes = ["/login", "/register", "/interview-flow", "/sequential-interview", "/forgot-password", "/verify-email", "/agency"];
   const showNavbar = !hideNavbarRoutes.includes(location.pathname);
 
   const PAGE_NAMES = {
@@ -57,7 +58,8 @@ const Layout = ({ children }) => {
     '/pricing': 'Pricing',
     '/refund': 'Refund Policy',
     '/shipping': 'Shipping Policy',
-    '/verify-email': 'Verify Email'
+    '/verify-email': 'Verify Email',
+    '/agency': 'Agency'
   };
 
   return (
@@ -105,6 +107,7 @@ function App() {
                   <Route path="/pricing" element={<Pricing />} />
                   <Route path="/refund" element={<Refund />} />
                   <Route path="/shipping" element={<Shipping />} />
+                  <Route path="/agency" element={<Agency />} />
 
                   {/* Protected Routes */}
                   <Route
