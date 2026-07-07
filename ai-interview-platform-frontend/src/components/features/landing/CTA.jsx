@@ -1,7 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowRight, Sparkles } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { logEvent } from "../../../config/amplitude";
 
 const CTA = () => {
@@ -24,7 +24,6 @@ const CTA = () => {
           
           <div className="relative z-10">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 border border-white/20 text-blue-300 text-xs font-bold uppercase tracking-widest mb-6 sm:mb-8 backdrop-blur-md">
-              <Sparkles className="h-3 w-3" />
               <span>Start your journey</span>
             </div>
             

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { X, Check, Zap, ShieldCheck, Sparkles, AlertCircle } from "lucide-react";
+import { X, Check, Zap, ShieldCheck, AlertCircle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import axiosInstance from "../../../api/axiosInstance";
 import { auth } from "../../../config/firebase";
@@ -153,9 +153,6 @@ const PricingModal = ({ isOpen, onClose, onSuccess, userEmail, userName }) => {
             </button>
 
             <div className="relative z-10 text-center">
-              <div className="inline-flex items-center justify-center p-3 bg-white/10 rounded-2xl mb-4 backdrop-blur-md border border-white/10 shadow-inner">
-                <Sparkles className="h-6 w-6 text-blue-200" />
-              </div>
               <h3 className="text-3xl font-bold text-white mb-2 tracking-tight">Unlock Potential</h3>
               <p className="text-blue-100/80 font-medium">Get detailed AI-powered interview feedback</p>
             </div>

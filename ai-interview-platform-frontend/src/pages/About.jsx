@@ -1,6 +1,6 @@
 import React from "react";
 import PageLayout from "../components/layout/PageLayout";
-import { Users, Target, Shield, Award, ArrowRight, Sparkles } from "lucide-react";
+import { Users, Target, Shield, Award, ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
 import SEO from "../components/layout/SEO";
 import Footer from "../components/features/landing/Footer";
@@ -49,7 +49,6 @@ const About = () => {
               transition={{ duration: 0.6 }}
             >
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-300 text-sm font-medium mb-6">
-                <Sparkles className="h-4 w-4" />
                 <span>Revolutionizing Recruitment</span>
               </div>
               <h1 className="text-4xl font-bold tracking-tight text-white sm:text-6xl mb-6">

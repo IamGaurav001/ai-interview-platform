@@ -1,6 +1,6 @@
 import React, { useState, useRef } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
-import { Play, Sparkles } from "lucide-react";
+import { Play } from "lucide-react";
 
 const DemoVideo = () => {
   const [isPlaying, setIsPlaying] = useState(false);
@@ -36,7 +36,6 @@ const DemoVideo = () => {
            className="mb-14 sm:mb-20 flex flex-col items-center"
         >
              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white border border-blue-100 text-blue-700 font-bold text-sm mb-6 shadow-sm shadow-blue-500/5">
-                <Sparkles className="w-4 h-4 text-blue-500" />
                 <span className="tracking-wide">SEE THE MAGIC</span>
              </div>
              <h2 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-[#1d2f62] mb-6 tracking-tight max-w-4xl leading-[1.1]">

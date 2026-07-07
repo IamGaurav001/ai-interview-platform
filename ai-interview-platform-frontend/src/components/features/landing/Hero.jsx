@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
-import { ArrowRight, Sparkles, Play } from "lucide-react";
+import { ArrowRight, Play } from "lucide-react";
 import { logEvent } from "../../../config/amplitude";
 import icon from "../../../assets/prephire-icon-circle.png";
 
