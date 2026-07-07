@@ -21,7 +21,6 @@ import {
   LogOut,
   ChevronDown,
   RefreshCw,
-  Sparkles,
   Clock,
   MicOff,
   Settings,
@@ -902,9 +901,7 @@ const InterviewFlow = () => {
               {/* Executive Summary */}
               <div className="mt-8 bg-white rounded-[2rem] p-8 sm:p-10 border border-slate-200 shadow-sm relative overflow-hidden">
                 <div className="absolute top-0 left-0 w-1.5 h-full bg-[#1d2f62]" />
-                <h3 className="text-lg font-bold text-[#1d2f62] mb-4 flex items-center gap-2 uppercase tracking-wide">
-                  <Sparkles className="h-5 w-5" /> Executive Summary
-                </h3>
+
                 <p className="text-slate-700 leading-loose text-lg">{summary.summary}</p>
               </div>
 
@@ -970,7 +967,6 @@ const InterviewFlow = () => {
               className="flex items-center gap-1.5 px-3 py-1.5 text-slate-600 hover:text-[#1d2f62] hover:bg-[#1d2f62]/10 rounded-lg transition-colors text-xs sm:text-sm font-medium"
               title="Start Tour"
             >
-              <Sparkles className="h-4 w-4" />
               <span className="hidden sm:inline">Tour</span>
             </button>
             <button

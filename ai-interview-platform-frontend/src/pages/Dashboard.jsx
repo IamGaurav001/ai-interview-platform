@@ -13,7 +13,6 @@ import {
   Mic,
   AlertTriangle,
   RefreshCw,
-  Sparkles,
   Activity,
   MessageCircle,
   Brain,
@@ -320,7 +319,6 @@ const Dashboard = () => {
                   <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-8">
                     <div className="flex-1">
                       <div className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-1.5 text-sm font-bold text-[#1d2f62] mb-4 shadow-sm">
-                        <Sparkles className="h-4 w-4" />
                         <span>{activeSession ? "Session In Progress" : "AI-Powered Interviewer"}</span>
                       </div>
                       <h2 className="text-3xl sm:text-4xl font-bold text-[#1d2f62] mb-3 tracking-tight">
@@ -550,9 +548,6 @@ const Dashboard = () => {
               >
                 
                 <h2 className="text-xl font-bold mb-4 flex items-center gap-3 relative z-10 text-slate-900">
-                  <div className="p-2 bg-blue-100 rounded-lg">
-                    <Sparkles className="h-5 w-5 text-[#1d2f62]" />
-                  </div>
                   Pro Tips
                 </h2>
                 <div className="space-y-4 relative z-10">

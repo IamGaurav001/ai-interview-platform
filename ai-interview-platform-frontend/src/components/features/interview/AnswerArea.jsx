@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { User, Mic, Square, CheckCircle2, Send, Loader2, Sparkles, Keyboard, X } from 'lucide-react';
+import { User, Mic, Square, CheckCircle2, Send, Loader2, Keyboard, X } from 'lucide-react';
 
 const AnswerArea = ({
   isRecording,
@@ -127,7 +127,6 @@ const AnswerArea = ({
             {transcribedText && (
               <div className="bg-white/80 backdrop-blur-sm rounded-xl p-4 border border-green-200/60 shadow-sm max-h-60 overflow-y-auto custom-scrollbar">
                 <div className="flex items-center gap-2 mb-2">
-                  <Sparkles className="h-3.5 w-3.5 text-green-600" />
                   <p className="text-xs font-bold text-green-700 uppercase tracking-wide">Transcribed Text</p>
                 </div>
                 <p className="text-sm text-slate-800 leading-relaxed">{transcribedText}</p>

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Bot, Volume2, Pause, Sparkles } from 'lucide-react';
+import { Bot, Volume2, Pause } from 'lucide-react';
 
 const QuestionCard = ({ 
   question, 
@@ -26,7 +26,6 @@ const QuestionCard = ({
             <Bot className="h-5 w-5 text-white" />
           </div>
           <div className="flex items-center gap-2">
-            <Sparkles className="h-3.5 w-3.5 text-[#1d2f62]" />
             <span className="text-xs font-bold text-[#1d2f62] uppercase tracking-wider">AI Question</span>
           </div>
         </div>

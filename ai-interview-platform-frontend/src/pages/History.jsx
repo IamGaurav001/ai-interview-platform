@@ -14,7 +14,6 @@ import {
   Clock,
   ArrowRight,
   BarChart3,
-  Sparkles,
   Target,
   Zap,
   BookOpen
@@ -438,9 +437,7 @@ const History = () => {
              <div className="absolute top-0 right-0 w-48 h-48 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
              <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
                <div className="flex-1">
-                 <div className="inline-flex items-center gap-2 px-2.5 py-1 bg-white/20 rounded-full text-[10px] font-bold uppercase tracking-wider mb-3 border border-white/10">
-                    <Sparkles className="h-3 w-3" /> Coach's Insight
-                 </div>
+
                  <h2 className="text-xl sm:text-2xl font-bold mb-2">
                    {parseFloat(stats.trend) > 0 
                      ? "You're getting better! Keep the momentum."
@@ -597,9 +594,6 @@ const ExecutiveSummarySection = ({ summary, strengths, weaknesses }) => {
         className="p-4 sm:p-5 lg:p-6 cursor-pointer flex justify-between items-center gap-3 group"
         onClick={() => setIsOpen(!isOpen)}
       >
-        <h4 className="text-xs font-bold text-blue-900 uppercase tracking-wide flex items-center gap-2">
-          <Sparkles className="h-4 w-4 text-blue-500" /> Executive Summary
-        </h4>
         
         <div className={`h-7 w-7 rounded-full flex items-center justify-center bg-blue-50 text-blue-600 transition-transform duration-300 group-hover:bg-blue-100 ${isOpen ? "rotate-180" : ""}`}>
            <ChevronDown className="h-4 w-4" />

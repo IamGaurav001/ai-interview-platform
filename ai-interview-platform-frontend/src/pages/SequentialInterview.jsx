@@ -17,7 +17,6 @@ import {
   Square,
   StopCircle,
   AlertCircle,
-  Sparkles,
   Bot,
   LogOut,
   Clock
@@ -832,7 +831,6 @@ const SequentialInterview = () => {
                       <div className="bg-blue-50/50 backdrop-blur-sm rounded-xl p-5 border border-blue-100 shadow-sm relative overflow-hidden">
                         <div className="absolute top-0 left-0 w-1 h-full bg-blue-400"></div>
                         <h4 className="text-sm font-bold text-blue-900 uppercase tracking-wide mb-2 flex items-center gap-2">
-                          <Sparkles className="h-4 w-4 text-blue-500" />
                           AI Feedback
                         </h4>
                         <p className="text-blue-800 leading-relaxed">{feedbacks[idx].overall_feedback}</p>
