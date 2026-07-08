@@ -2,6 +2,15 @@ import React, { useState, useRef } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { Play } from "lucide-react";
 
+
+const SparkleStar = ({ className, color }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M12 0C12 5.3 18.7 12 24 12C18.7 12 12 18.7 12 24C12 18.7 5.3 12 0 12C5.3 12 12 5.3 12 0Z" fill={color} />
+  </svg>
+);
+
+
+
 const DemoVideo = () => {
   const [isPlaying, setIsPlaying] = useState(false);
   const containerRef = useRef(null);
@@ -62,48 +71,119 @@ const DemoVideo = () => {
             
              <div className="relative rounded-[2rem] sm:rounded-[2.5rem] p-2 sm:p-3 bg-white/60 backdrop-blur-2xl border border-white shadow-2xl shadow-[#1d2f62]/10 overflow-hidden group mix-blend-normal transition-all duration-500 hover:shadow-3xl hover:shadow-[#1d2f62]/20 hover:-translate-y-2">
                 {/* Macbook-like UI Frame inner container */}
-                <div className="relative w-full aspect-video rounded-[1.5rem] sm:rounded-[2rem] overflow-hidden bg-slate-950 shadow-inner">
+                <div className={`relative w-full aspect-video rounded-[1.5rem] sm:rounded-[2rem] overflow-hidden transition-all duration-500 ${
+                  isPlaying 
+                    ? "bg-slate-950 shadow-2xl" 
+                    : "bg-white/30 backdrop-blur-2xl shadow-[inset_0_2px_8px_rgba(255,255,255,0.4)] border border-white/50"
+                }`}>
                     
                     {!isPlaying ? (
                         <div 
-                           className="absolute inset-0 flex items-center justify-center cursor-pointer group/overlay overflow-hidden" 
+                           className="absolute inset-0 flex flex-col items-center justify-between cursor-pointer group/overlay overflow-hidden p-5 sm:p-8 md:p-10 select-none" 
                            onClick={() => setIsPlaying(true)}
                         >
                             
-                            {/* Animated Background Mesh for the Thumbnail */}
-                            <div className="absolute inset-0 bg-[#070b14] overflow-hidden">
-                                <div className="absolute inset-0 opacity-80 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-[#1d2f62]/80 via-[#070b14] to-[#070b14]"></div>
+                            {/* Redesigned Translucent Background Mesh for the Thumbnail */}
+                            <div className="absolute inset-0 bg-gradient-to-tr from-blue-50/40 via-white/40 to-indigo-50/30 overflow-hidden pointer-events-none">
+                                {/* Bottom-left blue gradient mesh */}
+                                <div className="absolute -bottom-20 -left-20 w-[30rem] h-[20rem] bg-[radial-gradient(ellipse_at_bottom_left,rgba(59,130,246,0.15),transparent_70%)]" />
+                                
+                                {/* Bottom-right indigo/purple gradient mesh */}
+                                <div className="absolute -bottom-20 -right-20 w-[30rem] h-[20rem] bg-[radial-gradient(ellipse_at_bottom_right,rgba(139,92,246,0.1),transparent_70%)]" />
+
+                                {/* Concentric circles centered around the play button */}
+                                <svg className="absolute inset-0 w-full h-full text-blue-500/[0.04]" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                  <circle cx="50%" cy="32%" r="120" stroke="currentColor" strokeWidth="1.2" strokeDasharray="3 3" />
+                                  <circle cx="50%" cy="32%" r="180" stroke="currentColor" strokeWidth="1.2" />
+                                  <circle cx="50%" cy="32%" r="240" stroke="currentColor" strokeWidth="1.2" strokeDasharray="4 4" />
+                                  <circle cx="50%" cy="32%" r="300" stroke="currentColor" strokeWidth="1.2" />
+                                </svg>
+                                
+                                {/* Sparkle Stars */}
+                                <SparkleStar className="absolute left-[18%] top-[35%] w-4.5 h-4.5 opacity-60 animate-[pulse_3s_infinite_alternate]" color="#3b82f6" />
+                                <SparkleStar className="absolute right-[22%] top-[45%] w-4 h-4 opacity-60 animate-[pulse_4s_infinite_alternate] delay-500" color="#8b5cf6" />
+                                <SparkleStar className="absolute right-[28%] top-[20%] w-4.5 h-4.5 opacity-55 animate-[pulse_5s_infinite_alternate] delay-1000" color="#10b981" />
+                                
+                                {/* Floating Dots */}
+                                <div className="absolute top-[18%] left-[32%] w-1.5 h-1.5 rounded-full bg-indigo-400/40 animate-ping duration-[3000ms]" />
+                                <div className="absolute top-[28%] right-[36%] w-1.5 h-1.5 rounded-full bg-blue-400/30" />
+                                
                                 {/* Subtle noise grid */}
-                                <div className="absolute inset-0 opacity-10 mix-blend-overlay bg-[url('https://grainy-gradients.vercel.app/noise.svg')]"></div>
-                                {/* Glow orbs */}
-                                <div className="absolute origin-center top-0 right-0 w-[40rem] h-[40rem] bg-blue-500/10 rounded-full blur-[100px] transform translate-x-1/3 -translate-y-1/3 group-hover/overlay:scale-125 transition-transform duration-[1500ms] ease-out"></div>
-                                <div className="absolute origin-center bottom-0 left-0 w-[40rem] h-[40rem] bg-purple-500/10 rounded-full blur-[100px] transform -translate-x-1/3 translate-y-1/3 group-hover/overlay:scale-125 transition-transform duration-[1500ms] ease-out"></div>
+                                <div className="absolute inset-0 opacity-[0.015] mix-blend-overlay bg-[url('https://grainy-gradients.vercel.app/noise.svg')]"></div>
                             </div>
 
                             {/* Beautiful Glass Effect Info Card overlaying the background */}
-                            <div className="relative z-20 flex flex-col items-center gap-6 sm:gap-8 p-10 transform group-hover/overlay:scale-[1.03] transition-transform duration-700 ease-out">
+                            <div className="relative z-20 flex flex-col items-center justify-between h-full w-full py-4 sm:py-6 transform group-hover/overlay:scale-[1.01] transition-transform duration-700 ease-out">
                                 
-                                {/* Play Button */}
-                                <div className="relative flex items-center justify-center">
-                                    {/* Multi-layered Ping Effects */}
-                                    <div className="absolute inset-0 bg-blue-500 rounded-full animate-ping opacity-30 duration-1000"></div>
-                                    <div className="absolute -inset-6 bg-blue-400/20 rounded-full blur-2xl group-hover/overlay:bg-blue-400/40 transition-colors duration-500"></div>
+                                {/* Handwritten Indicator */}
+                                <div className="absolute top-[12%] left-[50%] -translate-x-32 -translate-y-3 hidden md:flex flex-col items-center rotate-[-12deg] pointer-events-none select-none">
+                                  <span className="text-blue-500/80 font-medium text-xs tracking-wide" style={{ fontFamily: "'Caveat', 'Architects Daughter', 'Comic Sans MS', cursive" }}>See it in action</span>
+                                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="text-blue-400 -mt-1 ml-8" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M2 2C5 6 8 9 16 11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                                    <path d="M12 7.5L16 11L12.5 14.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                  </svg>
+                                </div>
+
+                                {/* Play Button Area */}
+                                <div className="relative flex items-center justify-center mt-2">
+                                    {/* Concentric Glow Rings */}
+                                    <div className="absolute w-32 h-32 sm:w-36 sm:h-36 rounded-full bg-blue-500/5 border border-blue-500/10 animate-[pulse_4s_infinite]" />
+                                    <div className="absolute w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-blue-500/10 border border-blue-500/15" />
                                     
                                     {/* The Crystal Glass Button */}
-                                    <div className="relative w-20 h-20 sm:w-28 sm:h-28 bg-white/10 backdrop-blur-xl rounded-full flex items-center justify-center border border-white/20 shadow-[0_8px_32px_rgba(29,47,98,0.5)] group-hover/overlay:bg-white/20 group-hover/overlay:border-white/40 transition-all duration-300 before:absolute before:inset-0 before:rounded-full before:bg-gradient-to-b before:from-white/20 before:to-transparent before:opacity-50">
-                                        <Play className="w-8 h-8 sm:w-12 sm:h-12 text-white fill-white translate-x-1 drop-shadow-[0_4px_8px_rgba(0,0,0,0.4)] group-hover/overlay:scale-110 transition-transform duration-300" />
+                                    <div className="relative w-16 h-16 sm:w-20 sm:h-20 bg-white rounded-full flex items-center justify-center border border-blue-100 shadow-[0_8px_30px_rgba(59,130,246,0.18)] group-hover/overlay:scale-105 group-hover/overlay:shadow-[0_12px_40px_rgba(59,130,246,0.25)] transition-all duration-300">
+                                        <Play className="w-6 h-6 sm:w-8 sm:h-8 text-blue-600 fill-blue-600 translate-x-0.5" />
                                     </div>
                                 </div>
                                 
                                 {/* Text Content */}
-                                <div className="flex flex-col items-center gap-3">
-                                    <h3 className="text-2xl sm:text-4xl font-extrabold text-white tracking-tight drop-shadow-lg text-center">
-                                        Watch 2 Min Demo
+                                <div className="flex flex-col items-center gap-1.5 mt-2">
+                                    <h3 className="text-xl sm:text-3xl md:text-4xl font-extrabold text-slate-900 tracking-tight text-center leading-tight">
+                                        Watch <span className="text-blue-600">2 Min</span> Demo
                                     </h3>
-                                    <p className="text-blue-100/80 text-base sm:text-lg font-medium max-w-sm text-center">
+                                    <p className="text-slate-500 text-[11px] sm:text-sm font-medium max-w-md text-center leading-normal">
                                         See how our AI prepares you for the perfect interview
                                     </p>
                                 </div>
+
+                                {/* Features Badge Row */}
+                                <div className="inline-flex items-center justify-center gap-3 sm:gap-6 md:gap-8 px-4 py-2 sm:px-6 sm:py-3 rounded-full bg-white/70 backdrop-blur-md border border-white/80 shadow-[0_8px_30px_rgba(0,0,0,0.02)] mt-4 max-w-full overflow-x-auto">
+                                    <div className="flex items-center gap-1.5 sm:gap-2">
+                                        <div className="p-1 sm:p-1.5 bg-purple-50 text-purple-500 rounded-lg">
+                                            <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z" /></svg>
+                                        </div>
+                                        <div className="text-left">
+                                            <div className="text-[10px] sm:text-xs font-bold text-slate-800 leading-tight">AI-Powered</div>
+                                            <div className="text-[9px] sm:text-[10px] text-slate-400 leading-tight">Smart feedback</div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div className="w-[1px] h-5 bg-slate-200/60 hidden sm:block" />
+                                    
+                                    <div className="flex items-center gap-1.5 sm:gap-2">
+                                        <div className="p-1 sm:p-1.5 bg-emerald-50 text-emerald-500 rounded-lg">
+                                            <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                        </div>
+                                        <div className="text-left">
+                                            <div className="text-[10px] sm:text-xs font-bold text-slate-800 leading-tight">Personalized</div>
+                                            <div className="text-[9px] sm:text-[10px] text-slate-400 leading-tight">Tailored to you</div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div className="w-[1px] h-5 bg-slate-200/60 hidden sm:block" />
+                                    
+                                    <div className="flex items-center gap-1.5 sm:gap-2">
+                                        <div className="p-1 sm:p-1.5 bg-blue-50 text-blue-500 rounded-lg">
+                                            <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 18L9 11.25l4.306 4.307a11.95 11.95 0 015.814-5.519l2.74-1.22m0 0l-5.94-2.281m5.94 2.28 -2.28 5.941" /></svg>
+                                        </div>
+                                        <div className="text-left">
+                                            <div className="text-[10px] sm:text-xs font-bold text-slate-800 leading-tight">Proven Results</div>
+                                            <div className="text-[9px] sm:text-[10px] text-slate-400 leading-tight">Get hired faster</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+
                             </div>
                         </div>
                     ) : (
