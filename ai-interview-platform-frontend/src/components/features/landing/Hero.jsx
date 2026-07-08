@@ -5,6 +5,32 @@ import { ArrowRight, Play } from "lucide-react";
 import { logEvent } from "../../../config/amplitude";
 import icon from "../../../assets/prephire-icon-circle.png";
 
+// --- AI TYPING EFFECT COMPONENT ---
+const TypingText = ({ text }) => {
+  const [displayedText, setDisplayedText] = useState("");
+  
+  useEffect(() => {
+    setDisplayedText("");
+    let i = 0;
+    const interval = setInterval(() => {
+      if (i < text.length) {
+        setDisplayedText((prev) => prev + text.charAt(i));
+        i++;
+      } else {
+        clearInterval(interval);
+      }
+    }, 25); // 25ms per character
+    return () => clearInterval(interval);
+  }, [text]);
+
+  return (
+    <span className="relative">
+      {displayedText}
+      <span className="inline-block w-[3px] h-[18px] bg-blue-500 ml-1 animate-[pulse_0.8s_infinite] align-middle" />
+    </span>
+  );
+};
+
 const Hero = () => {
   return (
     <section className="relative z-10 pt-32 md:pt-48 pb-20 md:pb-40 overflow-hidden bg-transparent">
@@ -17,12 +43,12 @@ const Hero = () => {
           transition={{ duration: 0.8, ease: "easeOut" }}
           className="max-w-5xl mx-auto"
         >
-          {/* Badge */}
+          {/* Live Badge */}
           <motion.div 
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.2 }}
-            className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/60 border border-white/80 shadow-[0_2px_12px_rgba(0,0,0,0.03)] backdrop-blur-md text-slate-600 text-xs font-semibold uppercase tracking-wider mb-8 hover:scale-105 transition-transform cursor-default"
+            className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/70 border border-white/90 shadow-[0_2px_12px_rgba(0,0,0,0.03)] backdrop-blur-md text-slate-600 text-xs font-semibold uppercase tracking-wider mb-8 hover:scale-105 transition-transform cursor-default"
           >
             <span className="relative flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
@@ -34,27 +60,25 @@ const Hero = () => {
           {/* Headline */}
           <h1 className="text-5xl sm:text-6xl md:text-7xl font-extrabold tracking-tight mb-8 text-slate-900 leading-[1.05]">
             Ace Your Next Interview. <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-[#1d2f62]">
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-900">
               Get Hired Faster.
             </span>
           </h1>
           
           {/* Subheadline */}
-          <p className="text-lg sm:text-xl text-slate-500 mb-12 leading-relaxed max-w-3xl mx-auto font-normal">
+          <p className="text-lg sm:text-xl text-slate-500 mb-12 leading-relaxed max-w-3xl mx-auto font-medium">
             Practice with realistic AI interviews tailored to your resume. Get instant, actionable feedback on your answers, tone, and body language.
           </p>
           
           {/* CTAs */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-6 mb-24">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-6 mb-24 select-none">
             <Link
               to="/register"
               onClick={() => logEvent('Click CTA', { location: 'Hero', text: 'Start Practicing Free' })}
-              className="relative inline-flex h-14 overflow-hidden rounded-full p-[1px] focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 focus:ring-offset-slate-50"
+              className="group relative inline-flex h-14 items-center justify-center rounded-full bg-[#1d2f62] px-8 text-lg font-semibold text-white hover:-translate-y-1 hover:shadow-lg hover:shadow-blue-500/20 active:scale-95 transition-all duration-300"
             >
-              <span className="absolute inset-[-1000%] animate-[spin_2s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,#E2E8F0_0%,#3B82F6_50%,#E2E8F0_100%)]" />
-              <span className="inline-flex h-full w-full cursor-pointer items-center justify-center rounded-full bg-[#1d2f62] px-8 py-1 text-lg font-medium text-white backdrop-blur-3xl transition-all duration-300 hover:bg-[#1d2f62]/90 hover:scale-105 active:scale-95">
-                Start Practicing Free <ArrowRight className="ml-2 h-5 w-5" />
-              </span>
+              Start Practicing Free 
+              <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1.5 transition-transform duration-300" />
             </Link>
             
             <button
@@ -63,9 +87,9 @@ const Hero = () => {
                 element?.scrollIntoView({ behavior: 'smooth' });
                 logEvent('Click CTA', { location: 'Hero', text: 'Watch Demo' });
               }}
-              className="inline-flex h-14 items-center justify-center rounded-full bg-white/80 px-8 text-lg font-medium text-slate-700 shadow-sm border border-slate-200/80 hover:bg-white hover:border-slate-300/80 hover:text-slate-900 hover:shadow-md transition-all duration-300 hover:scale-105 active:scale-95 backdrop-blur-sm"
+              className="inline-flex h-14 items-center justify-center rounded-full bg-white px-8 text-lg font-semibold text-slate-700 shadow-sm border border-slate-200 hover:bg-slate-50 hover:border-slate-300 hover:text-slate-900 hover:shadow-md hover:-translate-y-1 active:scale-95 transition-all duration-300 backdrop-blur-sm"
             >
-              <Play className="mr-2 h-5 w-5 fill-slate-400" />
+              <Play className="mr-2 h-5 w-5 fill-slate-400 text-slate-400" />
               Watch Demo
             </button>
           </div>
@@ -90,8 +114,8 @@ const TiltCard = ({ children }) => {
   const mouseX = useSpring(x, { stiffness: 150, damping: 15 });
   const mouseY = useSpring(y, { stiffness: 150, damping: 15 });
 
-  const rotateX = useTransform(mouseY, [-0.5, 0.5], ["7deg", "-7deg"]);
-  const rotateY = useTransform(mouseX, [-0.5, 0.5], ["-7deg", "7deg"]);
+  const rotateX = useTransform(mouseY, [-0.5, 0.5], ["3.5deg", "-3.5deg"]);
+  const rotateY = useTransform(mouseX, [-0.5, 0.5], ["-3.5deg", "3.5deg"]);
 
   const handleMouseMove = (e) => {
     const rect = e.currentTarget.getBoundingClientRect();
@@ -117,7 +141,7 @@ const TiltCard = ({ children }) => {
       }}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
-      className="relative rounded-[2rem] bg-slate-900/5 p-2 sm:p-4 ring-1 ring-slate-900/10 backdrop-blur-3xl"
+      className="relative rounded-[2rem] bg-slate-900/5 p-2 sm:p-4 ring-1 ring-slate-900/10 backdrop-blur-3xl transition-all duration-500 hover:shadow-[0_30px_70px_-15px_rgba(59,130,246,0.12)] hover:ring-slate-900/15"
     >
       <div className="relative rounded-2xl bg-white shadow-2xl overflow-hidden border border-slate-200/60">
         {children}
@@ -137,9 +161,32 @@ const BackgroundBeams = () => {
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(120,119,198,0.08),rgba(255,255,255,0))]" />
       <div className="absolute inset-0 bg-gradient-to-b from-blue-50/20 via-white to-white" />
       
-      {/* Premium blobs */}
-      <div className="absolute -top-20 -right-20 w-[500px] h-[500px] bg-gradient-to-br from-blue-200/30 to-indigo-200/20 rounded-full blur-[120px] opacity-60 animate-[pulse_8s_infinite_alternate]" />
-      <div className="absolute top-20 -left-20 w-[500px] h-[500px] bg-gradient-to-tr from-indigo-200/30 to-purple-200/20 rounded-full blur-[120px] opacity-50 animate-[pulse_10s_infinite_alternate] delay-1000" />
+      {/* Premium slowly floating blobs */}
+      <motion.div 
+        animate={{
+          x: [0, 30, -20, 0],
+          y: [0, -40, 30, 0],
+        }}
+        transition={{
+          duration: 25,
+          repeat: Infinity,
+          ease: "easeInOut",
+        }}
+        className="absolute -top-20 -right-20 w-[500px] h-[500px] bg-gradient-to-br from-blue-200/25 to-indigo-200/15 rounded-full blur-[120px] opacity-60 pointer-events-none" 
+      />
+      <motion.div 
+        animate={{
+          x: [0, -40, 20, 0],
+          y: [0, 30, -30, 0],
+        }}
+        transition={{
+          duration: 28,
+          repeat: Infinity,
+          ease: "easeInOut",
+          delay: 2,
+        }}
+        className="absolute top-20 -left-20 w-[500px] h-[500px] bg-gradient-to-tr from-indigo-200/25 to-purple-200/15 rounded-full blur-[120px] opacity-50 pointer-events-none" 
+      />
       
       {/* Noise texture for depth */}
       <div className="absolute top-0 left-0 w-full h-full bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.015] mix-blend-overlay"></div>
@@ -169,15 +216,34 @@ const HeroDashboardPreview = () => {
   useEffect(() => {
     const interval = setInterval(() => {
       setIndex((prev) => (prev + 1) % mockData.length);
-    }, 4000);
+    }, 4500);
     return () => clearInterval(interval);
   }, []);
 
   return (
-    <div className="flex flex-col w-full h-[400px] md:h-[500px] relative bg-slate-50/50">
+    <div className="flex flex-col w-full h-[400px] md:h-[500px] relative bg-slate-50/50 overflow-hidden">
       
+      {/* Moving mouse cursor simulation */}
+      <motion.div
+        className="absolute z-50 pointer-events-none text-blue-600 drop-shadow-lg"
+        animate={{
+          x: [150, 480, 220, 150],
+          y: [280, 120, 220, 280],
+        }}
+        transition={{
+          duration: 12,
+          repeat: Infinity,
+          ease: "easeInOut",
+        }}
+        style={{ left: 0, top: 0 }}
+      >
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M4.5 3l15 6.5-6.5 1.5 5 8-3.5 2-5-8L4.5 15z" stroke="white" strokeWidth="2.2" strokeLinejoin="round" />
+        </svg>
+      </motion.div>
+
       {/* Window Header */}
-      <div className="flex items-center justify-between border-b border-slate-200 bg-white/80 backdrop-blur-sm px-6 py-4">
+      <div className="flex items-center justify-between border-b border-slate-200 bg-white/90 backdrop-blur-sm px-6 py-4 relative z-20">
         <div className="flex items-center gap-4">
           <div className="flex space-x-2">
             <div className="h-3 w-3 rounded-full bg-red-400" />
@@ -185,11 +251,11 @@ const HeroDashboardPreview = () => {
             <div className="h-3 w-3 rounded-full bg-emerald-400" />
           </div>
           <div className="hidden sm:flex items-center gap-2 px-3 py-1 bg-slate-100 rounded-md text-xs font-medium text-slate-500">
-            <span className="opacity-50">🔒</span> prephire.co/interview/session-live
+            <span className="opacity-50">🔒</span> prephire.co/session/live-ai
           </div>
         </div>
         <div className="flex items-center gap-3">
-           <div className="flex items-center gap-2 px-3 py-1.5 bg-red-50 border border-red-100 rounded-full">
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-red-50 border border-red-100 rounded-full">
             <div className="h-2 w-2 rounded-full bg-red-500 animate-pulse" />
             <span className="text-[10px] font-bold text-red-600 uppercase tracking-wider">Analyzing </span>
           </div>
@@ -197,23 +263,23 @@ const HeroDashboardPreview = () => {
       </div>
 
       {/* Content */}
-      <div className="flex-1 p-6 grid grid-cols-1 md:grid-cols-12 gap-6 overflow-y-auto custom-scrollbar">
+      <div className="flex-1 p-6 grid grid-cols-1 md:grid-cols-12 gap-6 overflow-y-auto custom-scrollbar relative z-10">
         
         {/* LEFT: AI Avatar */}
         <div className="md:col-span-4 flex flex-col h-full">
-          <div className="flex-1 bg-white rounded-2xl border border-slate-200 p-8 flex flex-col items-center justify-center relative overflow-hidden shadow-sm group hover:shadow-md transition-shadow">
-            <div className="absolute inset-0 bg-gradient-to-b from-blue-50/30 to-transparent" />
+          <div className="flex-1 bg-white rounded-2xl border border-slate-200/80 p-8 flex flex-col items-center justify-center relative overflow-hidden shadow-sm group hover:shadow-md transition-shadow">
+            <div className="absolute inset-0 bg-gradient-to-b from-blue-50/20 to-transparent" />
             
             <div className="relative mb-8">
-              <div className="h-32 w-32 rounded-full p-1.5 bg-[#1d2f62] from-blue-500 via-indigo-500 to-purple-500 shadow-xl relative z-10">
+              <div className="h-32 w-32 rounded-full p-1.5 bg-[#1d2f62] shadow-xl relative z-10">
                 <div className="h-full w-full rounded-full bg-white overflow-hidden border-4 border-white">
-                  <img src={icon} alt="AI Interviewer" width="128" height="128" className="h-full w-full object-cover transform group-hover:scale-110 transition-transform duration-700" />
+                  <img src={icon} alt="AI Interviewer" width="128" height="128" className="h-full w-full object-cover transform group-hover:scale-105 transition-transform duration-700" />
                 </div>
               </div>
               
               {/* Orbital Rings */}
-              <div className="absolute inset-0 -m-4 border border-blue-200/50 rounded-full animate-[spin_10s_linear_infinite]" />
-              <div className="absolute inset-0 -m-8 border border-indigo-200/30 rounded-full animate-[spin_15s_linear_infinite_reverse]" />
+              <div className="absolute inset-0 -m-4 border border-blue-200/30 rounded-full animate-[spin_12s_linear_infinite]" />
+              <div className="absolute inset-0 -m-8 border border-indigo-200/20 rounded-full animate-[spin_18s_linear_infinite_reverse]" />
             </div>
             
             <div className="text-center relative z-10">
@@ -230,16 +296,16 @@ const HeroDashboardPreview = () => {
         </div>
 
         {/* CENTER: Chat/Transcript */}
-        <div className="md:col-span-8 flex flex-col gap-4 h-full">
+        <div className="md:col-span-8 flex flex-col gap-4 h-full justify-between">
           {/* Question Card */}
           <motion.div 
-            className="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm hover:shadow-md transition-shadow relative overflow-hidden"
+            className="bg-white border border-slate-200/80 p-6 rounded-2xl shadow-sm hover:shadow-md transition-shadow relative overflow-hidden"
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
           >
-            <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-blue-500 to-indigo-600" />
+            <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-gradient-to-b from-blue-500 to-indigo-600" />
             <div className="flex gap-4">
-              <div className="h-10 w-10 rounded-xl bg-slate-100 flex-shrink-0 flex items-center justify-center text-sm text-slate-600 font-bold border border-slate-200">AI</div>
+              <div className="h-10 w-10 rounded-xl bg-slate-100 flex-shrink-0 flex items-center justify-center text-xs text-slate-600 font-bold border border-slate-200">AI</div>
               <div>
                 <div className="text-xs font-semibold text-slate-400 mb-1 uppercase tracking-wider">Interviewer</div>
                 <motion.p 
@@ -254,36 +320,31 @@ const HeroDashboardPreview = () => {
             </div>
           </motion.div>
 
-          {/* Answer Card */}
+          {/* Answer Card with AI Typing Effect */}
           <motion.div 
-            className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-100 p-6 rounded-2xl flex-1 relative overflow-hidden flex flex-col justify-center shadow-sm"
+            className="bg-gradient-to-br from-blue-50/50 to-indigo-50/50 border border-blue-100 p-6 rounded-2xl flex-1 relative overflow-hidden flex flex-col justify-center shadow-sm"
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.1 }}
           >
-            <div className="flex gap-4 h-full">
-               <div className="h-10 w-10 rounded-xl bg-blue-600 flex-shrink-0 flex items-center justify-center text-sm text-white font-bold shadow-lg shadow-blue-200">ME</div>
+            <div className="flex gap-4 h-full relative z-10">
+               <div className="h-10 w-10 rounded-xl bg-blue-600 flex-shrink-0 flex items-center justify-center text-xs text-white font-bold shadow-lg shadow-blue-200">ME</div>
                <div className="relative z-10 flex-1">
-                <div className="text-xs font-semibold text-blue-400 mb-1 uppercase tracking-wider">You</div>
-                <motion.p 
-                  key={`a-${index}`}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="text-xl font-medium text-slate-900 leading-relaxed"
-                >
-                  "{mockData[index].answer}"
-                </motion.p>
+                <div className="text-xs font-semibold text-blue-500/80 mb-1 uppercase tracking-wider">You</div>
+                <p className="text-xl font-medium text-slate-900 leading-relaxed">
+                  "<TypingText key={`a-${index}`} text={mockData[index].answer} />"
+                </p>
                </div>
             </div>
             
-            {/* Audio Waveform Visualization */}
-            <div className="absolute bottom-0 left-0 right-0 h-16 flex items-end justify-center gap-1 pb-4 opacity-20 mask-gradient-b">
-               {[...Array(30)].map((_, i) => (
+            {/* Audio Waveform Visualization (Smooth Speaking Wave) */}
+            <div className="absolute bottom-0 left-0 right-0 h-16 flex items-end justify-center gap-1.5 pb-2 opacity-35 mask-gradient-b">
+               {[...Array(24)].map((_, i) => (
                   <motion.div
                     key={i}
-                    className="w-1 bg-blue-600 rounded-t-full"
-                    animate={{ height: ["10%", `${Math.random() * 80 + 20}%`, "10%"] }}
-                    transition={{ duration: 0.8, repeat: Infinity, delay: i * 0.05 }}
+                    className="w-1 bg-gradient-to-t from-blue-600 to-indigo-400 rounded-t-full shadow-[0_0_8px_rgba(59,130,246,0.3)]"
+                    animate={{ height: ["15%", `${30 + Math.sin(i * 0.5) * 50 + Math.random() * 15}%`, "15%"] }}
+                    transition={{ duration: 0.8, repeat: Infinity, repeatType: "reverse", delay: i * 0.04, ease: "easeInOut" }}
                   />
                ))}
             </div>

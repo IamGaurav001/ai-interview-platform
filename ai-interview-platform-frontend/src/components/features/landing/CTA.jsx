@@ -86,10 +86,10 @@ const CTA = () => {
             </div>
             
             {/* Heading */}
-            <h2 className="text-3xl sm:text-5xl md:text-6xl font-extrabold text-slate-900 mb-6 sm:mb-8 tracking-tight leading-[1.1]">
-              Ready to land your <br />
+            <h2 className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-slate-900 mb-6 sm:mb-8 tracking-tight leading-[1.1]">
+              Your next offer <br />
               <span className="relative inline-block text-transparent bg-clip-text bg-gradient-to-r from-blue-500 via-indigo-600 to-purple-600 pb-1">
-                dream job?
+                starts here.
                 {/* Hand-drawn Indicator Rays */}
                 <svg className="absolute -right-9 top-1/2 -translate-y-1/2 w-8 h-8 text-blue-400 hidden sm:block" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
                   <path d="M3 12h5" />
@@ -110,7 +110,7 @@ const CTA = () => {
               <Link
                 to="/register"
                 onClick={() => logEvent('Click CTA', { location: 'Bottom', text: 'Get Started Now' })}
-                className="group relative flex items-center justify-between gap-6 pl-2 pr-5 py-2 bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-bold rounded-full hover:shadow-[0_8px_30px_rgba(59,130,246,0.35)] hover:-translate-y-0.5 active:scale-95 transition-all duration-300 shadow-lg shadow-blue-500/20 w-full sm:w-auto"
+                className="group relative flex items-center justify-between gap-6 pl-2 pr-5 py-2 bg-gradient-to-r from-blue-500 via-indigo-600 to-blue-500 bg-[size:200%_auto] hover:bg-right text-white font-bold rounded-full hover:-translate-y-1 hover:shadow-[0_12px_24px_rgba(59,130,246,0.35)] active:scale-95 transition-all duration-500 shadow-lg shadow-blue-500/20 w-full sm:w-auto"
               >
                 {/* Arrow Circle */}
                 <div className="w-10 h-10 rounded-full bg-white text-blue-600 flex items-center justify-center shadow-sm">
@@ -122,7 +122,7 @@ const CTA = () => {
                 
                 <span className="text-base sm:text-lg flex items-center gap-2">
                   Get Started Now 
-                  <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                  <ArrowRight className="h-5 w-5 group-hover:translate-x-1.5 transition-transform duration-300" />
                 </span>
               </Link>
             </div>

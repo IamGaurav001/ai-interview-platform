@@ -26,7 +26,7 @@ const SocialProof = () => {
                 {companies.map((company) => (
                   <span 
                     key={`${company}-${i}`} 
-                    className="text-xl md:text-3xl font-bold text-slate-300 hover:text-slate-800 transition-colors duration-300 cursor-default select-none"
+                    className="text-xl md:text-3xl font-bold text-slate-400 opacity-55 hover:opacity-100 hover:scale-[1.05] transition-all duration-300 cursor-default select-none inline-block"
                   >
                     {company}
                   </span>

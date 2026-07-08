@@ -32,11 +32,11 @@ const testimonials = [
 ];
 
 const Testimonials = () => {
-  const row1 = testimonials.slice(0, 5);
-  const row2 = testimonials.slice(5, 10);
+  const row1 = testimonials.slice(0, 2);
+  const row2 = testimonials.slice(2, 4);
 
   return (
-    <section className="py-24 bg-slate-50 relative overflow-hidden">
+    <section className="py-24 bg-gradient-to-b from-white via-indigo-50/15 to-white relative overflow-hidden">
       <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
         <div className="absolute -top-[20%] -left-[10%] w-[50%] h-[50%] rounded-full bg-indigo-500/5 blur-[100px]" />
         <div className="absolute -bottom-[20%] -right-[10%] w-[50%] h-[50%] rounded-full bg-purple-500/5 blur-[100px]" />
