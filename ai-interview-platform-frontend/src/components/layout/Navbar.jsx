@@ -97,6 +97,8 @@ const Navbar = () => {
     navLinks.push({ path: "/admin", label: "Admin", icon: Shield });
   }
 
+  const isLandingPage = location.pathname === "/";
+
   return (
     <>
       {/* Backdrop overlay for mobile menu */}
@@ -119,11 +121,13 @@ const Navbar = () => {
         transition={{ duration: 0.5, ease: "easeOut" }}
         className={`fixed left-1/2 -translate-x-1/2 z-50 transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] rounded-full border ${
           isScrolled || (mobileMenuOpen && windowWidth < 768)
-            ? "top-2 w-[calc(100%-1rem)] md:w-[calc(100%-3rem)] max-w-5xl bg-white shadow-md border-gray-200/50 py-1"
-            : "top-4 w-[calc(100%-2rem)] max-w-screen-2xl bg-white/60 backdrop-blur-md shadow-sm border-transparent py-1.5"
+            ? "top-2 w-[calc(100%-1rem)] md:w-[calc(100%-3rem)] max-w-5xl bg-white/80 backdrop-blur-xl shadow-[0_8px_30px_rgba(0,0,0,0.04)] border-slate-200/50 py-1"
+            : isLandingPage
+              ? "top-4 w-[calc(100%-2rem)] max-w-screen-2xl bg-transparent border-transparent shadow-none py-1.5"
+              : "top-4 w-[calc(100%-2rem)] max-w-screen-2xl bg-white/60 backdrop-blur-md shadow-sm border-transparent py-1.5"
         }`}
       >
-        <div className="px-4 sm:px-6 py-1">
+        <div className="px-6 sm:px-8 py-1">
           <div className="flex justify-between items-center">
 
             <Link

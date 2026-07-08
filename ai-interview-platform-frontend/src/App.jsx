@@ -37,6 +37,7 @@ const Layout = ({ children }) => {
   const location = useLocation();
   const hideNavbarRoutes = ["/login", "/register", "/interview-flow", "/sequential-interview", "/forgot-password", "/verify-email", "/agency"];
   const showNavbar = !hideNavbarRoutes.includes(location.pathname);
+  const isLandingPage = location.pathname === "/";
 
   const PAGE_NAMES = {
     '/': 'Landing Page',
@@ -66,7 +67,7 @@ const Layout = ({ children }) => {
     <>
       <SkipLink />
       {showNavbar && <Navbar />}
-      <main id="main-content" className={`min-h-screen w-full overflow-x-hidden bg-slate-50 ${showNavbar ? "pt-24" : ""}`}>
+      <main id="main-content" className={`min-h-screen w-full overflow-x-hidden ${isLandingPage ? "bg-white" : "bg-slate-50"} ${showNavbar && !isLandingPage ? "pt-24" : ""}`}>
         {children}
       </main>
     </>

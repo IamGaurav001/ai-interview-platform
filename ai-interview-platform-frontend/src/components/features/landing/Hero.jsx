@@ -7,7 +7,7 @@ import icon from "../../../assets/prephire-icon-circle.png";
 
 const Hero = () => {
   return (
-    <section className="relative z-10 pt-10 md:pt-20 pb-20 md:pb-40 overflow-hidden bg-white">
+    <section className="relative z-10 pt-32 md:pt-48 pb-20 md:pb-40 overflow-hidden bg-transparent">
       <BackgroundBeams />
       
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
@@ -22,7 +22,7 @@ const Hero = () => {
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.2 }}
-            className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/80 border border-slate-200 shadow-[0_0_20px_-5px_rgba(0,0,0,0.1)] backdrop-blur-md text-slate-600 text-xs font-semibold uppercase tracking-widest mb-8 hover:scale-105 transition-transform cursor-default"
+            className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/60 border border-white/80 shadow-[0_2px_12px_rgba(0,0,0,0.03)] backdrop-blur-md text-slate-600 text-xs font-semibold uppercase tracking-wider mb-8 hover:scale-105 transition-transform cursor-default"
           >
             <span className="relative flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
@@ -32,15 +32,15 @@ const Hero = () => {
           </motion.div>
           
           {/* Headline */}
-          <h1 className="text-5xl sm:text-4xl md:text-7xl font-bold tracking-tight mb-8 text-slate-900 leading-[1.05]">
+          <h1 className="text-5xl sm:text-6xl md:text-7xl font-extrabold tracking-tight mb-8 text-slate-900 leading-[1.05]">
             Ace Your Next Interview. <br />
-            <span className="text-transparent bg-clip-text bg-[#1d2f62]">
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-[#1d2f62]">
               Get Hired Faster.
             </span>
           </h1>
           
           {/* Subheadline */}
-          <p className="text-xl sm:text-2xl text-slate-700 mb-12 leading-relaxed max-w-3xl mx-auto font-light">
+          <p className="text-lg sm:text-xl text-slate-500 mb-12 leading-relaxed max-w-3xl mx-auto font-normal">
             Practice with realistic AI interviews tailored to your resume. Get instant, actionable feedback on your answers, tone, and body language.
           </p>
           
@@ -63,7 +63,7 @@ const Hero = () => {
                 element?.scrollIntoView({ behavior: 'smooth' });
                 logEvent('Click CTA', { location: 'Hero', text: 'Watch Demo' });
               }}
-              className="inline-flex h-14 items-center justify-center rounded-full bg-white px-8 text-lg font-medium text-slate-700 shadow-sm ring-1 ring-inset ring-slate-300 hover:bg-slate-50 hover:text-slate-900 transition-all duration-300 hover:scale-105 active:scale-95"
+              className="inline-flex h-14 items-center justify-center rounded-full bg-white/80 px-8 text-lg font-medium text-slate-700 shadow-sm border border-slate-200/80 hover:bg-white hover:border-slate-300/80 hover:text-slate-900 hover:shadow-md transition-all duration-300 hover:scale-105 active:scale-95 backdrop-blur-sm"
             >
               <Play className="mr-2 h-5 w-5 fill-slate-400" />
               Watch Demo
@@ -130,10 +130,19 @@ const TiltCard = ({ children }) => {
 const BackgroundBeams = () => {
   return (
     <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(120,119,198,0.1),rgba(255,255,255,0))]" />
-      <div className="absolute top-0 left-0 w-full h-full bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 brightness-100 contrast-150 mix-blend-overlay"></div>
-      <div className="absolute -top-40 -right-40 w-96 h-96 bg-blue-200 rounded-full blur-[128px] opacity-40 animate-pulse" />
-      <div className="absolute top-40 -left-40 w-96 h-96 bg-indigo-200 rounded-full blur-[128px] opacity-40 animate-pulse delay-1000" />
+      {/* Top-center soft blue/indigo glow */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1200px] h-[600px] bg-[radial-gradient(circle_at_50%_0%,rgba(59,130,246,0.08),transparent_60%)] blur-[80px]" />
+      
+      {/* Background radial gradient */}
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(120,119,198,0.08),rgba(255,255,255,0))]" />
+      <div className="absolute inset-0 bg-gradient-to-b from-blue-50/20 via-white to-white" />
+      
+      {/* Premium blobs */}
+      <div className="absolute -top-20 -right-20 w-[500px] h-[500px] bg-gradient-to-br from-blue-200/30 to-indigo-200/20 rounded-full blur-[120px] opacity-60 animate-[pulse_8s_infinite_alternate]" />
+      <div className="absolute top-20 -left-20 w-[500px] h-[500px] bg-gradient-to-tr from-indigo-200/30 to-purple-200/20 rounded-full blur-[120px] opacity-50 animate-[pulse_10s_infinite_alternate] delay-1000" />
+      
+      {/* Noise texture for depth */}
+      <div className="absolute top-0 left-0 w-full h-full bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.015] mix-blend-overlay"></div>
     </div>
   );
 };
